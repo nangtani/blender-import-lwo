@@ -1,0 +1,76 @@
+dist: xenial
+
+env:
+    global:
+        - BLENDER_CACHE=$HOME/.cache/blender
+    matrix:
+        - BLENDER_VERSION="2.79"
+        - BLENDER_VERSION="2.80"
+
+language: python
+python:
+    - 3.7
+
+cache:
+    apt: true
+    directories:
+        - $HOME/.cache/pip
+        - ${BLENDER_CACHE}
+addons:
+    apt:
+        packages:
+            - blender
+
+# https://builder.blender.org/download/blender-2.79-e6acb4fba094-linux-glibc224-x86_64.tar.bz2
+# http://ftp.nluug.nl/pub/graphics/blender/release/Blender${BLENDER_VERSION}/${BLENDER_ZIPFILE}
+#     - BLENDER_VERSION="2.80"
+#     - BLENDER_VERSION_SUFFIX="-430cf7e15eef"
+#     - BLENDER_VERSION="2.79"
+#     - BLENDER_VERSION_SUFFIX="-e6acb4fba094"
+
+before_install:
+    - env
+    - mkdir -p ${BLENDER_CACHE}
+    - ls ${BLENDER_CACHE}
+    - pip install -r tests/requirements.txt --upgrade
+    - yolk -l
+    - mkdir -p blender_build
+    - cd blender_build
+    - wget https://bootstrap.pypa.io/get-pip.py
+    - cd $TRAVIS_BUILD_DIR
+    - BLENDER_VERSION_SUFFIX=`python tests/get_blender_name.py ${BLENDER_VERSION}`
+
+install:
+    - echo ${BLENDER_VERSION}
+    - echo ${BLENDER_VERSION_SUFFIX}
+    - BLENDER_ARCHIVE="blender-${BLENDER_VERSION}${BLENDER_VERSION_SUFFIX}-linux-glibc224-x86_64"
+    - BLENDER_ZIPFILE=${BLENDER_ARCHIVE}.tar.bz2
+    - BLENDER_DIR=blender_${BLENDER_VERSION}
+    - BLENDER_PYTHONBIN=${BLENDER_DIR}/${BLENDER_VERSION}/python/bin
+    - cd ${BLENDER_CACHE}
+    - touch blender-${BLENDER_VERSION}.txt
+    - ls | grep -v ${BLENDER_ZIPFILE} | xargs rm
+    - wget -nc https://builder.blender.org/download/${BLENDER_ZIPFILE}
+    - cd $TRAVIS_BUILD_DIR ; cd blender_build
+    - tar jxf ${BLENDER_CACHE}/${BLENDER_ZIPFILE}
+    - mv ${BLENDER_ARCHIVE} ${BLENDER_DIR}
+    - ls ${BLENDER_DIR}/${BLENDER_VERSION}/python/bin
+    - ${BLENDER_PYTHONBIN}/python3.7m get-pip.py
+    - ${BLENDER_PYTHONBIN}/pip install pytest yolk3k --upgrade
+    - ${BLENDER_PYTHONBIN}/yolk -l
+
+script:
+    - cd ${TRAVIS_BUILD_DIR}
+#    - PATH="blender_build/blender_${BLENDER_VERSION}:${PATH}"
+    - blender_build/blender_${BLENDER_VERSION}/blender --version
+#     - PYTHONPATH="${TRAVIS_BUILD_DIR}/tests"
+#     - export ${PYTHONPATH} ; blender_build/blender_${BLENDER_VERSION}/blender --background --python "tests/load_pytest.py"
+    - python tests/run_blender.py ${BLENDER_VERSION}
+
+#after_success:
+#    - codecov -f tests_output/coverage.xml
+
+#notifications:
+#    email:
+#        on_success: change
+#        on_failure: always
