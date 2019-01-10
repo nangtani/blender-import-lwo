@@ -61,7 +61,6 @@ install:
 
 script:
     - cd ${TRAVIS_BUILD_DIR}
-#    - PATH="blender_build/blender_${BLENDER_VERSION}:${PATH}"
     - blender_build/blender_${BLENDER_VERSION}/blender --version
 #     - PYTHONPATH="${TRAVIS_BUILD_DIR}/tests"
 #     - export ${PYTHONPATH} ; blender_build/blender_${BLENDER_VERSION}/blender --background --python "tests/load_pytest.py"
@@ -70,7 +69,7 @@ script:
 #after_success:
 #    - codecov -f tests_output/coverage.xml
 
-#notifications:
-#    email:
-#        on_success: change
-#        on_failure: always
+notifications:
+    email:
+        on_success: change
+        on_failure: always
