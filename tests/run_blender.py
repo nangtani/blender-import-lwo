@@ -19,10 +19,6 @@ def main(blender, test_file):
     cmd = "{0} --background --python \"{1}\"".format(blender, test_file)
     result = int(os.system(cmd))
     return(result)
-#     if 0 == result:
-#         return(0)
-#     else:
-#         return(1)
 
 if __name__ == '__main__':
 
