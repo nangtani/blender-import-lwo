@@ -15,7 +15,9 @@ One obvious area of concern is that the addon used in blender are hardly ever wr
 
 My new years resolution (2019) was to at least see if I could put together a decent test frame work that could allow for regressable tests, on multiple builts of blender, and have it feed into a continous integration tool, in this case TravisCI that can run against the nightly builds.  
 
-I have also picked pytest as I have experience with this from my day job as and microchip validation engineer.  And it is non standard enough the work here shows how you can get any python module you want into blender.
+I have also picked `pytest` as I have experience with this from my day job as and microchip validation engineer.  And it is non standard enough the work here shows how you can get any python module you want into blender.
+
+Where possible i try and script in python only.  Some work, usually the wrapper script can be written in bash/sh.  That can wreck my head so here I did it in python for greater code continuity.
 
 ## pytest
 
@@ -31,9 +33,9 @@ and then we explictly call the python inside blender to install `pip`:
 
 this will install `pip` locally that when called will install modules into the blender version of python and not the system.
 
-*linux*: `blender/2.79/python/bin/pip`
+**linux**: `blender/2.79/python/bin/pip`
 
-*windows*: `blender\2.79\python\Scripts\pip`
+**windows**: `blender\2.79\python\Scripts\pip`
 
 we use this `pip` to install pytest:
 
@@ -61,10 +63,17 @@ The `unconfigure` removes the `addon` from the `scripts/addon` directory used by
 
 To run the test locally you need to have a version of blender present. Since these scripts were written to work on multiple revisions of blender at the same time, your standard unzips should got here accordingly:
 
-2.79 : `blender_build/blender_2.79`
-2.80 : `blender_build/blender_2.80`
+**2.79** : `blender_build/blender_2.79`
+
+**2.80** : `blender_build/blender_2.80`
+
+To run the tests locally we use the system python to run the script, one could arguably use the one included in blender itself.
+
+`python tests/run_blender.py 2.79`
 
 ## TravisCI
+
+![cron](images/cron.png)
 
 ## Coverage
 
