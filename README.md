@@ -53,7 +53,7 @@ The addon included here is the most basic addon possible.  All it does is print 
     assert  expect_version == return_version
 ```
 
-In the current release, there are two tests, one to check that the right value gets returned and one to check if the wrong value returned is detected correctly.  These pass.  If you wish to see a correct failure under pytest, changed the `expect_version` value to something it should now be.
+In the current release, there are two tests, one to check that the right value gets returned for the version ID and one to check if the wrong value returned is detected correctly.  These pass.  If you wish to see a correct failure under pytest, changed the `expect_version` value to something it should now be.
 
 During the `pytest` `configure` phase the helper scripts have been written to handle the zipping of the addon into a zip file, which is then imported into blender.  If this import was unsuccessfuly the `get_version()` would error, which would be captured by `pytest`.
 
