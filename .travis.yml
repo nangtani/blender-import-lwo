@@ -21,13 +21,6 @@ addons:
         packages:
             - blender
 
-# https://builder.blender.org/download/blender-2.79-e6acb4fba094-linux-glibc224-x86_64.tar.bz2
-# http://ftp.nluug.nl/pub/graphics/blender/release/Blender${BLENDER_VERSION}/${BLENDER_ZIPFILE}
-#     - BLENDER_VERSION="2.80"
-#     - BLENDER_VERSION_SUFFIX="-430cf7e15eef"
-#     - BLENDER_VERSION="2.79"
-#     - BLENDER_VERSION_SUFFIX="-e6acb4fba094"
-
 before_install:
     - env
     - mkdir -p ${BLENDER_CACHE}
