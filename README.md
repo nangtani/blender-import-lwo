@@ -3,7 +3,7 @@
 
 # Blender - pytest - TravisCI integration
 
-The code to shows how the `pytest` can be used inside blender to test an addon.  Once a checkin has been performed TravisCI runs the tests on the current nightly builds for blender 2.79 and 2.8.
+The code to shows how the `pytest` can be used inside blender to test an addon.  Once a checkin has been performed TravisCI run the tests on the current nightly builds for blender 2.79 and 2.80.
 
 ## Motivation
 
@@ -11,17 +11,19 @@ I have been around python for the better part of 10 years now.  Python is only j
 
 I have been playing around with blender for 3-4 years and the move to blender 2.80 from 2.79 is beginning to look very similar.
 
-One obvious area of concern is that the addon used in blender are hardly ever written with any tests.  If some thing was written for 2.56 it may or may not work for 2.65. It usually did so that has allowed some great work to live on.  Hoever the move to 2.80 is really beginning to flag where we suffer for lack of regressable tests.
+One obvious area of concern is that the addon used in blender are hardly ever written with any tests.  If some thing was written for 2.56 it may or may not work for 2.65. It usually did so that has allowed some great work to live on.  Hoever the move to 2.80 is really beginning to flag where we suffer for lack of regressable testing.
 
-My new years resolution (2019) was to at least see if I could put together a decent test frame work that could allow for regressable tests, on multiple builts of blender, and have it feed into a continous integration tool, in this case TravisCI that can run against the nightly builds.  
+My new years resolution (2019) was to at least see if I could put together a decent test frame work that could allow for regressable tests, on multiple builts of blender, and have it feed into a continous integration tool, in this case TravisCI, that can run against the nightly builds.  
 
 I have also picked `pytest` as I have experience with this from my day job as and microchip validation engineer.  And it is non standard enough the work here shows how you can get any python module you want into blender.
 
-Where possible I try and script in python only.  Some work, usually the wrapper script can be written in bash/sh.  That can wreck my head so here I did it in python for greater code continuity.
+Where possible I try and script in python only.  Some other work I have seen, usually the wrapper script, can be written in bash/sh.  That can wreck my head so here all scripts where possible have been written in python for greater code continuity.
 
 ## pytest
 
-Blender comes with it own version of python.  When you run blender the python it uses is this one not one that has been installed on you system.  The python that blender somes with has `unittest` as a standard module.  `unittest` is a bit long in the tooth, `pytest` has started to become a lot more popular in the industry. So two things are missing that we need to get, `pip` and `pytest`.  
+Blender comes with it own version of python.  When you run blender, the python it uses, is this one, not the one that has been installed on you system.  This python comes with has `unittest` as a standard module.  `unittest` is a bit long in the tooth, `pytest` has started to become a lot more popular in the industry. 
+
+So two things are missing out of the box that we need to get, `pip` and `pytest`.  
 
 To install `pip` you need to fetch `get-pip.py` from this path:
 
@@ -45,7 +47,7 @@ You will now be able to import pytest inside python scripts called by blender.
 
 ## fake-addon
 
-The addon included here is the most basic addon possible.  All it does is print out a message when it is installed and another one when it is removed.  However all addons have required to have version tuple.  This version can be read back through blender.  This is the test we use:
+The addon included here is the most basic addon possible.  All it does is print out a message when it is installed and another one when it is removed.  However all addons are required to have version tuple.  This version ID of the addon can be read back through blender via python.  This is the test we use:
 
 ```
     expect_version = (0, 0, 1)
