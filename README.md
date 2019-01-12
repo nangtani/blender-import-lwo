@@ -17,7 +17,7 @@ My new years resolution (2019) was to at least see if I could put together a dec
 
 I have also picked `pytest` as I have experience with this from my day job as and microchip validation engineer.  And it is non standard enough the work here shows how you can get any python module you want into blender.
 
-Where possible i try and script in python only.  Some work, usually the wrapper script can be written in bash/sh.  That can wreck my head so here I did it in python for greater code continuity.
+Where possible I try and script in python only.  Some work, usually the wrapper script can be written in bash/sh.  That can wreck my head so here I did it in python for greater code continuity.
 
 ## pytest
 
@@ -71,7 +71,55 @@ To run the tests locally we use the system python to run the script, one could a
 
 `python tests/run_blender.py 2.79`
 
+```
+============================= test session starts =============================
+platform win32 -- Python 3.6.2, pytest-4.1.0, py-1.7.0, pluggy-0.8.0
+rootdir: D:\blender-fake-addon, inifile:
+collected 2 items
+
+tests\test_pytest.py ..                                                  [100%]
+
+========================== 2 passed in 0.20 seconds ===========================
+```
+
+
 ## TravisCI
+
+To use TravisCI you need to link your github account.
+
+The script has two modes, 2.79 and 2.80.  The script, `get_blender_name.py`, is used to webscrape the blender downloads site and fetch the current revision numbers of the nightly builds.
+
+When downloading we use a cache for the tar.bz2 file we get.  This allows us to do faster incremental testing.  Keep an eye on your cache sizes over on TravisCI that they don't blow up.
+
+Here is an example of a successful run:
+
+![cron](images/success.png)
+
+And this was the result of a test that was checked in a a failure forced:
+
+![cron](images/failure.png)
+
+And here is what can be found in the log for the error.
+
+```
+_____________________________ test_versionID_pass ______________________________
+bpy_module = 'fake_addon'
+    def test_versionID_pass(bpy_module):
+        expect_version = (1, 0, 1)
+        return_version = get_version(bpy_module)
+>       assert  expect_version == return_version
+E       assert (1, 0, 1) == (0, 0, 1)
+E         At index 0 diff: 1 != 0
+E         Use -v to get the full diff
+tests/test_pytest.py:11: AssertionError
+====================== 1 failed, 1 passed in 0.08 seconds ======================
+Cleaning up - fake_addon
+Goodbye World
+*** test run reporting finished
+Error: Not freed memory blocks: 1, total unfreed memory 0.000214 MB
+The command "python tests/run_blender.py ${BLENDER_VERSION}" exited with 1.
+```
+As we want to runn against the nightly builds we need to set up some cronjobs to run.  These can be found under settings.  I added a daily cron for my builds as I imagine my addon isn't changing that much it is a potential change in the how the nightly builds work is what we really want to catch early.
 
 ![cron](images/cron.png)
 
