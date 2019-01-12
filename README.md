@@ -119,10 +119,16 @@ Goodbye World
 Error: Not freed memory blocks: 1, total unfreed memory 0.000214 MB
 The command "python tests/run_blender.py ${BLENDER_VERSION}" exited with 1.
 ```
-As we want to runn against the nightly builds we need to set up some cronjobs to run.  These can be found under settings.  I added a daily cron for my builds as I imagine my addon isn't changing that much it is a potential change in the how the nightly builds work is what we really want to catch early.
+As we want to run against the nightly builds we need to set up some cronjobs to run.  These can be found under settings.  I added a daily cron for my builds as I imagine my addon isn't changing that much, it is a potential change in the how the nightly builds work is what we really want to catch early.
 
 ![cron](images/cron.png)
+
+Please consult the `.travis.yml` file for the remainder of operation it is quite self explanitory.
 
 ## Coverage
 
 TBD
+
+## Wrapup
+
+This is just one attempt at building a verification flow.  If you have any comments for improvements please get in touch.
