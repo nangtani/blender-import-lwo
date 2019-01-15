@@ -30,7 +30,7 @@ if __name__ == '__main__':
     except:
         blender_rev = "2.79"
     
-    blender_dir = "blender_build/blender_{0}".format(blender_rev)
+    blender_dir = "blender_build/blender-{0}".format(blender_rev)
     
     blender = os.path.realpath("{0}/blender".format(blender_dir))
     test_file = "tests/load_pytest.py"
