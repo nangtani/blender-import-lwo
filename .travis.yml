@@ -54,9 +54,9 @@ install:
 
 script:
     - cd ${TRAVIS_BUILD_DIR}
-    - blender_build/blender_${BLENDER_VERSION}/blender --version
+    - blender_build/blender-${BLENDER_VERSION}/blender --version
 #     - PYTHONPATH="${TRAVIS_BUILD_DIR}/tests"
-#     - export ${PYTHONPATH} ; blender_build/blender_${BLENDER_VERSION}/blender --background --python "tests/load_pytest.py"
+#     - export ${PYTHONPATH} ; blender_build/blender-${BLENDER_VERSION}/blender --background --python "tests/load_pytest.py"
     - python tests/run_blender.py ${BLENDER_VERSION}
 
 #after_success:
