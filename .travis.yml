@@ -5,7 +5,7 @@ env:
         - BLENDER_CACHE=$HOME/.cache/blender
     matrix:
         - BLENDER_VERSION="2.79"
-#        - BLENDER_VERSION="2.80"
+        - BLENDER_VERSION="2.80"
 
 language: python
 python:
