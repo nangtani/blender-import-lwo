@@ -19,8 +19,8 @@
 bl_info= {
     "name": "Import LightWave Objects",
     "author": "Ken Nign (Ken9)",
-    "version": (1, 2),
-    "blender": (2, 57, 0),
+    "version": (1, 2, 1),
+    "blender": (2, 80, 0),
     "location": "File > Import > LightWave Object (.lwo)",
     "description": "Imports a LWO file including any UV, Morph and Color maps. "
                    "Can convert Skelegons to an Armature.",
@@ -1247,19 +1247,30 @@ class IMPORT_OT_lwo(bpy.types.Operator):
 def menu_func(self, context):
     self.layout.operator(IMPORT_OT_lwo.bl_idname, text="LightWave Object (.lwo)")
 
+classes = (
+    IMPORT_OT_lwo,
+)
 
 def register():
-    bpy.utils.register_module(__name__)
+    if (2, 80, 0) < bpy.app.version:
+        for cls in classes:
+            bpy.utils.register_class(cls)
 
-    #bpy.types.TOPBAR_MT_file_import.append(menu_func)
-    bpy.types.INFO_MT_file_import.append(menu_func)
+        bpy.types.TOPBAR_MT_file_import.append(menu_func)
+    else:
+        bpy.utils.register_module(__name__)
+        bpy.types.INFO_MT_file_import.append(menu_func)
 
 
 def unregister():
-    bpy.utils.unregister_module(__name__)
+    if (2, 80, 0) < bpy.app.version:
+        for cls in classes:
+            bpy.utils.unregister_class(cls)
 
-    #bpy.types.TOPBAR_MT_file_import.remove(menu_func)
-    bpy.types.INFO_MT_file_import.remove(menu_func)
+        bpy.types.TOPBAR_MT_file_import.remove(menu_func)
+    else:
+        bpy.utils.unregister_module(__name__)
+        bpy.types.INFO_MT_file_import.remove(menu_func)
 
 if __name__ == "__main__":
     register()
