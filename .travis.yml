@@ -28,8 +28,8 @@ before_install:
     - pip install -r tests/requirements.txt --upgrade
     - yolk -l
     - mkdir -p blender_build
-    - cd blender_build
-    - wget https://bootstrap.pypa.io/get-pip.py
+#     - cd blender_build
+#     - wget https://bootstrap.pypa.io/get-pip.py
     - cd $TRAVIS_BUILD_DIR
     - BLENDER_VERSION_SUFFIX=`python tests/get_blender_name.py ${BLENDER_VERSION}`
 
@@ -48,8 +48,9 @@ install:
     - tar jxf ${BLENDER_CACHE}/${BLENDER_ZIPFILE}
     - mv ${BLENDER_ARCHIVE} ${BLENDER_DIR}
     - ls ${BLENDER_DIR}/${BLENDER_VERSION}/python/bin
-    - ${BLENDER_PYTHONBIN}/python3.7m get-pip.py
-    - ${BLENDER_PYTHONBIN}/pip install pytest yolk3k --upgrade
+#    - ${BLENDER_PYTHONBIN}/python3.7m get-pip.py
+    - ${BLENDER_PYTHONBIN}/python3.7m -m ensure pip
+    - ${BLENDER_PYTHONBIN}/pip3 install -r ${TRAVIS_BUILD_DIR}/blender_requirements.txt  --upgrade
     - ${BLENDER_PYTHONBIN}/yolk -l
 
 script:
