@@ -2,5 +2,3 @@
 [![codecov.io Code Coverage](https://img.shields.io/codecov/c/github/douglaskastle/blender-fake-addon.svg?maxAge=2592000)](https://codecov.io/github/douglaskastle/blender-fake-addon?branch=master)
 
 # Blender - import_lwo
-
-
