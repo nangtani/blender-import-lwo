@@ -45,9 +45,13 @@ def getBlender(blender_version, blender_version_suffix, blender_zipfile):
     cwd = checkPath(os.getcwd())
     os.chdir("..")
     
-    #e = blender_zipfile.split("-")
+    if re.search("linux", blender_zipfile):
+        machine = "linux"
+        s ="blender*{0}*{1}*x86_64".format(blender_version, blender_version_suffix)
+    else:
+        machine = "windows"
+        s ="blender*{0}*{1}*windows64".format(blender_version, blender_version_suffix)
     #print(blender_zipfile)
-    s ="blender*{0}*{1}*{2}".format(blender_version, blender_version_suffix, "windows64")
     files = glob(s)
     if 0 == len(files):
         if not os.path.exists(blender_zipfile):
@@ -70,10 +74,11 @@ def getBlender(blender_version, blender_version_suffix, blender_zipfile):
     
     files = glob(s)
     blender_archive = files[0]
-    #print(os.path.realpath(blender_archive))
-    #print(blender_archive)
 
-    python = os.path.realpath("{0}/{1}/python/bin/python".format(blender_archive, blender_version))
+    if "linux" == machine:
+        python = os.path.realpath("{0}/{1}/python/bin/python3.7m".format(blender_archive, blender_version))
+    else:
+        python = os.path.realpath("{0}/{1}/python/bin/python".format(blender_archive, blender_version))
     cmd = "{0} -m ensurepip".format(python)
     os.system(cmd)
     cmd = "{0} -m pip install --upgrade -r {1}/blender_requirements.txt -r {1}/tests/requirements.txt".format(python, cwd)
