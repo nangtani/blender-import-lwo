@@ -49,7 +49,7 @@ install:
     - mv ${BLENDER_ARCHIVE} ${BLENDER_DIR}
     - ls ${BLENDER_DIR}/${BLENDER_VERSION}/python/bin
 #    - ${BLENDER_PYTHONBIN}/python3.7m get-pip.py
-    - ${BLENDER_PYTHONBIN}/python3.7m -m ensure pip
+    - ${BLENDER_PYTHONBIN}/python3.7m -m ensurepip
     - ${BLENDER_PYTHONBIN}/pip3 install -r ${TRAVIS_BUILD_DIR}/blender_requirements.txt  --upgrade
     - ${BLENDER_PYTHONBIN}/yolk -l
 
