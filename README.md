@@ -25,23 +25,19 @@ Blender comes with it own version of python.  When you run blender, the python i
 
 So two things are missing out of the box that we need to get, `pip` and `pytest`.  
 
-To install `pip` you need to fetch `get-pip.py` from this path:
+We explictly call the python inside blender to install `pip`:
 
-`wget https://bootstrap.pypa.io/get-pip.py`
-
-and then we explictly call the python inside blender to install `pip`:
-
-`blender/2.79/python/bin/python3.7m get-pip.py`
+`blender/2.79/python/bin/python3.7m -m ensurepip`
 
 this will install `pip` locally that when called will install modules into the blender version of python and not the system.
 
-**linux**: `blender/2.79/python/bin/pip`
+**linux**: `blender/2.79/python/bin/pip3`
 
-**windows**: `blender\2.79\python\Scripts\pip`
+**windows**: `blender\2.79\python\Scripts\pip3`
 
 we use this `pip` to install pytest:
 
-`blender/2.79/python/bin/pip install pytest`
+`blender/2.79/python/bin/pip3 install pytest`
 
 You will now be able to import pytest inside python scripts called by blender.
 
