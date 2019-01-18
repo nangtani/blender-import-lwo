@@ -1,4 +1,5 @@
 import os
+import time
 import bpy
 
 def setup_lwo(infile):
@@ -51,18 +52,12 @@ def compare_obj(x, y):
     elif str(x).startswith("<bpy_struct"):
         #print(a, x1)
         return None
-#     elif x is None or \
-#        isinstance(x, str) or \
-#        isinstance(x, int) or \
-#        isinstance(x, float) or \
-#        isinstance(x, list) or \
-#        isinstance(x, tuple) or \
-#        isinstance(x, Quaternion) or \
-#        isinstance(x, Euler) or \
-#        isinstance(x, Matrix) or \
-#        isinstance(x, Vector):
-#         if not x == y:    
-#             fail = True
+    elif str(x).startswith("<bound"):
+        #print(a, x1)
+        return True
+#     elif str(x) == "name":
+#         #print(a, x1)
+#         return True
     else:
         if not x == y:    
             fail = True
@@ -77,15 +72,26 @@ def compare_bpy(a, x, y, error_count = 0):
         x1 = getattr(x,a)
     except:
         print("ERROR: x1 does not have attribute: {0}".format(a))
+        assert False
     try:
         y1 = getattr(y,a)
     except:
         print("ERROR: y1 does not have attribute: {0}".format(a))
+        assert False
+    
+    if 'name' == a:
+        x1 = x1.split(".")[0]
+        y1 = y1.split(".")[0]
     
     if 'active_material' == a or \
        'material_slots' == a:
         #print(x1, True)
         pass
+        return(0)
+    elif 'bound_box' == a:
+        return(0)
+    elif 'deepcopy' == a:
+        return(0)
     else:
         fail = compare_obj(x1, y1)
         #print(a, fail, x1)
@@ -93,6 +99,7 @@ def compare_bpy(a, x, y, error_count = 0):
     if fail:
         error_count += 1
         print("ERROR: Attributes do not match: {0} - {1} - {2}".format(a, x1, y1))
+        assert False
     
     return error_count
 
@@ -102,7 +109,9 @@ class deepCopy:
     
     def deepcopy(self, m):
         for k in dir(m):
-           setattr(self, k, getattr(m,k))
+            if k.startswith("__"):
+                continue
+            setattr(self, k, getattr(m,k))
 
 
 def diff_files(outfile0, outfile1, error_count=0):
@@ -111,7 +120,8 @@ def diff_files(outfile0, outfile1, error_count=0):
         print("Reference blend present: {0}".format(outfile1))
     else:
         print("No reference blend present: {0}".format(outfile1))
-        exit()
+        assert False
+        return
     
     m1 = None
     
@@ -123,6 +133,8 @@ def diff_files(outfile0, outfile1, error_count=0):
         j = bpy.data.objects[k].copy()
         o0[k].deepcopy(bpy.data.objects[k].copy())
     #print(o0)
+    
+    time.sleep(0.25)
     
     bpy.ops.wm.open_mainfile(filepath=outfile1)
     print(j)
@@ -137,32 +149,13 @@ def diff_files(outfile0, outfile1, error_count=0):
         #pprint(dir(x))
         #pprint(k)
         attr_list = dir(x)
-        attr_list.remove('MeasureGenerator')
-        attr_list.remove('__ge__')
-        attr_list.remove('__gt__')
-        attr_list.remove('__hash__')
-        attr_list.remove('__eq__')
-        attr_list.remove('__le__')
-        attr_list.remove('__lt__')
-        attr_list.remove('__ne__')
-        attr_list.remove('__init__')
-        attr_list.remove('__repr__')
-        attr_list.remove('__reduce__')
-        attr_list.remove('__reduce_ex__')
-        attr_list.remove('__getattribute__')
-        attr_list.remove('__dir__')
-        attr_list.remove('__doc__')
-        attr_list.remove('__module__')
-        attr_list.remove('__slots__')
-        attr_list.remove('__dict__')
-        attr_list.remove('__delattr__')
-        attr_list.remove('__setattr__')
-        attr_list.remove('__str__')
-        attr_list.remove('__sizeof__')
-        attr_list.remove('__format__')
         for a in attr_list:
+            if a.startswith("__"):
+                continue
+            print(a)
             error_count = compare_bpy(a, x, y, error_count)
             #if not 0 == error_count:
                 #break
+        #assert False
         print("Test completed with {0} errors".format(error_count))
         
