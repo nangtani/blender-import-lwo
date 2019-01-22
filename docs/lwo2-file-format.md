@@ -1,7 +1,3 @@
-[Original Link](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html) 
-
-[Wayback Link](https://web.archive.org/web/20151028210222/http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html)
-
 ### Object Files
 
 November 9, 2001
@@ -133,7 +129,7 @@ Signals the start of a new layer. All the data chunks which follow will be inclu
 
 > PNTS { point-location[[VEC12]]((#coordinate))  * }
 
-Lists (_x_,  _y_,  _z_) coordinate triples for a set of points. The number of points in the chunk is just the chunk size divided by 12. The  PNTS  chunk must precede the  [POLS](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_POLS),  [VMAP]((#uv-vertex-map))  and  [VMAD](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_VMAD)  chunks that refer to it. These chunks list points using a 0-based index into  PNTS.
+Lists (_x_,  _y_,  _z_) coordinate triples for a set of points. The number of points in the chunk is just the chunk size divided by 12. The  PNTS  chunk must precede the  [POLS](#discontinuous-vertex-mapping) chunks that refer to it. These chunks list points using a 0-based index into  PNTS.
 
 The LightWave® coordinate system is left-handed, with +X to the right or east, +Y upward, and +Z forward or north. Object files don't contain explicit units, but by convention the unit is meters. Coordinates in  PNTS  are relative to the pivot point of the layer.
 
@@ -142,7 +138,7 @@ The LightWave® coordinate system is left-handed, with +X to the right or east, 
 > VMAP { type[[ID4]](#id-tag), dimension[[U2]](#unsigned-integer), name[[S0]](#string),  
 > ( vert[[VX]]((#variable-length-index)), value[[F4]](#float)  # dimension )* }
 
-Associates a set of floating-point vectors with a set of points.  VMAPs begin with a type, a dimension (vector length) and a name. These are followed by a list of vertex/vector pairs. The vertex is given as an index into the most recent  [PNTS](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_PNTS)  chunk, in  [VX]((#variable-length-index))  format. The vector contains  dimension  floating-point values. There can be any number of these chunks, but they should all have different types or names.
+Associates a set of floating-point vectors with a set of points.  VMAPs begin with a type, a dimension (vector length) and a name. These are followed by a list of vertex/vector pairs. The vertex is given as an index into the most recent  [PNTS](#point-list) chunk, in  [VX]((#variable-length-index))  format. The vector contains  dimension  floating-point values. There can be any number of these chunks, but they should all have different types or names.
 
 Some common type codes are
 
@@ -202,9 +198,9 @@ A list of polygons for the current layer. Possible polygon types include:
 
     - Line segments representing the object's skeleton. These are converted to bones for deformation during rendering.
 
-Each polygon is defined by a vertex count followed by a list of indexes into the most recent  [PNTS](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_PNTS)  chunk. The maximum number of vertices is 1023. The 6 high-order bits of the vertex count are flag bits with different meanings for each polygon type. When reading  POLS, remember to mask out the  flags  to obtain  numverts. (For  CURV  polygon: The two low order flags are for continuity control point toggles. The four remaining high order flag bits are additional vertex count bits; this brings the maximum number of vertices for  CURV  polygons to 2^14 = 16383.)
+Each polygon is defined by a vertex count followed by a list of indexes into the most recent  [PNTS](#point-list) chunk. The maximum number of vertices is 1023. The 6 high-order bits of the vertex count are flag bits with different meanings for each polygon type. When reading  POLS, remember to mask out the  flags  to obtain  numverts. (For  CURV  polygon: The two low order flags are for continuity control point toggles. The four remaining high order flag bits are additional vertex count bits; this brings the maximum number of vertices for  CURV  polygons to 2^14 = 16383.)
 
-When writing  POLS, the vertex list for each polygon should begin at a convex vertex and proceed clockwise as seen from the visible side of the polygon. LightWave® polygons are single-sided (although  [double-sidedness](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_SIDE)  is a possible surface property), and the normal is defined as the cross product of the first and last edges.
+When writing  POLS, the vertex list for each polygon should begin at a convex vertex and proceed clockwise as seen from the visible side of the polygon. LightWave® polygons are single-sided (although  [double-sidedness](#polygon-sidedness) is a possible surface property), and the normal is defined as the cross product of the first and last edges.
 
 ##### _Tag Strings_
 
@@ -216,11 +212,11 @@ Lists the tag strings that can be associated with polygons by the  [PTAG]((#poly
 
 > PTAG { type[[ID4]](#id-tag), ( poly[[VX]]((#variable-length-index)), tag[[U2]](#unsigned-integer)  )* }
 
-Associates tags of a given type with polygons in the most recent  [POLS](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_POLS)  chunk. The most common polygon tag types are
+Associates tags of a given type with polygons in the most recent  [POLS](#polygon-list) chunk. The most common polygon tag types are
 
 -  **SURF**
 
-    - The surface assigned to the polygon. The actual surface attributes are found by matching the name in the [TAGS]((#tag-strings))  chunk with the name in a [SURF](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_SURF)  chunk.
+    - The surface assigned to the polygon. The actual surface attributes are found by matching the name in the [TAGS]((#tag-strings))  chunk with the name in a [SURF](#surface-definition) chunk.
  
 -  **PART**
 
@@ -230,7 +226,7 @@ Associates tags of a given type with polygons in the most recent  [POLS](http://
 
     - The smoothing group the polygon belongs to. Shading is only interpolated within a smoothing group, not across groups.
 
-The polygon is identified by an index into the previous  [POLS](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_POLS)  chunk, and the tag is given by an index into the previous  [TAGS]((#tag-strings))  chunk. Not all polygons will have a value for every tag type. The behavior for polygons lacking a given tag depends on the type.
+The polygon is identified by an index into the previous  [POLS](#polygon-list) chunk, and the tag is given by an index into the previous  [TAGS]((#tag-strings))  chunk. Not all polygons will have a value for every tag type. The behavior for polygons lacking a given tag depends on the type.
 
 ##### Discontinuous Vertex Mapping_
 
@@ -261,21 +257,21 @@ The UV subdivision type ids are:
 ```
 ##### _Envelope Definition_
 
-> [ENVL](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#H_envl)  { index[[VX]]((#variable-length-index)), attributes[[SUB-CHUNK]]((#chunks))  * }
+> [ENVL](#envelope-subchunks) { index[[VX]]((#variable-length-index)), attributes[[SUB-CHUNK]]((#chunks))  * }
 
-An array of keys. Each  ENVL  chunk defines the value of a single parameter channel as a function of time. The index is used to identify this envelope uniquely and can have any non-zero value less than 0x1000000. Following the index is a collection of subchunks that describe the envelope. These are documented below, in the  [Envelope Subchunks](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#H_envl)section.
+An array of keys. Each  ENVL  chunk defines the value of a single parameter channel as a function of time. The index is used to identify this envelope uniquely and can have any non-zero value less than 0x1000000. Following the index is a collection of subchunks that describe the envelope. These are documented below, in the  [Envelope Subchunks](#envelope-subchunks) section.
 
 ##### _Image or Image Sequence_
 
-> [CLIP](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#H_clip)  { index[[U4]](#unsigned-integer), attributes[[SUB-CHUNK]]((#chunks))  * }
+> [CLIP](#clip-subchunks) { index[[U4]](#unsigned-integer), attributes[[SUB-CHUNK]]((#chunks))  * }
 
-Describes an image or a sequence of images. Surface definitions specify images by referring to  CLIP  chunks. The term "clip" is used to describe these because they can be numbered sequences or animations as well as stills. The index identifies this clip uniquely and may be any non-zero value less than 0x1000000. The filename and any image processing modifiers follow as a variable list of subchunks, which are documented below in the  [Clip Subchunks](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#H_clip)  section.
+Describes an image or a sequence of images. Surface definitions specify images by referring to  CLIP  chunks. The term "clip" is used to describe these because they can be numbered sequences or animations as well as stills. The index identifies this clip uniquely and may be any non-zero value less than 0x1000000. The filename and any image processing modifiers follow as a variable list of subchunks, which are documented below in the  [Clip Subchunks](#clip-subchunks) section.
 
 ##### _Surface Definition_
 
-> [SURF](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#H_surf)  { name[[S0]](#string), source[[S0]](#string), attributes[[SUB-CHUNK]]((#chunks))  * }
+> [SURF](#surface-sub-chunks) { name[[S0]](#string), source[[S0]](#string), attributes[[SUB-CHUNK]]((#chunks))  * }
 
-Describes the shading attributes of a surface. The name uniquely identifies the surface. This is the string that's stored in  [TAGS]((#tag-strings))  and referenced by tag index in  [PTAG]((#polygon-tag-mapping)). If the source name is non-null, then this surface is derived from, or composed with, the source surface. The base attributes of the source surface can be overridden by this surface, and texture blocks can be added to the source surface. The material attributes follow as a variable list of subchunks documented below in the  [Surface Subchunks](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#H_surf)  section.
+Describes the shading attributes of a surface. The name uniquely identifies the surface. This is the string that's stored in  [TAGS]((#tag-strings))  and referenced by tag index in  [PTAG]((#polygon-tag-mapping)). If the source name is non-null, then this surface is derived from, or composed with, the source surface. The base attributes of the source surface can be overridden by this surface, and texture blocks can be added to the source surface. The material attributes follow as a variable list of subchunks documented below in the  [Surface Subchunks](#surface-sub-chunks) section.
 
 ##### _Bounding Box_
 
@@ -293,7 +289,7 @@ Store an object description. Optional. This should be a simple line of upper and
 
 > TEXT { comment[[S0]](#string)  }
 
-Store comments about the object. Optional. The text is just like the  [DESC](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_DESC)  chunk, but it can be about any subject, it may contain newline characters and it does not need to be particularly short.
+Store comments about the object. Optional. The text is just like the  [DESC](#description-line) chunk, but it can be about any subject, it may contain newline characters and it does not need to be particularly short.
 
 ##### _Thumbnail Icon Image_
 
@@ -303,7 +299,7 @@ An iconic or thumbnail image for the object which can be used when viewing the f
 
 ## Envelope Subchunks
 
-The  [ENVL](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_ENVL)  chunk contains a series of subchunks describing the keyframes, intervals and global attributes of a single envelope. Note that the  PRE,  KEY  and  TCB  IDs each include a trailing space when written in the file.
+The  [ENVL](#envelope-definition) chunk contains a series of subchunks describing the keyframes, intervals and global attributes of a single envelope. Note that the  PRE,  KEY  and  TCB  IDs each include a trailing space when written in the file.
 
 ##### _Envelope Type_
 
@@ -311,25 +307,18 @@ The  [ENVL](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_ENV
 
 The type subchunk records the format in which the envelope is displayed to the user and a type code that identifies the components of certain predefined envelope triples. The user format has no effect on the actual values, only the way they're presented in LightWave®'s interface.
 
-> **02**  - Float
-> 
-> **03**  - Distance
-> 
-> **04**  - Percent
-> 
-> **05**  - Angle
+- **02**  - Float
+- **03**  - Distance
+- **04**  - Percent
+- **05**  - Angle
 
 The predefined envelope types include the following.
 
-> **01, 02, 03**  - Position: X, Y, Z
-> 
-> **04, 05, 06**  - Rotation: Heading, Pitch, Bank
-> 
-> **07, 08, 09**  - Scale: X, Y, Z
-> 
-> **0A, 0B, 0C**  - Color: R, G, B
-> 
-> **0D, 0E, 0F**  - Falloff: X, Y, Z
+- **01, 02, 03**  - Position: X, Y, Z
+- **04, 05, 06**  - Rotation: Heading, Pitch, Bank
+- **07, 08, 09**  - Scale: X, Y, Z
+- **0A, 0B, 0C**  - Color: R, G, B
+- **0D, 0E, 0F**  - Falloff: X, Y, Z
 
 ##### _Pre-Behavior_
 
@@ -337,29 +326,29 @@ The predefined envelope types include the following.
 
 The pre-behavior for an envelope defines the signal value for times before the first key. The type code selects one of several predefined behaviors.
 
-> **0 - Reset**
-> 
-> Sets the value to 0.0.
-> 
-> **1 - Constant**
-> 
-> Sets the value to the value at the nearest key.
-> 
-> **2 - Repeat**
-> 
-> Repeats the interval between the first and last keys (the primary interval).
-> 
-> **3 - Oscillate**
-> 
-> Like Repeat, but alternating copies of the primary interval are time-reversed.
-> 
-> **4 - Offset Repeat**
-> 
-> Like Repeat, but offset by the difference between the values of the first and last keys.
-> 
-> **5 - Linear**
-> 
-> Linearly extrapolates the value based on the tangent at the nearest key.
+- **0 - Reset**
+
+    - Sets the value to 0.0.
+
+- **1 - Constant**
+
+    - Sets the value to the value at the nearest key.
+
+- **2 - Repeat**
+
+    - Repeats the interval between the first and last keys (the primary interval).
+
+- **3 - Oscillate**
+
+    - Like Repeat, but alternating copies of the primary interval are time-reversed.
+
+- **4 - Offset Repeat**
+
+    - Like Repeat, but offset by the difference between the values of the first and last keys.
+
+- **5 - Linear**
+
+    - Linearly extrapolates the value based on the tangent at the nearest key.
 
 ##### _Post-Behavior_
 
@@ -517,7 +506,7 @@ Pixel filters may also be used as clip modifiers, and they are stored and used i
 
 ## Surface Subchunks
 
-The subchunks found in  [SURF](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_SURF)  chunks can be divided into two types. Basic surface parameters are stored in simple subchunks with no nested subchunks, while texture and shader data is stored in surface blocks containing nested subchunks.
+The subchunks found in  [SURF](#surface-definition) chunks can be divided into two types. Basic surface parameters are stored in simple subchunks with no nested subchunks, while texture and shader data is stored in surface blocks containing nested subchunks.
 
 ### Basic Surface Parameters
 
@@ -539,7 +528,7 @@ The base level of the surface's diffuse, luminosity, specular, reflection, trans
 
 > GLOS { glossiness[[FP4]](#percentage), envelope[[VX]]((#variable-length-index))  }
 
-Glossiness controls the falloff of specular highlights. The intensity of a specular highlight is calculated as cos_n_  _a_, where  _a_  is the angle between the reflection and view vectors. The power  _n_  is the specular exponent. The  GLOS  chunk stores a glossiness  _g_  as a floating point fraction related to  _n_  by:  _n_  = 2(10_g_  + 2). A glossiness of 20% (0.2) gives a specular exponent of 24, or 16, equivalent to the "Low" glossiness preset in versions of LightWave® prior to 6.0. Likewise 40% is 64 or "Medium," 60% is 256 or "High," and 80% is 1024 or "Maximum." The  GLOS  subchunk is only meaningful when the specularity in  [SPEC](http://static.lightwave3d.com/sdk/11-6/html/filefmts/s_Shad)  is non-zero. If  GLOS  is missing, a value of 40% is assumed.
+Glossiness controls the falloff of specular highlights. The intensity of a specular highlight is calculated as cos_n_  _a_, where  _a_  is the angle between the reflection and view vectors. The power  _n_  is the specular exponent. The  GLOS  chunk stores a glossiness  _g_  as a floating point fraction related to  _n_  by:  _n_  = 2(10_g_  + 2). A glossiness of 20% (0.2) gives a specular exponent of 24, or 16, equivalent to the "Low" glossiness preset in versions of LightWave® prior to 6.0. Likewise 40% is 64 or "Medium," 60% is 256 or "High," and 80% is 1024 or "Maximum." The  GLOS  subchunk is only meaningful when the specularity in  [SPEC](#base-shading-values)  is non-zero. If  GLOS  is missing, a value of 40% is assumed.
 
 ##### _Diffuse Sharpness_
 
@@ -569,23 +558,23 @@ The maximum angle between adjacent polygons that will be smooth shaded. Shading 
 
 > RFOP { reflection-options[[U2]](#unsigned-integer)  }
 
-Reflection options is a numeric code that describes how reflections are handled for this surface and is only meaningful if the reflectivity in  [REFL](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_Shad)  is non-zero.
+Reflection options is a numeric code that describes how reflections are handled for this surface and is only meaningful if the reflectivity in  [REFL](#base-shading-values) is non-zero.
 
-> **0 - Backdrop Only**
-> 
-> Only the backdrop is reflected.
-> 
-> **1 - Raytracing + Backdrop**
-> 
-> Objects in the scene are reflected when raytracing is enabled. Rays that don't intercept an object are assigned the backdrop color.
-> 
-> **2 - Spherical Map**
-> 
-> If an image is provided in an  [RIMG](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_RIMG)  subchunk, the image is reflected as if it were spherically wrapped around the scene.
-> 
-> **3 - Raytracing + Spherical Map**
-> 
-> Objects in the scene are reflected when raytracing is enabled. Rays that don't intercept an object are assigned a color from the image map.
+- **0 - Backdrop Only**
+
+    - Only the backdrop is reflected.
+
+- **1 - Raytracing + Backdrop**
+
+    - Objects in the scene are reflected when raytracing is enabled. Rays that don't intercept an object are assigned the backdrop color.
+
+- **2 - Spherical Map**
+
+    - If an image is provided in an  [RIMG](#reflection-map-image) subchunk, the image is reflected as if it were spherically wrapped around the scene.
+
+- **3 - Raytracing + Spherical Map**
+
+    - Objects in the scene are reflected when raytracing is enabled. Rays that don't intercept an object are assigned a color from the image map.
 
 If there is no  RFOP  subchunk, a value of 0 is assumed.
 
@@ -593,7 +582,7 @@ If there is no  RFOP  subchunk, a value of 0 is assumed.
 
 > RIMG { image[[VX]]((#variable-length-index))  }
 
-A surface reflects this image as if it were spherically wrapped around the scene. The  RIMG  is only used if the reflection options in  [RFOP](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_RFOP)  are set to use an image and the reflectivity of the surface in  [REFL](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_Shad)  is non-zero. The image is the index of a  [CLIP](#image-or-image-sequence)  chunk, or zero to indicate no image.
+A surface reflects this image as if it were spherically wrapped around the scene. The  RIMG  is only used if the reflection options in  [RFOP](#base-shading-values) is non-zero. The image is the index of a  [CLIP](#image-or-image-sequence)  chunk, or zero to indicate no image.
 
 ##### _Reflection Map Image Seam Angle_
 
@@ -617,13 +606,13 @@ The surface's index of refraction. This is used to bend refraction rays when ray
 
 > TROP { transparency-options[[U2]](#unsigned-integer)  }
 
-The transparency options are the same as the reflection options in  [RFOP](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_RFOP), but for refraction.
+The transparency options are the same as the reflection options in  [RFOP]((#reflection-options)), but for refraction.
 
 ##### _Refraction Map Image_
 
 > TIMG { image[[VX]]((#variable-length-index))  }
 
-Like  [RIMG](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_RIMG), but for refraction.
+Like  [RIMG]((#reflection-map-image)), but for refraction.
 
 ##### _Refraction Blurring_
 
@@ -647,7 +636,7 @@ The color filter percentage determines the amount by which rays passing through 
 
 > ADTR { additive[[FP4]](#percentage), envelope[[VX]]((#variable-length-index))  }
 
-Additive transparency is a simple rendering trick that works independently of the mechanism associated with the  [TRAN](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_TRAN)  and related settings. The color of the surface is added to the color of the scene elements behind it in a proportion controlled by the additive value.
+Additive transparency is a simple rendering trick that works independently of the mechanism associated with the  [TRAN](#TRAN) and related settings. The color of the surface is added to the color of the scene elements behind it in a proportion controlled by the additive value.
 
 ##### _Glow Effect_
 
@@ -665,25 +654,25 @@ The line effect draws the surface as a wireframe of the polygon edges. Currently
 
 ##### _Alpha Mode_
 
-> ALPH { mode[[U2]](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#t_U2), value[[FP4]](#percentage)  }
+> ALPH { mode[[U2]]((#unsigned-integer)), value[[FP4]](#percentage)  }
 
 The alpha mode defines the alpha channel output options for the surface.
 
-> **0 - Unaffected by Surface**
-> 
-> The surface has no effect on the alpha channel when rendered.
-> 
-> **1 - Constant Value**
-> 
-> The alpha channel will be written with the constant value following the mode in the subchunk.
-> 
-> **2 - Surface Opacity**
-> 
-> The alpha value is derived from surface opacity, which is the default if the  ALPH  chunk is missing.
-> 
-> **3 - Shadow Density**
-> 
-> The alpha value comes from the shadow density.
+- **0 - Unaffected by Surface**
+
+    - The surface has no effect on the alpha channel when rendered.
+
+- **1 - Constant Value**
+
+    - The alpha channel will be written with the constant value following the mode in the subchunk.
+
+- **2 - Surface Opacity**
+
+    - The alpha value is derived from surface opacity, which is the default if the  ALPH  chunk is missing.
+
+- **3 - Shadow Density**
+
+    - The alpha value comes from the shadow density.
 
 ##### _Vertex Color Map_
 
@@ -737,10 +726,10 @@ Every block contains a header subchunk.
 
 The ID of the header subchunk identifies the block type and can be one of the following.
 
-> **IMAP**  - an image map texture  
-> **PROC**  - a procedural texture  
-> **GRAD**  - a gradient texture  
-> **SHDR**  - a shader plug-in
+- **IMAP**  - an image map texture  
+- **PROC**  - a procedural texture  
+- **GRAD**  - a gradient texture  
+- **SHDR**  - a shader plug-in
 
 The header contains an ordinal string (described above) and subchunks that are common to all block types.
 
@@ -748,7 +737,7 @@ The header contains an ordinal string (described above) and subchunks that are c
 
 > CHAN { texture-channel[[ID4]](#id-tag)  }
 
-This is required in all texture layer blocks and can have a value of  [COLR](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_COLR),  [DIFF](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_Shad),  [LUMI](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_Shad),  [SPEC](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_Shad),  [GLOS](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_GLOS),  [REFL](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_Shad),  [TRAN](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_Shad),  [RIND](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_RIND),  [TRNL](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_Shad), or  [BUMP]((#brightness)), The texture layer is applied to the corresponding surface attribute. If present in a shader block, this value is ignored.
+This is required in all texture layer blocks and can have a value of  [COLR](#base-color),  [DIFF](#base-shading-values),  [LUMI](#base-shading-values),  [SPEC](#base-shading-values),  [GLOS](#specular-glosiness),  [REFL](#base-shading-values),  [TRAN](#base-shading-values),  [RIND](#refractive-index),  [TRNL](#base-shading-values), or  [BUMP]((#brightness)), The texture layer is applied to the corresponding surface attribute. If present in a shader block, this value is ignored.
 
 ##### _Enable State_
 
@@ -762,14 +751,14 @@ True if the texture layer or shader should be evaluated during rendering. If  EN
 
 Opacity is valid only for texture layers. It specifies how opaque the layer is with respect to the layers before it (beneath it) on the same channel, or how the layer is combined with the previous layers. The types can be
 
-> 0 - Normal  
-> 1 - Subtractive  
-> 2 - Difference  
-> 3 - Multiply  
-> 4 - Divide  
-> 5 - Alpha  
-> 6 - Texture Displacement  
-> 7 - Additive
+- 0 - Normal  
+- 1 - Subtractive  
+- 2 - Difference  
+- 3 - Multiply  
+- 4 - Divide  
+- 5 - Alpha  
+- 6 - Texture Displacement  
+- 7 - Additive
 
 Alpha opacity uses the current layer as an alpha channel. The previous layers are visible where the current layer is white and transparent where the current layer is black. Texture Displacement distorts the underlying layers. If  OPAC  is missing, 100% Additive opacity is assumed.
 
@@ -805,19 +794,19 @@ Specifies a reference object for the texture. The reference object is given by n
 
 Texture effects may fall off with distance from the texture center if this subchunk is present. The vector represents a rate per unit distance along each axis. The type can be
 
-> **0 - Cubic**
-> 
-> Falloff is linear along all three axes independently.
-> 
-> **1 - Spherical**
-> 
-> Falloff is proportional to the Euclidean distance from the center.
-> 
-> **2 - Linear X  
-> 3 - Linear Y  
-> 4 - Linear Z**
-> 
-> Falloff is linear only along the specified axis. The other two vector components are ignored.
+- **0 - Cubic**
+
+    - Falloff is linear along all three axes independently.
+
+- **1 - Spherical**
+
+    - Falloff is proportional to the Euclidean distance from the center.
+
+- **2 - Linear X** 
+- **3 - Linear Y** 
+- **4 - Linear Z**
+
+    - Falloff is linear only along the specified axis. The other two vector components are ignored.
 
 ##### _Coordinate System_
 
@@ -827,7 +816,7 @@ The coordinate system can be 0 for object coordinates (the default if the chunk 
 
 #### Image Maps
 
-Texture blocks with a header type of  IMAP  are image maps. These use an image to modulate one of the surface channels. In addition to the basic parameters listed below, the block may also contain a  [TMAP](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#Hs_TMAP)  chunk.
+Texture blocks with a header type of  IMAP  are image maps. These use an image to modulate one of the surface channels. In addition to the basic parameters listed below, the block may also contain a  [TMAP](#texture-mapping)  chunk.
 
 ##### _Projection Mode_
 
@@ -835,29 +824,29 @@ Texture blocks with a header type of  IMAP  are image maps. These use an image t
 
 The projection defines how 2D coordinates in the image are transformed into 3D coordinates in the scene. In the following list of projections, image coordinates are called  _r_  (horizontal) and  _s_  (vertical).
 
-> **0 - Planar**
-> 
-> The image is projected on a plane along the major axis (specified in the  [AXIS]((#major-axis))  subchunk).  _r_  and  _s_  map to the other two axes.
-> 
-> **1 - Cylindrical**
-> 
-> The image is wrapped cylindrically around the major axis.  _r_  maps to longitude (angle around the major axis).
-> 
-> **2 - Spherical**
-> 
-> The image is wrapped spherically around the major axis.  _r_  and  _s_map to longitude and latitude.
-> 
-> **3 - Cubic**
-> 
-> Like Planar, but projected along all three axes. The dominant axis of the geometric normal selects the projection axis for a given surface spot.
-> 
-> **4 - Front Projection**
-> 
-> The image is projected on the current camera's viewplane.  _r_  and  _s_map to points on the viewplane.
-> 
-> **5 - UV**
-> 
-> _r_  and  _s_  map to points (_u_,  _v_) defined for the geometry using a vertex map (identified in the  BLOK's  [VMAP](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bi_VMAP)  subchunk).
+- **0 - Planar**
+
+    - The image is projected on a plane along the major axis (specified in the  [AXIS]((#major-axis))  subchunk).  _r_  and  _s_  map to the other two axes.
+
+- **1 - Cylindrical**
+
+    - The image is wrapped cylindrically around the major axis.  _r_  maps to longitude (angle around the major axis).
+
+- **2 - Spherical**
+
+    - The image is wrapped spherically around the major axis.  _r_  and  _s_map to longitude and latitude.
+
+- **3 - Cubic**
+
+    - Like Planar, but projected along all three axes. The dominant axis of the geometric normal selects the projection axis for a given surface spot.
+
+- **4 - Front Projection**
+
+T    - he image is projected on the current camera's viewplane.  _r_  and  _s_map to points on the viewplane.
+
+- **5 - UV**
+
+    - _r_  and  _s_  map to points (_u_,  _v_) defined for the geometry using a vertex map (identified in the  BLOK's  [VMAP](#uv-vertex-map) subchunk).
 
 ##### _Major Axis_
 
@@ -877,21 +866,21 @@ The  CLIP  index of the mapped image.
 
 Specifies how the color of the texture is derived for areas outside the image.
 
-> **0 - Reset**
-> 
-> Areas outside the image are assumed to be black. The ultimate effect of this depends on the opacity settings. For an additive texture layer on the color channel, the final color will come from the preceding layers or from the base color of the surface.
-> 
-> **1 - Repeat**
-> 
-> The image is repeated or tiled.
-> 
-> **2 - Mirror**
-> 
-> Like repeat, but alternate tiles are mirror-reversed.
-> 
-> **3 - Edge**
-> 
-> The color is taken from the image's nearest edge pixel.
+- **0 - Reset**
+
+    - Areas outside the image are assumed to be black. The ultimate effect of this depends on the opacity settings. For an additive texture layer on the color channel, the final color will come from the preceding layers or from the base color of the surface.
+
+- **1 - Repeat**
+
+    - The image is repeated or tiled.
+
+- **2 - Mirror**
+
+    - Like repeat, but alternate tiles are mirror-reversed.
+
+- **3 - Edge**
+
+    - The color is taken from the image's nearest edge pixel.
 
 If no wrap options are specified, 1 is assumed.
 
@@ -1005,9 +994,9 @@ The transfer function is defined by an array of keys, each with an input value a
 
 An array of integers defining the interpolation for the span preceding each key. Possible values include
 
-> 0 - Linear  
-> 1 - Spline  
-> 2 - Step
+- 0 - Linear  
+- 1 - Spline  
+- 2 - Step
 
 #### Shaders
 
@@ -1038,105 +1027,110 @@ Just like a procedural texture layer, a shader is defined by an algorithm name (
 - [CHAN](#channel)  Texture Layer Channel  
 - [CLIP](#image-or-image-sequence)  Image, Image Sequence  
 - [CLRA](#color-space-alpha)  Color Space Alpha  
-- [CLRF](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_CLRF)  Surface Color Filter  
-- [CLRH](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_CLRH)  Surface Color Highlights  
-- [CLRS](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#i_CLRS)  Color Space RGB  
-- [CNTR](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bt_SIZE)  Texture Center  
-- [COLR](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_COLR)  Surface Base Color  
-- [CONT](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#i_CONT)  Clip Contrast  
-- [CSYS](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bt_CSYS)  Texture Coordinate System  
+- [CLRF](#color-filter) Surface Color Filter  
+- [CLRH](#color-highlights) Surface Color Highlights  
+- [CLRS](#color-space-rgb) Color Space RGB  
+- [CNTR](#position,-orientation-and-size) Texture Center  
+- [COLR](#base-color) Surface Base Color  
+- [CONT](#contrast) Clip Contrast  
+- [CSYS](#coordinate-system) Texture Coordinate System  
 
-- [DESC](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_DESC)  Description Line  
-- [DIFF](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_Shad)  Surface Diffuse  
-- [DITH](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#i_DITH)  Image Dithering  
+- [DESC](#description-line) Description Line  
+- [DIFF](#base-shading-values) Surface Diffuse  
+- [DITH](#image-dithering) Image Dithering  
 
-- [ENAB](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bh_ENAB)  Surface Block Enable  
-- [ENVL](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_ENVL)  Envelope  
+- [ENAB](#enable-state) Surface Block Enable  
+- [ENVL](#envelope-definition) Envelope  
 
-- [FALL](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bt_FALL)  Texture Falloff  
-- [FILT](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#i_FILT)  Image Filtering  
-- [FKEY](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bg_FKEY)  Gradient Key Values  
-- [FORM](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#t_FORM)  IFF Format File  
-- [FUNC](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bp_FUNC)  Procedural Texture Algorithm  
-- [FUNC](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bs_FUNC)  Surface Shader Algorithm  
+- [FALL](#falloff) Texture Falloff  
+- [FILT](#image-filtering) Image Filtering  
+- [FKEY](#key-values) Gradient Key Values  
+- [FORM](#in-this-document) IFF Format File  
+- [FUNC](#algorithm-and-parameters) Procedural Texture Algorithm  
+- [FUNC](#shader-algorithm) Surface Shader Algorithm  
 
-- [GAMM](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#i_GAMM)  Clip Gamma Correction  
-- [GLOS](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_GLOS)  Surface Specular Glossiness  
-- [GLOW](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_GLOW)  Surface Glow Effect  
-- [GREN](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bg_GRxx)  Gradient End  
-- [GRPT](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bg_GRPT)  Gradient Repeat Mode  
-- [GRST](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bg_GRxx)  Gradient Start  
+- [GAMM](#gamma-correction) Clip Gamma Correction  
+- [GLOS](#specular-glossiness) Surface Specular Glossiness  
+- [GLOW](#glow-effect) Surface Glow Effect  
+- [GREN](#gradient-range) Gradient End  
+- [GRPT](#repeat-mode) Gradient Repeat Mode  
+- [GRST](#gradient-range) Gradient Start  
 
-- [HUE](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#i_HUE) Clip Hue  
+- [HUE](#hue)Clip Hue  
 
-- [ICON](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_ICON)  Thumbnail Icon Image  
-- [IFLT](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#i_IFLT)  Clip Image Filter  
-- [IKEY](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bg_IKEY)  Gradient Key Parameters  
-- [IMAG](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bi_IMAG)  Image Map Image  
-- [INAM](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bg_INAM)  Gradient Item Name  
-- [ISEQ](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#i_ISEQ)  Clip Image Sequence  
+- [ICON](#thumbnail-icon-image) Thumbnail Icon Image  
+- [IFLT](#plug-in-image-filters) Clip Image Filter  
+- [IKEY](#key-parameters) Gradient Key Parameters  
+- [IMAG](#image-map) Image Map Image  
+- [INAM](#item-name) Gradient Item Name  
+- [ISEQ](#image-sequence) Clip Image Sequence  
 
-- [KEY](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#e_KEY) Keyframe Time and Value  
+- [KEY](#keyframe-time-and-value)Keyframe Time and Value  
 
-- [LAYR](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_LAYR)  Layer  
-- [LINE](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_LINE)  Surface Render Outlines  
-- [LUMI](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_Shad)  Surface Luminosity  
+- [LAYR](#layer) Layer  
+- [LINE](#render-outlines) Surface Render Outlines  
+- [LUMI](#base-shading-values) Surface Luminosity  
 
-- [NAME](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#e_NAME)  Envelope Channel Name  
-- [NEGA](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#i_NEGA)  Clip Negative  
+- [NAME](#channel-name) Envelope Channel Name  
+- [NEGA](#negative) Clip Negative  
 
-- [OPAC](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bh_OPAC)  Texture Layer Opacity  
-- [OREF](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bt_OREF)  Texture Reference Object  
-- [PFLT](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#i_PFLT)  Clip Pixel Filter  
-- [PIXB](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bi_PIXB)  Image Map Pixel Blending  
-- [PNAM](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bg_PNAM)  Gradient Parameter Name  
-- [PNTS](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_PNTS)  Point List  
-- [POLS](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_POLS)  Polygon List  
-- [POST](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#e_POST)  Envelope Post-Behavior  
-- [PRE](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#e_PRE) Envelope Pre-Behavior  
-- [PROJ](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bi_PROJ)  Image Map Projection Mode  
+- [OPAC](#opacity) Texture Layer Opacity  
+- [OREF](#reference-object) Texture Reference Object  
+- [PFLT](#plug-in-pixel-filters) Clip Pixel Filter  
+- [PIXB](#pixel-blending) Image Map Pixel Blending  
+- [PNAM](#parameter-name) Gradient Parameter Name  
+- [PNTS](#point-list) Point List  
+- [POLS](#polygon-list) Polygon List  
+- [POST](#post-behavior) Envelope Post-Behavior  
+- [PRE](#pre-behavior)Envelope Pre-Behavior  
+- [PROJ](#projection-mode) Image Map Projection Mode  
 - [PTAG]((#polygon-tag-mapping))  Polygon Tag Mapping  
 
-- [RBLR](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_RBLR)  Reflection Blurring  
-- [REFL](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_Shad)  Surface Reflectivity  
-- [RFOP](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_RFOP)  Surface Reflection Options  
-- [RIMG](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_RIMG)  Surface Reflection Map Image  
-- [RIND](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_RIND)  Surface Refractive Index  
-- [ROTA](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bt_SIZE)  Texture Rotation  
-- [RSAN](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_RSAN)  Surface Reflection Map Image Seam Angle  
+- [RBLR](#reflection-blurring) Reflection Blurring  
+- [REFL](#base-shading-values) Surface Reflectivity  
+- [RFOP](#reflection-options) Surface Reflection Options  
+- [RIMG](#reflection-map-image) Surface Reflection Map Image  
+- [RIND](#refractive-index) Surface Refractive Index  
+- [ROTA](#position,-orientation-and-size) Texture Rotation  
+- [RSAN](#reflection-map-image-seam-angle) Surface Reflection Map Image Seam Angle  
 
-- [SPAN](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#e_SPAN)  Envelope Interval Interpolation  
-- [SATR](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#i_SATR)  Clip Saturation  
-- [SHRP](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_SHRP)  Surface Diffuse Sharpness  
-- [SIDE](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_SIDE)  Surface Polygon Sidedness  
-- [SIZE](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bt_SIZE)  Texture Size  
-- [SMAN](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_SMAN)  Surface Max Smoothing Angle  
-- [SPEC](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_Shad)  Surface Specularity  
-- [STCC](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#i_STCC)  Clip Color-cycling Still  
-- [STCK](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bi_STCK)  Sticky Projection  
-- [STIL](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#i_STIL)  Clip Still Image  
-- [SURF](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_SURF)  Surface Definition  
+- [SPAN](#interval-interpolation) Envelope Interval Interpolation  
+- [SATR](#saturation) Clip Saturation  
+- [SHRP](#diffuse-sharpness) Surface Diffuse Sharpness  
+- [SIDE](#polygon-sidedness) Surface Polygon Sidedness  
+- [SIZE](#position,-orientation-and-size) Texture Size  
+- [SMAN](#max-smoothing-angle) Surface Max Smoothing Angle  
+- [SPEC](#base-shading-values) Surface Specularity  
+- [STCC](#color-cycling-still) Clip Color-cycling Still  
+- [STCK](#sticky-projection) Sticky Projection  
+- [STIL](#still-image) Clip Still Image  
+- [SURF](#surface-definition) Surface Definition  
 
 - [TAGS]((#tag-strings))  Tag Strings  
-- [TAMP](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bi_TAMP)  Image Map Texture Amplitude  
-- [TBLR](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_TBLR)  Refraction Blurring  
-- [TEXT](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_TEXT)  Commentary Text  
-- [TIME](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#i_TIME)  Clip Time  
-- [TIMG](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_TIMG)  Surface Refraction Map Image  
-- [TMAP](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_TMAP)  Texture Mapping  
-- [TRAN](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_Shad)  Surface Transparency  
-- [TRNL](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_Shad)  Surface Translucency  
-- [TROP](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_TROP)  Surface Transparency Options  
-- [TYPE](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#e_TYPE)  Envelope Type  
+- [TAMP](#texture-amplitude) Image Map Texture Amplitude  
+- [TBLR](#refraction-blurring) Refraction Blurring  
+- [TEXT](#commentary-text) Commentary Text  
+- [TIME](#time) Clip Time  
+- [TIMG](#refraction-map-image) Surface Refraction Map Image  
+- [TMAP](#tmap) Texture Mapping  
+- [TRAN](#base-shading-values) Surface Transparency  
+- [TRNL](#base-shading-values) Surface Translucency  
+- [TROP](#transparency-options) Surface Transparency Options  
+- [TYPE](#envelope-type) Envelope Type  
 
-- [VALU](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bp_VALU)  Procedural Texture Value  
-- [VCOL](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#s_VCOL)  Surface Vertex Color Map  
-- [VMAD](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#c_VMAD)  Discontinuous Vertex Map  
+- [VALU](#basic-value) Procedural Texture Value  
+- [VCOL](#vertex-color-map) Surface Vertex Color Map  
+- [VMAD](#discontinuous-vertex-mapping) Discontinuous Vertex Map  
 - [VMAP]((#uv-vertex-map))  Vertex Map  
-- [VMAP](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bi_VMAP)  Image Map UV Vertex Map  
+- [VMAP](#uv-vertex-map) Image Map UV Vertex Map  
 
-- [WRAP](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bi_WRAP)  Image Map Wrap Options  
-- [WRPW](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bi_WRPx)  Image Map Width Wrap Amount  
-- [WRPH](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#bi_WRPx)  Image Map Height Wrap Amount  
+- [WRAP](#image-wrap-options) Image Map Wrap Options  
+- [WRPW](#image-wrap-amount) Image Map Width Wrap Amount  
+- [WRPH](#image-wrap-amount) Image Map Height Wrap Amount  
 
-- [XREF](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html#i_XREF)  Clip Reference (Clone)
+- [XREF](#reference-clone) Clip Reference (Clone)
+
+[Original Link](http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html) 
+
+[Wayback Link](https://web.archive.org/web/20151028210222/http://static.lightwave3d.com/sdk/11-6/html/filefmts/lwo2.html)
+
