@@ -6,7 +6,6 @@ import zipfile
 import shutil
 import bpy
 
-
 def zip_addon(addon):
     bpy_module = re.sub(".py", "", os.path.basename(os.path.realpath(addon)))
     zfile = os.path.realpath(bpy_module + ".zip")
@@ -45,6 +44,24 @@ def cleanup(addon, bpy_module):
         shutil.rmtree(addon)
     else:
         os.remove(addon)
+
+class SetupAddon(object):
+    def __init__(self, addon):
+        self.addon = addon
+
+    def configure(self):
+        (self.bpy_module, self.zfile) = zip_addon(self.addon)
+        copy_addon(self.bpy_module, self.zfile)
+
+    def unconfigure(self):
+        cleanup(self.addon, self.bpy_module)
+
+    def convert_lwo(self, infile, outfile=None):
+        bpy.ops.import_scene.lwo(filepath=infile)
+        
+        outfile = re.sub("src_lwo", "ref_blend", infile + ".blend")
+        if not None == outfile:
+            bpy.ops.wm.save_mainfile(filepath=outfile)
 
 
 def get_version(bpy_module):

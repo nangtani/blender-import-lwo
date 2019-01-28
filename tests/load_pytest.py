@@ -1,23 +1,20 @@
 import sys
 import pytest
-from addon_helper import zip_addon, copy_addon, cleanup
+from addon_helper import SetupAddon
 
-
-class SetupPlugin(object):
-    def __init__(self, addon):
-        self.addon = addon
+class SetupPytest(SetupAddon):
 
     def pytest_configure(self, config):
-        (self.bpy_module, self.zfile) = zip_addon(self.addon)
-        copy_addon(self.bpy_module, self.zfile)
+        super().configure()
         config.cache.set("bpy_module", self.bpy_module)
 
     def pytest_unconfigure(self):
-        cleanup(self.addon, self.bpy_module)
+        super().unconfigure()
         print("*** test run reporting finished")
 
 
-addon = "io_import_scene_lwo.py"
+# addon = "io_import_scene_lwo.py"
 # addon = "io_import_scene_lwo_1_2_edit.py"
-exit_val = pytest.main(["tests"], plugins=[SetupPlugin(addon)])
+addon = "io_import_scene_lwo"
+exit_val = pytest.main(["tests"], plugins=[SetupPytest(addon)])
 sys.exit(exit_val)

@@ -5,4 +5,7 @@ __pycache__
 *.zip
 .pytest_cache
 tests/dst_blend
+tests/src_lwo
+*.blend1
+*.bak
 ~*

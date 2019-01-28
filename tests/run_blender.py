@@ -28,6 +28,10 @@ def main(blender, test_file):
 
 if __name__ == "__main__":
 
+    infile = "tests/load_pytest.py"
+    if len(sys.argv) >= 3:
+        infile = sys.argv[2]
+
     try:
         blender_rev = sys.argv[1]
     except:
@@ -36,8 +40,7 @@ if __name__ == "__main__":
     blender_dir = "blender_build/blender-{0}".format(blender_rev)
 
     blender = os.path.realpath("{0}/blender".format(blender_dir))
-    test_file = "tests/load_pytest.py"
 
-    exit_val = main(blender, test_file)
+    exit_val = main(blender, infile)
 
     sys.exit(exit_val)
