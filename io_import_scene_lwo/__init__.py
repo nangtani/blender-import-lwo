@@ -16,17 +16,17 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-bl_info= {
+bl_info = {
     "name": "Import LightWave Objects",
     "author": "Ken Nign (Ken9), Gert De Roost and Dave Keeshan",
     "version": (1, 4, 0),
     "blender": (2, 80, 0),
     "location": "File > Import > LightWave Object (.lwo)",
     "description": "Imports a LWO file including any UV, Morph and Color maps. "
-                   "Can convert Skelegons to an Armature.",
+    "Can convert Skelegons to an Armature.",
     "warning": "",
     "wiki_url": "http://wiki.blender.org/index.php/Extensions:2.6/Py/"
-                "Scripts/Import-Export/LightWave_Object",
+    "Scripts/Import-Export/LightWave_Object",
     "category": "Import-Export",
 }
 
@@ -68,32 +68,34 @@ import bmesh
 import mathutils
 from mathutils.geometry import tessellate_polygon
 
-#from . import lwoObj
 from .lwoObj import lwoObj
 
-def load_lwo(filename,
-             context,
-             ADD_SUBD_MOD=True,
-             LOAD_HIDDEN=False,
-             SKEL_TO_ARM=True,
-             USE_EXISTING_MATERIALS=False):
-    """Read the LWO file, hand off to version specific function."""
-    
-    lwo = lwoObj(filename)
-    lwo.read(ADD_SUBD_MOD, LOAD_HIDDEN, SKEL_TO_ARM, USE_EXISTING_MATERIALS)
-    
-    # With the data gathered, build the object(s).
-    build_objects(lwo)
 
-    
+def load_lwo(
+    filename,
+    context,
+    ADD_SUBD_MOD=True,
+    LOAD_HIDDEN=False,
+    SKEL_TO_ARM=True,
+    USE_EXISTING_MATERIALS=False,
+):
+    """Read the LWO file, hand off to version specific function."""
+
+    lwo = lwoObj(filename)
+    lwo.read(ADD_SUBD_MOD, LOAD_HIDDEN, SKEL_TO_ARM)
+
+    # With the data gathered, build the object(s).
+    build_objects(lwo, USE_EXISTING_MATERIALS)
+
+
 def create_mappack(data, map_name, map_type):
     """Match the map data to faces."""
-    pack= {}
+    pack = {}
 
     def color_pointmap(map):
         for fi in range(len(data.pols)):
             if fi not in pack:
-                pack[fi]= []
+                pack[fi] = []
             for pnt in data.pols[fi]:
                 if pnt in map:
                     pack[fi].append(map[pnt])
@@ -103,14 +105,14 @@ def create_mappack(data, map_name, map_type):
     def color_facemap(map):
         for fi in range(len(data.pols)):
             if fi not in pack:
-                pack[fi]= []
+                pack[fi] = []
                 for p in data.pols[fi]:
                     pack[fi].append((1.0, 1.0, 1.0))
             if fi in map:
                 for po in range(len(data.pols[fi])):
                     if data.pols[fi][po] in map[fi]:
                         pack[fi].insert(po, map[fi][data.pols[fi][po]])
-                        del pack[fi][po+1]
+                        del pack[fi][po + 1]
 
     if map_type == "COLOR":
         # Look at the first map, is it a point or face map
@@ -131,172 +133,198 @@ def build_armature(layer_data, bones):
     bones.remove(bones[0])
 
     # Now start adding the bones at the point locations.
-    prev_bone= None
+    prev_bone = None
     for skb_idx in range(len(layer_data.bones)):
         if skb_idx in layer_data.bone_names:
-            nb= bones.new(layer_data.bone_names[skb_idx])
+            nb = bones.new(layer_data.bone_names[skb_idx])
         else:
-            nb= bones.new("Bone")
+            nb = bones.new("Bone")
 
-        nb.head= layer_data.pnts[layer_data.bones[skb_idx][0]]
-        nb.tail= layer_data.pnts[layer_data.bones[skb_idx][1]]
+        nb.head = layer_data.pnts[layer_data.bones[skb_idx][0]]
+        nb.tail = layer_data.pnts[layer_data.bones[skb_idx][1]]
 
         if skb_idx in layer_data.bone_rolls:
-            xyz= layer_data.bone_rolls[skb_idx].split(' ')
-            vec= mathutils.Vector((float(xyz[0]), float(xyz[1]), float(xyz[2])))
-            quat= vec.to_track_quat('Y', 'Z')
-            nb.roll= max(quat.to_euler('YZX'))
+            xyz = layer_data.bone_rolls[skb_idx].split(" ")
+            vec = mathutils.Vector((float(xyz[0]), float(xyz[1]), float(xyz[2])))
+            quat = vec.to_track_quat("Y", "Z")
+            nb.roll = max(quat.to_euler("YZX"))
             if nb.roll == 0.0:
-                nb.roll= min(quat.to_euler('YZX')) * -1
+                nb.roll = min(quat.to_euler("YZX")) * -1
             # YZX order seems to produce the correct roll value.
         else:
-            nb.roll= 0.0
+            nb.roll = 0.0
 
         if prev_bone is not None:
             if nb.head == prev_bone.tail:
-                nb.parent= prev_bone
+                nb.parent = prev_bone
 
-        nb.use_connect= True
-        prev_bone= nb
+        nb.use_connect = True
+        prev_bone = nb
 
-def build_materials(lwo):
-    print("Adding %d Materials" % len(lwo.surfs))
+
+def build_materials(lwo, use_existing_materials):
+    print(f"Adding {len(lwo.surfs)} Materials")
 
     for surf_key in lwo.surfs:
         surf_data = lwo.surfs[surf_key]
-        
-        if lwo.use_existing_materials:
-            surf_data.bl_mat = bpy.data.materials.get(surf_data.name)
-        else:
-            surf_data.bl_mat = None
+#         if not hasattr(surf_data, "bl_mat2"):
+#             print(False)
+#             #surf_data.__setattr__("bl_mat2", None)
 
+        if use_existing_materials:
+            surf_data.bl_mat = bpy.data.materials.get(surf_data.name)
+#         else:
+#             surf_data.bl_mat = None
+
+        if (2, 80, 0) < bpy.app.version:
+            continue # FIXME
+        
         if None == surf_data.bl_mat:
-            surf_data.bl_mat= bpy.data.materials.new(surf_data.name)
-            surf_data.bl_mat.diffuse_color= (surf_data.colr[:])
-            surf_data.bl_mat.diffuse_intensity= surf_data.diff
-            surf_data.bl_mat.emit= surf_data.lumi
-            surf_data.bl_mat.specular_intensity= surf_data.spec
+            surf_data.bl_mat = bpy.data.materials.new(surf_data.name)
+            surf_data.bl_mat.diffuse_color = surf_data.colr[:]
+            surf_data.bl_mat.diffuse_intensity = surf_data.diff
+            surf_data.bl_mat.emit = surf_data.lumi
+            surf_data.bl_mat.specular_intensity = surf_data.spec
             if surf_data.refl != 0.0:
-                surf_data.bl_mat.raytrace_mirror.use= True
-            surf_data.bl_mat.raytrace_mirror.reflect_factor= surf_data.refl
-            surf_data.bl_mat.raytrace_mirror.gloss_factor= 1.0-surf_data.rblr
+                surf_data.bl_mat.raytrace_mirror.use = True
+            surf_data.bl_mat.raytrace_mirror.reflect_factor = surf_data.refl
+            surf_data.bl_mat.raytrace_mirror.gloss_factor = 1.0 - surf_data.rblr
             if surf_data.tran != 0.0:
-                surf_data.bl_mat.use_transparency= True
-                surf_data.bl_mat.transparency_method= 'RAYTRACE'
-            surf_data.bl_mat.alpha= 1.0 - surf_data.tran
-            surf_data.bl_mat.raytrace_transparency.ior= surf_data.rind
-            surf_data.bl_mat.raytrace_transparency.gloss_factor= 1.0 - surf_data.tblr
-            surf_data.bl_mat.translucency= surf_data.trnl
-            surf_data.bl_mat.specular_hardness= int(4*((10*surf_data.glos)*(10*surf_data.glos)))+4
-            surf_data.textures.reverse()                                                           
-            for texture in surf_data.textures:                                                     
-                ci = texture.clipid                                                                
-                tex_slot = surf_data.bl_mat.texture_slots.add()                                    
-                path1, path2 = lwo.clips[ci]                                                    
-                try:                                                                               
-                    if not(bpy.data.images.get(path1)):                                            
-                        image = bpy.data.images.load(path1)                                        
-                    path = path1                                                                   
-                except:                                                                            
-                    if not(bpy.data.images.get(path2)):                                            
-                        image = bpy.data.images.load(path2)                                        
-                    path = path2                                                                   
-                print(path)                                                                        
-                print(path1)                                                                       
-                print(path2)                                                                       
-                tex = bpy.data.textures.new(os.path.basename(path), 'IMAGE')                       
-                tex.image = image                                                                  
-                tex_slot.texture = tex                                                             
-                if texture.projection == 5:                                                        
-                    tex_slot.texture_coords = 'UV'                                                 
-                    tex_slot.uv_layer = texture.uvname                                             
-                tex_slot.diffuse_color_factor = texture.opac                                       
-                if not(texture.enab):                                                              
-                    tex_slot.use_textures[ci - 1] = False                                          
-            for texture in surf_data.textures_5:                                                   
-                tex_slot = surf_data.bl_mat.texture_slots.add()                                    
-                tex = bpy.data.textures.new(os.path.basename(texture.path), 'IMAGE')               
-                if not(bpy.data.images.get(texture.path)):                                         
-                    image = bpy.data.images.load(texture.path)                                     
-                tex.image = image                                                                  
-                tex_slot.texture = tex                                                             
-                tex_slot.texture_coords = 'GLOBAL'                                                 
-                tex_slot.mapping = 'FLAT'                                                          
-                if texture.X:                                                                      
-                    tex_slot.mapping_x = 'X'                                                       
-                if texture.Y:                                                                      
-                    tex_slot.mapping_y = 'Y'                                                       
-                if texture.Z:                                                                      
-                    tex_slot.mapping_z = 'Z'                                                       
+                surf_data.bl_mat.use_transparency = True
+                surf_data.bl_mat.transparency_method = "RAYTRACE"
+            surf_data.bl_mat.alpha = 1.0 - surf_data.tran
+            surf_data.bl_mat.raytrace_transparency.ior = surf_data.rind
+            surf_data.bl_mat.raytrace_transparency.gloss_factor = 1.0 - surf_data.tblr
+            surf_data.bl_mat.translucency = surf_data.trnl
+            surf_data.bl_mat.specular_hardness = (
+                int(4 * ((10 * surf_data.glos) * (10 * surf_data.glos))) + 4
+            )
+            surf_data.textures.reverse()
+            for texture in surf_data.textures:
+                ci = texture.clipid
+                tex_slot = surf_data.bl_mat.texture_slots.add()
+                print(lwo.clips)
+                try:
+                    path = lwo.clips[ci]
+                    image = bpy.data.images.get(path)
+                    if None == image:
+                        image = bpy.data.images.load(path)
+                    print(path, image)
+                except KeyError:
+                    path = ""
+                    continue
+                tex = bpy.data.textures.new(os.path.basename(path), "IMAGE")
+                tex.image = image
+                tex_slot.texture = tex
+                if texture.projection == 5:
+                    tex_slot.texture_coords = "UV"
+                    tex_slot.uv_layer = texture.uvname
+                tex_slot.diffuse_color_factor = texture.opac
+                if not (texture.enab):
+                    tex_slot.use_textures[ci - 1] = False
+            for texture in surf_data.textures_5:
+                tex_slot = surf_data.bl_mat.texture_slots.add()
+                tex = bpy.data.textures.new(os.path.basename(texture.path), "IMAGE")
+                if not (bpy.data.images.get(texture.path)):
+                    image = bpy.data.images.load(texture.path)
+                tex.image = image
+                tex_slot.texture = tex
+                tex_slot.texture_coords = "GLOBAL"
+                tex_slot.mapping = "FLAT"
+                if texture.X:
+                    tex_slot.mapping_x = "X"
+                if texture.Y:
+                    tex_slot.mapping_y = "Y"
+                if texture.Z:
+                    tex_slot.mapping_z = "Z"
             # The Gloss is as close as possible given the differences.
 
 
-def build_objects(lwo):
+def build_objects(lwo, use_existing_materials):
     """Using the gathered data, create the objects."""
-    ob_dict= {}  # Used for the parenting setup.
-    
-    build_materials(lwo)
-    
+    ob_dict = {}  # Used for the parenting setup.
+
+    build_materials(lwo, use_existing_materials)
+
     # Single layer objects use the object file's name instead.
-    if len(lwo.layers) and lwo.layers[-1].name == 'Layer 1':
-        lwo.layers[-1].name= lwo.name
+    if len(lwo.layers) and lwo.layers[-1].name == "Layer 1":
+        lwo.layers[-1].name = lwo.name
         print("Building '%s' Object" % lwo.name)
     else:
         print("Building %d Objects" % len(lwo.layers))
 
     # Before adding any meshes or armatures go into Object mode.
     if bpy.ops.object.mode_set.poll():
-        bpy.ops.object.mode_set(mode='OBJECT')
+        bpy.ops.object.mode_set(mode="OBJECT")
 
     for layer_data in lwo.layers:
-        me= bpy.data.meshes.new(layer_data.name)
+        me = bpy.data.meshes.new(layer_data.name)
         me.vertices.add(len(layer_data.pnts))
-        me.tessfaces.add(len(layer_data.pols))
+        if (2, 80, 0) < bpy.app.version:
+            pass # FIXME
+#             print(me.loop_triangle)
+#             me.loop_triangles.add(len(layer_data.pols))
+        else:
+            #print("tessfaces.add", len(layer_data.pols))
+            #print(layer_data.pols)
+            me.tessfaces.add(len(layer_data.pols))
         # for vi in range(len(layer_data.pnts)):
         #     me.vertices[vi].co= layer_data.pnts[vi]
 
         # faster, would be faster again to use an array
         me.vertices.foreach_set("co", [axis for co in layer_data.pnts for axis in co])
 
-        ngons= {}   # To keep the FaceIdx consistent, handle NGons later.
-        edges= []   # Holds the FaceIdx of the 2-point polys.
+        ngons = {}  # To keep the FaceIdx consistent, handle NGons later.
+        edges = []  # Holds the FaceIdx of the 2-point polys.
         for fi, fpol in enumerate(layer_data.pols):
-            fpol.reverse()   # Reversing gives correct normal directions
+            fpol.reverse()  # Reversing gives correct normal directions
             # PointID 0 in the last element causes Blender to think it's un-used.
             if fpol[-1] == 0:
                 fpol.insert(0, fpol[-1])
                 del fpol[-1]
 
-            vlen= len(fpol)
+            vlen = len(fpol)
             if vlen == 3 or vlen == 4:
-                for i in range(vlen):
-                    me.tessfaces[fi].vertices_raw[i]= fpol[i]
+                if (2, 80, 0) < bpy.app.version:
+                    pass # FIXME
+                else:
+                    for i in range(vlen):
+                        me.tessfaces[fi].vertices_raw[i] = fpol[i]
             elif vlen == 2:
                 edges.append(fi)
             elif vlen != 1:
-                ngons[fi]= fpol  # Deal with them later
+                ngons[fi] = fpol  # Deal with them later
 
-        ob= bpy.data.objects.new(layer_data.name, me)
-        scn = bpy.context.scene
-        scn.objects.link(ob)
-        scn.objects.active = ob
-        ob.select = True
-        ob_dict[layer_data.index]= [ob, layer_data.parent_index]
+        ob = bpy.data.objects.new(layer_data.name, me)
+        if (2, 80, 0) < bpy.app.version:
+            scn = bpy.context.collection
+            scn.objects.link(ob)
+            #scn.objects.active = ob
+            #ob.select = True
+        else:
+            scn = bpy.context.scene
+            scn.objects.link(ob)
+            scn.objects.active = ob
+            ob.select = True
+        ob_dict[layer_data.index] = [ob, layer_data.parent_index]
 
         # Move the object so the pivot is in the right place.
-        ob.location= layer_data.pivot
+        ob.location = layer_data.pivot
 
         # Create the Material Slots and assign the MatIndex to the correct faces.
-        mat_slot= 0
+        mat_slot = 0
         for surf_key in layer_data.surf_tags:
             if lwo.tags[surf_key] in lwo.surfs:
                 me.materials.append(lwo.surfs[lwo.tags[surf_key]].bl_mat)
 
                 for fi in layer_data.surf_tags[surf_key]:
-                    me.tessfaces[fi].material_index= mat_slot
-                    me.tessfaces[fi].use_smooth= lwo.surfs[lwo.tags[surf_key]].smooth
+                    if (2, 80, 0) < bpy.app.version:
+                        pass # FIXME
+                    else:
+                        me.tessfaces[fi].material_index = mat_slot
+                        me.tessfaces[fi].use_smooth = lwo.surfs[lwo.tags[surf_key]].smooth
 
-                mat_slot+=1
+                mat_slot += 1
 
         # Create the Vertex Normals.
         if len(layer_data.vnorms) > 0:
@@ -313,12 +341,16 @@ def build_objects(lwo):
                 keepflat = True
                 for no in layer_data.lnorms[pi]:
                     vn = layer_data.vnorms[no[0]]
-                    if round(no[1], 4) == round(vn[0], 4) or round(no[2], 4) == round(vn[1], 4) or round(no[3], 4) == round(vn[2], 4):
+                    if (
+                        round(no[1], 4) == round(vn[0], 4)
+                        or round(no[2], 4) == round(vn[1], 4)
+                        or round(no[3], 4) == round(vn[2], 4)
+                    ):
                         keepflat = False
                         break
-                if not(keepflat):
+                if not (keepflat):
                     p.use_smooth = True
-                #for li in me.polygons[vn[1]].loop_indices:
+                # for li in me.polygons[vn[1]].loop_indices:
                 #    l = me.loops[li]
                 #    if l.vertex_index == vn[0]:
                 #        l.normal = [vn[2], vn[3], vn[4]]
@@ -327,43 +359,47 @@ def build_objects(lwo):
         if len(layer_data.wmaps) > 0:
             print("Adding %d Vertex Groups" % len(layer_data.wmaps))
             for wmap_key in layer_data.wmaps:
-                vgroup= ob.vertex_groups.new()
-                vgroup.name= wmap_key
-                wlist= layer_data.wmaps[wmap_key]
+                vgroup = ob.vertex_groups.new()
+                vgroup.name = wmap_key
+                wlist = layer_data.wmaps[wmap_key]
                 for pvp in wlist:
-                    vgroup.add((pvp[0], ), pvp[1], 'REPLACE')
+                    vgroup.add((pvp[0],), pvp[1], "REPLACE")
 
         # Create the Shape Keys (LW's Endomorphs).
         if len(layer_data.morphs) > 0:
             print("Adding %d Shapes Keys" % len(layer_data.morphs))
-            ob.shape_key_add('Basis')   # Got to have a Base Shape.
+            ob.shape_key_add("Basis")  # Got to have a Base Shape.
             for morph_key in layer_data.morphs:
-                skey= ob.shape_key_add(morph_key)
-                dlist= layer_data.morphs[morph_key]
+                skey = ob.shape_key_add(morph_key)
+                dlist = layer_data.morphs[morph_key]
                 for pdp in dlist:
-                    me.shape_keys.key_blocks[skey.name].data[pdp[0]].co= [pdp[1], pdp[2], pdp[3]]
+                    me.shape_keys.key_blocks[skey.name].data[pdp[0]].co = [
+                        pdp[1],
+                        pdp[2],
+                        pdp[3],
+                    ]
 
         # Create the Vertex Color maps.
         if len(layer_data.colmaps) > 0:
             print("Adding %d Vertex Color Maps" % len(layer_data.colmaps))
             for cmap_key in layer_data.colmaps:
-                map_pack= create_mappack(layer_data, cmap_key, "COLOR")
+                map_pack = create_mappack(layer_data, cmap_key, "COLOR")
                 me.vertex_colors.new(cmap_key)
-                vcol= me.tessface_vertex_colors[-1]
+                vcol = me.tessface_vertex_colors[-1]
                 if not vcol or not vcol.data:
                     break
                 for fi in map_pack:
                     if fi > len(vcol.data):
                         continue
-                    face= map_pack[fi]
-                    colf= vcol.data[fi]
+                    face = map_pack[fi]
+                    colf = vcol.data[fi]
 
                     if len(face) > 2:
-                        colf.color1= face[0]
-                        colf.color2= face[1]
-                        colf.color3= face[2]
+                        colf.color1 = face[0]
+                        colf.color2 = face[1]
+                        colf.color3 = face[2]
                     if len(face) == 4:
-                        colf.color4= face[3]
+                        colf.color4 = face[3]
 
         # Create the UV Maps.
         if len(layer_data.uvmaps_vmad) > 0 or len(layer_data.uvmaps_vmap) > 0:
@@ -379,23 +415,35 @@ def build_objects(lwo):
                 bm.free()
             else:
                 for uvmap_key in allmaps:
-                    uvm = me.uv_textures.new()
-                    uvm.name = uvmap_key
+                    if (2, 80, 0) < bpy.app.version:
+                        pass # FIXME
+                    else:
+                        uvm = me.uv_textures.new()
+                        uvm.name = uvmap_key
             vertloops = {}
             for v in me.vertices:
                 vertloops[v.index] = []
             for l in me.loops:
                 vertloops[l.vertex_index].append(l.index)
             for uvmap_key in layer_data.uvmaps_vmad.keys():
-                uvcoords = layer_data.uvmaps_vmad[uvmap_key]['FaceMap']
+                uvcoords = layer_data.uvmaps_vmad[uvmap_key]["FaceMap"]
                 uvm = me.uv_layers.get(uvmap_key)
-                for pnt_id, pol_id, (u, v) in uvcoords.items():
-                    for li in me.polygons[pol_id].loop_indices:
-                        if pnt_id == me.loops[li].vertex_index:
-                            uvm.data[li].uv = [u, v]
-                            break
+                print(uvcoords)
+                for pnt_id in uvcoords.keys():
+                    #print(pnt_id, uvcoords[pnt_id])
+                    for pol_id, (u, v) in uvcoords[pnt_id].items():
+                        #print(pol_id, (u, v))
+                        for li in me.polygons[pol_id].loop_indices:
+                            if pnt_id == me.loops[li].vertex_index:
+                                uvm.data[li].uv = [u, v]
+                                break
+#                 for pnt_id, {pol_id, (u, v)} in uvcoords.items():
+#                     for li in me.polygons[pol_id].loop_indices:
+#                         if pnt_id == me.loops[li].vertex_index:
+#                             uvm.data[li].uv = [u, v]
+#                             break
             for uvmap_key in layer_data.uvmaps_vmap.keys():
-                uvcoords = layer_data.uvmaps_vmap[uvmap_key]['PointMap']
+                uvcoords = layer_data.uvmaps_vmap[uvmap_key]["PointMap"]
                 uvm = me.uv_layers.get(uvmap_key)
                 for pnt_id, (u, v) in uvcoords.items():
                     for li in vertloops[pnt_id]:
@@ -405,58 +453,58 @@ def build_objects(lwo):
         print(ngons)
         if len(ngons) > 0:
             for ng_key in ngons:
-                face_offset= len(me.tessfaces)
-                ng= ngons[ng_key]
-                v_locs= []
+                face_offset = len(me.tessfaces)
+                ng = ngons[ng_key]
+                v_locs = []
                 for vi in range(len(ng)):
                     v_locs.append(mathutils.Vector(layer_data.pnts[ngons[ng_key][vi]]))
-                tris= tessellate_polygon([v_locs])
+                tris = tessellate_polygon([v_locs])
                 me.tessfaces.add(len(tris))
                 for tri in tris:
-                    face= me.tessfaces[face_offset]
-                    face.vertices_raw[0]= ng[tri[0]]
-                    face.vertices_raw[1]= ng[tri[1]]
-                    face.vertices_raw[2]= ng[tri[2]]
-                    face.material_index= me.tessfaces[ng_key].material_index
-                    face.use_smooth= me.tessfaces[ng_key].use_smooth
-                    face_offset+= 1
+                    face = me.tessfaces[face_offset]
+                    face.vertices_raw[0] = ng[tri[0]]
+                    face.vertices_raw[1] = ng[tri[1]]
+                    face.vertices_raw[2] = ng[tri[2]]
+                    face.material_index = me.tessfaces[ng_key].material_index
+                    face.use_smooth = me.tessfaces[ng_key].use_smooth
+                    face_offset += 1
 
         # FaceIDs are no longer a concern, so now update the mesh.
-        has_edges= len(edges) > 0 or len(layer_data.edge_weights) > 0
+        has_edges = len(edges) > 0 or len(layer_data.edge_weights) > 0
         me.update(calc_edges=has_edges)
 
         # Add the edges.
-        edge_offset= len(me.edges)
+        edge_offset = len(me.edges)
         me.edges.add(len(edges))
         for edge_fi in edges:
-            me.edges[edge_offset].vertices[0]= layer_data.pols[edge_fi][0]
-            me.edges[edge_offset].vertices[1]= layer_data.pols[edge_fi][1]
-            edge_offset+= 1
+            me.edges[edge_offset].vertices[0] = layer_data.pols[edge_fi][0]
+            me.edges[edge_offset].vertices[1] = layer_data.pols[edge_fi][1]
+            edge_offset += 1
 
         # Apply the Edge Weighting.
         if len(layer_data.edge_weights) > 0:
             for edge in me.edges:
-                edge_sa= "{0} {1}".format(edge.vertices[0], edge.vertices[1])
-                edge_sb= "{0} {1}".format(edge.vertices[1], edge.vertices[0])
+                edge_sa = "{0} {1}".format(edge.vertices[0], edge.vertices[1])
+                edge_sb = "{0} {1}".format(edge.vertices[1], edge.vertices[0])
                 if edge_sa in layer_data.edge_weights:
-                    edge.crease= layer_data.edge_weights[edge_sa]
+                    edge.crease = layer_data.edge_weights[edge_sa]
                 elif edge_sb in layer_data.edge_weights:
-                    edge.crease= layer_data.edge_weights[edge_sb]
+                    edge.crease = layer_data.edge_weights[edge_sb]
 
         # Unfortunately we can't exlude certain faces from the subdivision.
         if layer_data.has_subds and lwo.add_subd_mod:
-            ob.modifiers.new(name="Subsurf", type='SUBSURF')
+            ob.modifiers.new(name="Subsurf", type="SUBSURF")
 
         # Should we build an armature from the embedded rig?
         if len(layer_data.bones) > 0 and lwo.skel_to_arm:
             bpy.ops.object.armature_add()
-            arm_object= bpy.context.active_object
-            arm_object.name= "ARM_" + layer_data.name
-            arm_object.data.name= arm_object.name
-            arm_object.location= layer_data.pivot
-            bpy.ops.object.mode_set(mode='EDIT')
+            arm_object = bpy.context.active_object
+            arm_object.name = "ARM_" + layer_data.name
+            arm_object.data.name = arm_object.name
+            arm_object.location = layer_data.pivot
+            bpy.ops.object.mode_set(mode="EDIT")
             build_armature(layer_data, arm_object.data.edit_bones)
-            bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.ops.object.mode_set(mode="OBJECT")
 
         # Clear out the dictionaries for this layer.
         layer_data.bone_names.clear()
@@ -472,16 +520,29 @@ def build_objects(lwo):
         # keep this last!
         print("validating mesh: %r..." % me.name)
         me.validate()
-        me.update(calc_tessface=True)
-        # Create the 3D View visualisation textures.
-        for tf in me.tessfaces:
-            tex_slots = me.materials[tf.material_index].texture_slots
-            for ts in tex_slots:
-                if ts:
-                    image = tex_slots[0].texture.image
-                    for lay in me.tessface_uv_textures:
-                        lay.data[tf.index].image = image
-                    break
+        if (2, 80, 0) < bpy.app.version:
+            pass # FIXME
+            me.update(calc_loop_triangles=True)
+            # Create the 3D View visualisation textures.
+#             for tf in me.tessfaces:
+#                 tex_slots = me.materials[tf.material_index].texture_slots
+#                 for ts in tex_slots:
+#                     if ts:
+#                         image = tex_slots[0].texture.image
+#                         for lay in me.tessface_uv_textures:
+#                             lay.data[tf.index].image = image
+#                         break
+        else:
+            me.update(calc_tessface=True)
+            # Create the 3D View visualisation textures.
+            for tf in me.tessfaces:
+                tex_slots = me.materials[tf.material_index].texture_slots
+                for ts in tex_slots:
+                    if ts:
+                        image = tex_slots[0].texture.image
+                        for lay in me.tessface_uv_textures:
+                            lay.data[tf.index].image = image
+                        break
 
         print("done!")
 
@@ -492,11 +553,10 @@ def build_objects(lwo):
     for ob_key in ob_dict:
         if ob_dict[ob_key][1] != -1 and ob_dict[ob_key][1] in ob_dict:
             parent_ob = ob_dict[ob_dict[ob_key][1]]
-            ob_dict[ob_key][0].parent= parent_ob[0]
-            ob_dict[ob_key][0].location-= parent_ob[0].location
+            ob_dict[ob_key][0].parent = parent_ob[0]
+            ob_dict[ob_key][0].location -= parent_ob[0].location
         elif len(ob_dict.keys()) > 1:
             ob_dict[ob_key][0].parent = empty
-            
 
     bpy.context.scene.update()
 
@@ -508,40 +568,92 @@ from bpy.props import StringProperty, BoolProperty
 
 class IMPORT_OT_lwo(bpy.types.Operator):
     """Import LWO Operator"""
-    bl_idname= "import_scene.lwo"
-    bl_label= "Import LWO"
-    bl_description= "Import a LightWave Object file"
-    bl_options= {'REGISTER', 'UNDO'}
 
-    filepath= StringProperty(name="File Path", description="Filepath used for importing the LWO file", maxlen=1024, default="")
+    bl_idname = "import_scene.lwo"
+    bl_label = "Import LWO"
+    bl_description = "Import a LightWave Object file"
+    bl_options = {"REGISTER", "UNDO"}
 
-    ADD_SUBD_MOD= BoolProperty(name="Apply SubD Modifier", description="Apply the Subdivision Surface modifier to layers with Subpatches", default=True)
-    LOAD_HIDDEN= BoolProperty(name="Load Hidden Layers", description="Load object layers that have been marked as hidden", default=False)
-    SKEL_TO_ARM= BoolProperty(name="Create Armature", description="Create an armature from an embedded Skelegon rig", default=True)
-    USE_EXISTING_MATERIALS= BoolProperty(name="Use Existing Materials", description="Use existing materials if a material by that name already exists", default=False)
+    if (2, 80, 0) < bpy.app.version:
+        filepath: StringProperty(
+            name="File Path",
+            description="Filepath used for importing the LWO file",
+            maxlen=1024,
+            default="",
+        )
+    
+        ADD_SUBD_MOD: BoolProperty(
+            name="Apply SubD Modifier",
+            description="Apply the Subdivision Surface modifier to layers with Subpatches",
+            default=True,
+        )
+        LOAD_HIDDEN: BoolProperty(
+            name="Load Hidden Layers",
+            description="Load object layers that have been marked as hidden",
+            default=False,
+        )
+        SKEL_TO_ARM: BoolProperty(
+            name="Create Armature",
+            description="Create an armature from an embedded Skelegon rig",
+            default=True,
+        )
+        USE_EXISTING_MATERIALS: BoolProperty(
+            name="Use Existing Materials",
+            description="Use existing materials if a material by that name already exists",
+            default=False,
+        )
+    else:
+        filepath = StringProperty(
+            name="File Path",
+            description="Filepath used for importing the LWO file",
+            maxlen=1024,
+            default="",
+        )
+    
+        ADD_SUBD_MOD = BoolProperty(
+            name="Apply SubD Modifier",
+            description="Apply the Subdivision Surface modifier to layers with Subpatches",
+            default=True,
+        )
+        LOAD_HIDDEN = BoolProperty(
+            name="Load Hidden Layers",
+            description="Load object layers that have been marked as hidden",
+            default=False,
+        )
+        SKEL_TO_ARM = BoolProperty(
+            name="Create Armature",
+            description="Create an armature from an embedded Skelegon rig",
+            default=True,
+        )
+        USE_EXISTING_MATERIALS = BoolProperty(
+            name="Use Existing Materials",
+            description="Use existing materials if a material by that name already exists",
+            default=False,
+        )
 
     def execute(self, context):
-        load_lwo(self.filepath,
-                 context,
-                 self.ADD_SUBD_MOD,
-                 self.LOAD_HIDDEN,
-                 self.SKEL_TO_ARM,
-                 self.USE_EXISTING_MATERIALS)
-        return {'FINISHED'}
+        load_lwo(
+            self.filepath,
+            context,
+            self.ADD_SUBD_MOD,
+            self.LOAD_HIDDEN,
+            self.SKEL_TO_ARM,
+            self.USE_EXISTING_MATERIALS,
+        )
+        return {"FINISHED"}
 
     def invoke(self, context, event):
-        wm= context.window_manager
+        wm = context.window_manager
         wm.fileselect_add(self)
-        return {'RUNNING_MODAL'}
+        return {"RUNNING_MODAL"}
 
 
 def menu_func(self, context):
     self.layout.operator(IMPORT_OT_lwo.bl_idname, text="LightWave Object (.lwo)")
 
 
-classes = (
-    IMPORT_OT_lwo,
-)
+classes = (IMPORT_OT_lwo,)
+
 
 def register():
     if (2, 80, 0) < bpy.app.version:
@@ -563,6 +675,7 @@ def unregister():
     else:
         bpy.utils.unregister_module(__name__)
         bpy.types.INFO_MT_file_import.remove(menu_func)
+
 
 if __name__ == "__main__":
     register()

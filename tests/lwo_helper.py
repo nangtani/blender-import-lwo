@@ -5,6 +5,34 @@ import bpy
 from mathutils import Vector, Matrix, Euler, Quaternion
 from pprint import pprint
 
+def delete_everything():
+    
+    #print(bpy.data.objects.keys())
+    #print(bpy.data.objects['Layer 2'])
+    for k in bpy.data.objects.keys():
+        if k.startswith("Layer"):
+            continue
+        o = bpy.data.objects[k]
+        #print(o)
+        if (2, 80, 0) < bpy.app.version:
+            o.select_get()
+        else:
+            o.select = True
+        bpy.ops.object.delete()
+
+    for k in bpy.data.textures.keys():
+        j = bpy.data.textures[k]
+        bpy.data.textures.remove(j)
+
+    for k in bpy.data.materials.keys():
+        j = bpy.data.materials[k]
+        bpy.data.materials.remove(j)
+
+    for k in bpy.data.images.keys():
+        j = bpy.data.images[k]
+        bpy.data.images.remove(j)
+
+
 def objToDict(m):
     n = {}
     for k in dir(m):
@@ -139,6 +167,7 @@ def setup_lwo(infile):
     outfile0 = "{0}/{1}.blend".format(dst_path, name)
     outfile1 = "{0}/{1}.blend".format(ref_path, name)
 
+    #delete_everything()
     if "Camera" in bpy.data.objects.keys():
         if (2, 80, 0) < bpy.app.version:
             bpy.data.objects["Camera"].select_get()
@@ -250,7 +279,6 @@ def setup_lwo(infile):
 # 
 #     return error_count
 # 
-
 
 def diff_files(outfile0, outfile1, error_count=0):
     print("Diffing files!")
