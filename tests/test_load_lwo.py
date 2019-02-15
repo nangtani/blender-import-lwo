@@ -24,3 +24,8 @@ def test_load_lwo_box1_uv():
 def test_load_lwo_box2_uv():
     infile = 'tests/src_lwo/box/box2-uv.lwo'
     load_lwo(infile)
+
+def test_load_lwo_box2_uv():
+    infile = 'tests/src_lwo/box/box3-uv-layers.lwo'
+    load_lwo(infile)
+

@@ -7,13 +7,12 @@ from pprint import pprint
 
 def delete_everything():
     
-    #print(bpy.data.objects.keys())
-    #print(bpy.data.objects['Layer 2'])
     for k in bpy.data.objects.keys():
-        if k.startswith("Layer"):
+        try:
+            o = bpy.data.objects[k]
+        except KeyError:
             continue
-        o = bpy.data.objects[k]
-        #print(o)
+            #print(o)
         if (2, 80, 0) < bpy.app.version:
             o.select_get()
         else:
