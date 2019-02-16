@@ -67,6 +67,7 @@ import bpy
 import bmesh
 import mathutils
 from mathutils.geometry import tessellate_polygon
+from pprint import pprint
 
 from .lwoObj import lwoObj
 
@@ -167,10 +168,6 @@ def build_materials(lwo, use_existing_materials):
 
     for surf_key in lwo.surfs:
         surf_data = lwo.surfs[surf_key]
-#         if not hasattr(surf_data, "bl_mat2"):
-#             print(False)
-#             #surf_data.__setattr__("bl_mat2", None)
-
         if use_existing_materials:
             surf_data.bl_mat = bpy.data.materials.get(surf_data.name)
 #         else:
@@ -203,13 +200,13 @@ def build_materials(lwo, use_existing_materials):
             for texture in surf_data.textures:
                 ci = texture.clipid
                 tex_slot = surf_data.bl_mat.texture_slots.add()
-                print(lwo.clips)
+                #print(lwo.clips)
                 try:
                     path = lwo.clips[ci]
                     image = bpy.data.images.get(path)
                     if None == image:
                         image = bpy.data.images.load(path)
-                    print(path, image)
+                    #print(path, image)
                 except KeyError:
                     path = ""
                     continue
@@ -258,42 +255,44 @@ def build_objects(lwo, use_existing_materials):
         bpy.ops.object.mode_set(mode="OBJECT")
 
     for layer_data in lwo.layers:
+        face_edges = []
         me = bpy.data.meshes.new(layer_data.name)
-        me.vertices.add(len(layer_data.pnts))
-        if (2, 80, 0) < bpy.app.version:
-            pass # FIXME
-#             print(me.loop_triangle)
-#             me.loop_triangles.add(len(layer_data.pols))
-        else:
-            #print("tessfaces.add", len(layer_data.pols))
-            #print(layer_data.pols)
-            me.tessfaces.add(len(layer_data.pols))
-        # for vi in range(len(layer_data.pnts)):
-        #     me.vertices[vi].co= layer_data.pnts[vi]
-
-        # faster, would be faster again to use an array
-        me.vertices.foreach_set("co", [axis for co in layer_data.pnts for axis in co])
-
-        ngons = {}  # To keep the FaceIdx consistent, handle NGons later.
-        edges = []  # Holds the FaceIdx of the 2-point polys.
-        for fi, fpol in enumerate(layer_data.pols):
-            fpol.reverse()  # Reversing gives correct normal directions
-            # PointID 0 in the last element causes Blender to think it's un-used.
-            if fpol[-1] == 0:
-                fpol.insert(0, fpol[-1])
-                del fpol[-1]
-
-            vlen = len(fpol)
-            if vlen == 3 or vlen == 4:
-                if (2, 80, 0) < bpy.app.version:
-                    pass # FIXME
-                else:
-                    for i in range(vlen):
-                        me.tessfaces[fi].vertices_raw[i] = fpol[i]
-            elif vlen == 2:
-                edges.append(fi)
-            elif vlen != 1:
-                ngons[fi] = fpol  # Deal with them later
+        me.from_pydata(layer_data.pnts, face_edges, layer_data.pols)
+#         me.vertices.add(len(layer_data.pnts))
+#         if (2, 80, 0) < bpy.app.version:
+#             pass # FIXME
+# #             print(me.loop_triangle)
+# #             me.loop_triangles.add(len(layer_data.pols))
+#         else:
+#             #print("tessfaces.add", len(layer_data.pols))
+#             #print(layer_data.pols)
+#             me.tessfaces.add(len(layer_data.pols))
+#         # for vi in range(len(layer_data.pnts)):
+#         #     me.vertices[vi].co= laye  r_data.pnts[vi]
+# 
+#         # faster, would be faster again to use an array
+#         me.vertices.foreach_set("co", [axis for co in layer_data.pnts for axis in co])
+# 
+#         ngons = {}  # To keep the FaceIdx consistent, handle NGons later.
+#         edges = []  # Holds the FaceIdx of the 2-point polys.
+#         for fi, fpol in enumerate(layer_data.pols):
+#             fpol.reverse()  # Reversing gives correct normal directions
+#             # PointID 0 in the last element causes Blender to think it's un-used.
+#             if fpol[-1] == 0:
+#                 fpol.insert(0, fpol[-1])
+#                 del fpol[-1]
+# 
+#             vlen = len(fpol)
+#             if vlen == 3 or vlen == 4:
+#                 if (2, 80, 0) < bpy.app.version:
+#                     pass # FIXME
+#                 else:
+#                     for i in range(vlen):
+#                         me.tessfaces[fi].vertices_raw[i] = fpol[i]
+#             elif vlen == 2:
+#                 edges.append(fi)
+#             elif vlen != 1:
+#                 ngons[fi] = fpol  # Deal with them later
 
         ob = bpy.data.objects.new(layer_data.name, me)
         if (2, 80, 0) < bpy.app.version:
@@ -318,11 +317,8 @@ def build_objects(lwo, use_existing_materials):
                 me.materials.append(lwo.surfs[lwo.tags[surf_key]].bl_mat)
 
                 for fi in layer_data.surf_tags[surf_key]:
-                    if (2, 80, 0) < bpy.app.version:
-                        pass # FIXME
-                    else:
-                        me.tessfaces[fi].material_index = mat_slot
-                        me.tessfaces[fi].use_smooth = lwo.surfs[lwo.tags[surf_key]].smooth
+                    me.polygons[fi].material_index = mat_slot
+                    me.polygons[fi].use_smooth = lwo.surfs[lwo.tags[surf_key]].smooth
 
                 mat_slot += 1
 
@@ -416,10 +412,10 @@ def build_objects(lwo, use_existing_materials):
             else:
                 for uvmap_key in allmaps:
                     if (2, 80, 0) < bpy.app.version:
-                        pass # FIXME
+                        uvm = me.uv_layers.new()
                     else:
                         uvm = me.uv_textures.new()
-                        uvm.name = uvmap_key
+                    uvm.name = uvmap_key
             vertloops = {}
             for v in me.vertices:
                 vertloops[v.index] = []
@@ -428,20 +424,12 @@ def build_objects(lwo, use_existing_materials):
             for uvmap_key in layer_data.uvmaps_vmad.keys():
                 uvcoords = layer_data.uvmaps_vmad[uvmap_key]["FaceMap"]
                 uvm = me.uv_layers.get(uvmap_key)
-                print(uvcoords)
-                for pnt_id in uvcoords.keys():
-                    #print(pnt_id, uvcoords[pnt_id])
-                    for pol_id, (u, v) in uvcoords[pnt_id].items():
-                        #print(pol_id, (u, v))
+                for pol_id in uvcoords.keys():
+                    for pnt_id, (u, v) in uvcoords[pol_id].items():
                         for li in me.polygons[pol_id].loop_indices:
                             if pnt_id == me.loops[li].vertex_index:
                                 uvm.data[li].uv = [u, v]
                                 break
-#                 for pnt_id, {pol_id, (u, v)} in uvcoords.items():
-#                     for li in me.polygons[pol_id].loop_indices:
-#                         if pnt_id == me.loops[li].vertex_index:
-#                             uvm.data[li].uv = [u, v]
-#                             break
             for uvmap_key in layer_data.uvmaps_vmap.keys():
                 uvcoords = layer_data.uvmaps_vmap[uvmap_key]["PointMap"]
                 uvm = me.uv_layers.get(uvmap_key)
@@ -449,37 +437,37 @@ def build_objects(lwo, use_existing_materials):
                     for li in vertloops[pnt_id]:
                         uvm.data[li].uv = [u, v]
 
-        # Now add the NGons.
-        print(ngons)
-        if len(ngons) > 0:
-            for ng_key in ngons:
-                face_offset = len(me.tessfaces)
-                ng = ngons[ng_key]
-                v_locs = []
-                for vi in range(len(ng)):
-                    v_locs.append(mathutils.Vector(layer_data.pnts[ngons[ng_key][vi]]))
-                tris = tessellate_polygon([v_locs])
-                me.tessfaces.add(len(tris))
-                for tri in tris:
-                    face = me.tessfaces[face_offset]
-                    face.vertices_raw[0] = ng[tri[0]]
-                    face.vertices_raw[1] = ng[tri[1]]
-                    face.vertices_raw[2] = ng[tri[2]]
-                    face.material_index = me.tessfaces[ng_key].material_index
-                    face.use_smooth = me.tessfaces[ng_key].use_smooth
-                    face_offset += 1
+#         # Now add the NGons.
+#         print(ngons)
+#         if len(ngons) > 0:
+#             for ng_key in ngons:
+#                 face_offset = len(me.tessfaces)
+#                 ng = ngons[ng_key]
+#                 v_locs = []
+#                 for vi in range(len(ng)):
+#                     v_locs.append(mathutils.Vector(layer_data.pnts[ngons[ng_key][vi]]))
+#                 tris = tessellate_polygon([v_locs])
+#                 me.tessfaces.add(len(tris))
+#                 for tri in tris:
+#                     face = me.tessfaces[face_offset]
+#                     face.vertices_raw[0] = ng[tri[0]]
+#                     face.vertices_raw[1] = ng[tri[1]]
+#                     face.vertices_raw[2] = ng[tri[2]]
+#                     face.material_index = me.tessfaces[ng_key].material_index
+#                     face.use_smooth = me.tessfaces[ng_key].use_smooth
+#                     face_offset += 1
 
-        # FaceIDs are no longer a concern, so now update the mesh.
-        has_edges = len(edges) > 0 or len(layer_data.edge_weights) > 0
-        me.update(calc_edges=has_edges)
-
-        # Add the edges.
-        edge_offset = len(me.edges)
-        me.edges.add(len(edges))
-        for edge_fi in edges:
-            me.edges[edge_offset].vertices[0] = layer_data.pols[edge_fi][0]
-            me.edges[edge_offset].vertices[1] = layer_data.pols[edge_fi][1]
-            edge_offset += 1
+#         # FaceIDs are no longer a concern, so now update the mesh.
+#         has_edges = len(edges) > 0 or len(layer_data.edge_weights) > 0
+#         me.update(calc_edges=has_edges)
+# 
+#         # Add the edges.
+#         edge_offset = len(me.edges)
+#         me.edges.add(len(edges))
+#         for edge_fi in edges:
+#             me.edges[edge_offset].vertices[0] = layer_data.pols[edge_fi][0]
+#             me.edges[edge_offset].vertices[1] = layer_data.pols[edge_fi][1]
+#             edge_offset += 1
 
         # Apply the Edge Weighting.
         if len(layer_data.edge_weights) > 0:
@@ -520,25 +508,28 @@ def build_objects(lwo, use_existing_materials):
         # keep this last!
         print("validating mesh: %r..." % me.name)
         me.validate()
+        # Texture slots have been removed from 2.80, is there a corresponding any thing?
         if (2, 80, 0) < bpy.app.version:
-            pass # FIXME
             me.update(calc_loop_triangles=True)
             # Create the 3D View visualisation textures.
-#             for tf in me.tessfaces:
+#             for tf in me.polygons:
 #                 tex_slots = me.materials[tf.material_index].texture_slots
 #                 for ts in tex_slots:
 #                     if ts:
 #                         image = tex_slots[0].texture.image
-#                         for lay in me.tessface_uv_textures:
+#                         for lay in me.uv_layers:
 #                             lay.data[tf.index].image = image
 #                         break
         else:
             me.update(calc_tessface=True)
             # Create the 3D View visualisation textures.
-            for tf in me.tessfaces:
+            for tf in me.polygons:
                 tex_slots = me.materials[tf.material_index].texture_slots
                 for ts in tex_slots:
                     if ts:
+                        if None == tex_slots[0].texture:
+                            continue
+                        
                         image = tex_slots[0].texture.image
                         for lay in me.tessface_uv_textures:
                             lay.data[tf.index].image = image
@@ -549,7 +540,10 @@ def build_objects(lwo, use_existing_materials):
     # With the objects made, setup the parents and re-adjust the locations.
     if len(ob_dict.keys()) > 1:
         empty = bpy.data.objects.new(name=lwo.name + "_empty", object_data=None)
-        bpy.context.scene.objects.link(empty)
+        if (2, 80, 0) < bpy.app.version:
+            bpy.context.collection.objects.link(empty)
+        else:
+            bpy.context.scene.objects.link(empty)
     for ob_key in ob_dict:
         if ob_dict[ob_key][1] != -1 and ob_dict[ob_key][1] in ob_dict:
             parent_ob = ob_dict[ob_dict[ob_key][1]]

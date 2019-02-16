@@ -166,25 +166,7 @@ def setup_lwo(infile):
     outfile0 = "{0}/{1}.blend".format(dst_path, name)
     outfile1 = "{0}/{1}.blend".format(ref_path, name)
 
-    #delete_everything()
-    if "Camera" in bpy.data.objects.keys():
-        if (2, 80, 0) < bpy.app.version:
-            bpy.data.objects["Camera"].select_get()
-        else:
-            bpy.data.objects["Camera"].select = True
-        bpy.ops.object.delete()
-    if "Lamp" in bpy.data.objects.keys():
-        if (2, 80, 0) < bpy.app.version:
-            bpy.data.objects["Lamp"].select_get()
-        else:
-            bpy.data.objects["Lamp"].select = True
-        bpy.ops.object.delete()
-    if "Cube" in bpy.data.objects.keys():
-        if (2, 80, 0) < bpy.app.version:
-            bpy.data.objects["Cube"].select_get()
-        else:
-            bpy.data.objects["Cube"].select = True
-        bpy.ops.object.delete()
+    delete_everything()
 
     if os.path.isfile(outfile0):
         os.remove(outfile0)

@@ -6,6 +6,13 @@ import zipfile
 import shutil
 import bpy
 
+def mkdir_p(outfile):
+    dirname = os.path.dirname(outfile).split("/")
+    for i in range(len(dirname)):
+        new_path = "/".join(dirname[0:i+1])
+        if not os.path.isdir(new_path):
+            os.mkdir(new_path)
+
 def zip_addon(addon):
     bpy_module = re.sub(".py", "", os.path.basename(os.path.realpath(addon)))
     zfile = os.path.realpath(bpy_module + ".zip")
@@ -59,9 +66,14 @@ class SetupAddon(object):
     def convert_lwo(self, infile, outfile=None):
         bpy.ops.import_scene.lwo(filepath=infile)
         
-        outfile = re.sub("src_lwo", "ref_blend", infile + ".blend")
-        if not None == outfile:
-            bpy.ops.wm.save_mainfile(filepath=outfile)
+        if None == outfile:
+            rev = f"{bpy.app.version[0]}.{bpy.app.version[1]}"
+            new_path = f"ref_blend/{rev}"
+            outfile = re.sub("src_lwo", new_path, infile + ".blend")
+        
+        mkdir_p(outfile)
+                
+        bpy.ops.wm.save_mainfile(filepath=outfile)
 
 
 def get_version(bpy_module):
