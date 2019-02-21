@@ -162,84 +162,124 @@ def build_armature(layer_data, bones):
         nb.use_connect = True
         prev_bone = nb
 
+def lwo2BI(lwo, surf_key, use_existing_materials):
+    surf_data = lwo.surfs[surf_key]
+    #bl_mat = None
+    #mat_name = lwo.surfs[surf_key].name
+    #textures = lwo.surfs[surf_key].textures
+    if use_existing_materials:
+        surf_data.bl_mat = bpy.data.materials.get(surf_data.name)
+#     else:
+#         surf_data.bl_mat = None
+
+    if (2, 80, 0) < bpy.app.version:
+        #return # FIXME
+        raise Exception("Blender Internal has been removed")
+    
+    if None == surf_data.bl_mat:
+        surf_data.bl_mat = bpy.data.materials.new(surf_data.name)
+        surf_data.bl_mat.diffuse_color = surf_data.colr[:]
+        surf_data.bl_mat.diffuse_intensity = surf_data.diff
+        surf_data.bl_mat.emit = surf_data.lumi
+        surf_data.bl_mat.specular_intensity = surf_data.spec
+        if surf_data.refl != 0.0:
+            surf_data.bl_mat.raytrace_mirror.use = True
+        surf_data.bl_mat.raytrace_mirror.reflect_factor = surf_data.refl
+        surf_data.bl_mat.raytrace_mirror.gloss_factor = 1.0 - surf_data.rblr
+        if surf_data.tran != 0.0:
+            surf_data.bl_mat.use_transparency = True
+            surf_data.bl_mat.transparency_method = "RAYTRACE"
+        surf_data.bl_mat.alpha = 1.0 - surf_data.tran
+        surf_data.bl_mat.raytrace_transparency.ior = surf_data.rind
+        surf_data.bl_mat.raytrace_transparency.gloss_factor = 1.0 - surf_data.tblr
+        surf_data.bl_mat.translucency = surf_data.trnl
+        surf_data.bl_mat.specular_hardness = (
+            int(4 * ((10 * surf_data.glos) * (10 * surf_data.glos))) + 4
+        )
+        surf_data.textures.reverse()
+        for texture in surf_data.textures:
+            ci = texture.clipid
+            tex_slot = surf_data.bl_mat.texture_slots.add()
+            #print(lwo.clips)
+            try:
+                path = lwo.clips[ci]
+                image = bpy.data.images.get(path)
+                if None == image:
+                    image = bpy.data.images.load(path)
+                #print(path, image)
+            except KeyError:
+                path = ""
+                continue
+            tex = bpy.data.textures.new(os.path.basename(path), "IMAGE")
+            tex.image = image
+            tex_slot.texture = tex
+            if texture.projection == 5:
+                tex_slot.texture_coords = "UV"
+                tex_slot.uv_layer = texture.uvname
+            tex_slot.diffuse_color_factor = texture.opac
+            if not (texture.enab):
+                tex_slot.use_textures[ci - 1] = False
+        for texture in surf_data.textures_5:
+            tex_slot = surf_data.bl_mat.texture_slots.add()
+            tex = bpy.data.textures.new(os.path.basename(texture.path), "IMAGE")
+            if not (bpy.data.images.get(texture.path)):
+                image = bpy.data.images.load(texture.path)
+            tex.image = image
+            tex_slot.texture = tex
+            tex_slot.texture_coords = "GLOBAL"
+            tex_slot.mapping = "FLAT"
+            if texture.X:
+                tex_slot.mapping_x = "X"
+            if texture.Y:
+                tex_slot.mapping_y = "Y"
+            if texture.Z:
+                tex_slot.mapping_z = "Z"
+
+def lwo2cycles(lwo, surf_key, use_existing_materials):
+    surf_data = lwo.surfs[surf_key]
+    mat = None
+    mat_name = surf_data.name
+    if use_existing_materials:
+        mat = bpy.data.materials.get(mat_name)
+    
+    if None == mat:
+        mat = bpy.data.materials.new(mat_name)
+        mat.use_nodes = True
+        nodes = mat.node_tree.nodes
+        if (2, 80, 0) < bpy.app.version:
+            pass
+        else:
+            mat.diffuse_color = surf_data.colr[:]
+            m = nodes['Material Output']
+            d = nodes.new('ShaderNodeBsdfPrincipled')
+            mat.node_tree.links.new(d.outputs['BSDF'], m.inputs['Surface']) 
+            nodes.remove(nodes['Diffuse BSDF'])
+                   
+        d = nodes['Principled BSDF']
+        color = (surf_data.colr[0], surf_data.colr[1], surf_data.colr[2], 1)
+        d.inputs[0].default_value = color
+
+    
+    surf_data.bl_mat = mat
+    #print(surf_data.bl_mat)
 
 def build_materials(lwo, use_existing_materials):
     print(f"Adding {len(lwo.surfs)} Materials")
 
     for surf_key in lwo.surfs:
-        surf_data = lwo.surfs[surf_key]
-        if use_existing_materials:
-            surf_data.bl_mat = bpy.data.materials.get(surf_data.name)
-#         else:
-#             surf_data.bl_mat = None
-
-        if (2, 80, 0) < bpy.app.version:
-            continue # FIXME
-        
-        if None == surf_data.bl_mat:
-            surf_data.bl_mat = bpy.data.materials.new(surf_data.name)
-            surf_data.bl_mat.diffuse_color = surf_data.colr[:]
-            surf_data.bl_mat.diffuse_intensity = surf_data.diff
-            surf_data.bl_mat.emit = surf_data.lumi
-            surf_data.bl_mat.specular_intensity = surf_data.spec
-            if surf_data.refl != 0.0:
-                surf_data.bl_mat.raytrace_mirror.use = True
-            surf_data.bl_mat.raytrace_mirror.reflect_factor = surf_data.refl
-            surf_data.bl_mat.raytrace_mirror.gloss_factor = 1.0 - surf_data.rblr
-            if surf_data.tran != 0.0:
-                surf_data.bl_mat.use_transparency = True
-                surf_data.bl_mat.transparency_method = "RAYTRACE"
-            surf_data.bl_mat.alpha = 1.0 - surf_data.tran
-            surf_data.bl_mat.raytrace_transparency.ior = surf_data.rind
-            surf_data.bl_mat.raytrace_transparency.gloss_factor = 1.0 - surf_data.tblr
-            surf_data.bl_mat.translucency = surf_data.trnl
-            surf_data.bl_mat.specular_hardness = (
-                int(4 * ((10 * surf_data.glos) * (10 * surf_data.glos))) + 4
-            )
-            surf_data.textures.reverse()
-            for texture in surf_data.textures:
-                ci = texture.clipid
-                tex_slot = surf_data.bl_mat.texture_slots.add()
-                #print(lwo.clips)
-                try:
-                    path = lwo.clips[ci]
-                    image = bpy.data.images.get(path)
-                    if None == image:
-                        image = bpy.data.images.load(path)
-                    #print(path, image)
-                except KeyError:
-                    path = ""
-                    continue
-                tex = bpy.data.textures.new(os.path.basename(path), "IMAGE")
-                tex.image = image
-                tex_slot.texture = tex
-                if texture.projection == 5:
-                    tex_slot.texture_coords = "UV"
-                    tex_slot.uv_layer = texture.uvname
-                tex_slot.diffuse_color_factor = texture.opac
-                if not (texture.enab):
-                    tex_slot.use_textures[ci - 1] = False
-            for texture in surf_data.textures_5:
-                tex_slot = surf_data.bl_mat.texture_slots.add()
-                tex = bpy.data.textures.new(os.path.basename(texture.path), "IMAGE")
-                if not (bpy.data.images.get(texture.path)):
-                    image = bpy.data.images.load(texture.path)
-                tex.image = image
-                tex_slot.texture = tex
-                tex_slot.texture_coords = "GLOBAL"
-                tex_slot.mapping = "FLAT"
-                if texture.X:
-                    tex_slot.mapping_x = "X"
-                if texture.Y:
-                    tex_slot.mapping_y = "Y"
-                if texture.Z:
-                    tex_slot.mapping_z = "Z"
-            # The Gloss is as close as possible given the differences.
+        if 'CYCLES' == bpy.context.scene.render.engine:
+            surf_data = lwo2cycles(lwo, surf_key, use_existing_materials)
+        else:
+            surf_data = lwo2BI(lwo, surf_key, use_existing_materials)
 
 
 def build_objects(lwo, use_existing_materials):
     """Using the gathered data, create the objects."""
     ob_dict = {}  # Used for the parenting setup.
+    
+#     pprint(lwo.images)
+#     pprint(lwo.clips)
+#     raise
 
     build_materials(lwo, use_existing_materials)
 
@@ -258,7 +298,21 @@ def build_objects(lwo, use_existing_materials):
         face_edges = []
         me = bpy.data.meshes.new(layer_data.name)
         me.from_pydata(layer_data.pnts, face_edges, layer_data.pols)
-#         me.vertices.add(len(layer_data.pnts))
+#         print(dir(me))
+#         print(me.vertices)
+#         print(me.polygons)
+#         print(me.tessfaces)
+#         me.calc_tessface()
+#         print(me.tessfaces)
+#         print(me.edges)
+#         
+#         me_old = bpy.data.meshes.new(layer_data.name)
+#         me_old.vertices.add(len(layer_data.pnts))
+#         me_old.tessfaces.add(len(layer_data.pols))
+#         print(me_old.vertices)
+#         print(me_old.tessfaces)
+#         raise
+
 #         if (2, 80, 0) < bpy.app.version:
 #             pass # FIXME
 # #             print(me.loop_triangle)
@@ -298,8 +352,8 @@ def build_objects(lwo, use_existing_materials):
         if (2, 80, 0) < bpy.app.version:
             scn = bpy.context.collection
             scn.objects.link(ob)
-            #scn.objects.active = ob
-            #ob.select = True
+            bpy.context.view_layer.objects.active = ob
+            ob.select_set(state=True)
         else:
             scn = bpy.context.scene
             scn.objects.link(ob)
@@ -322,6 +376,9 @@ def build_objects(lwo, use_existing_materials):
 
                 mat_slot += 1
 
+        #bpy.context.object.data.use_auto_smooth = True
+        bpy.ops.object.modifier_add(type='EDGE_SPLIT')
+        
         # Create the Vertex Normals.
         if len(layer_data.vnorms) > 0:
             print("Adding Vertex Normals")
@@ -511,18 +568,14 @@ def build_objects(lwo, use_existing_materials):
         # Texture slots have been removed from 2.80, is there a corresponding any thing?
         if (2, 80, 0) < bpy.app.version:
             me.update(calc_loop_triangles=True)
-            # Create the 3D View visualisation textures.
-#             for tf in me.polygons:
-#                 tex_slots = me.materials[tf.material_index].texture_slots
-#                 for ts in tex_slots:
-#                     if ts:
-#                         image = tex_slots[0].texture.image
-#                         for lay in me.uv_layers:
-#                             lay.data[tf.index].image = image
-#                         break
         else:
             me.update(calc_tessface=True)
-            # Create the 3D View visualisation textures.
+        
+        
+        # Create the 3D View visualisation textures.
+        if 'CYCLES' == bpy.context.scene.render.engine:
+            pass
+        else:
             for tf in me.polygons:
                 tex_slots = me.materials[tf.material_index].texture_slots
                 for ts in tex_slots:

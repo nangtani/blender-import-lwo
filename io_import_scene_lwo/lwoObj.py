@@ -216,7 +216,7 @@ def read_layr_5(layr_bytes, object_layers):
     if name_len > 2 and layr_name != "noname":
         new_layr.name = layr_name
     else:
-        new_layr.name = "Layer %d" % new_layr.index
+        new_layr.name = f"Layer {new_layr.index}"
 
     object_layers.append(new_layr)
 
@@ -224,7 +224,6 @@ def read_layr_5(layr_bytes, object_layers):
 def read_pnts(pnt_bytes, object_layers):
     """Read the layer's points."""
     print(f"\tReading Layer ({object_layers[-1].name }) Points")
-    #print("\tReading Layer (" + object_layers[-1].name + ") Points")
     offset = 0
     chunk_len = len(pnt_bytes)
 
@@ -495,14 +494,13 @@ def read_normal_vmad(norm_bytes, object_layers):
             lnorms[pol_id] = []
         lnorms[pol_id].append([pnt_id, norm[0], norm[2], norm[1]])
 
-    print("LENGTH", len(lnorms.keys()))
+    print(f"LENGTH {len(lnorms.keys())}")
     object_layers[-1].lnorms = lnorms
 
 
 def read_pols(pol_bytes, object_layers):
     """Read the layer's polygons, each one is just a list of point indexes."""
     print(f"\tReading Layer ({object_layers[-1].name}) Polygons")
-    #print("\tReading Layer (" + object_layers[-1].name + ") Polygons")
     offset = 0
     pols_count = len(pol_bytes)
     old_pols_count = len(object_layers[-1].pols)
@@ -528,7 +526,6 @@ def read_pols_5(pol_bytes, object_layers):
     But it also includes the surface index.
     """
     print(f"\tReading Layer ({object_layers[-1].name}) Polygons")
-    #print("\tReading Layer (" + object_layers[-1].name + ") Polygons")
     offset = 0
     chunk_len = len(pol_bytes)
     old_pols_count = len(object_layers[-1].pols)
@@ -559,7 +556,6 @@ def read_pols_5(pol_bytes, object_layers):
 def read_bones(bone_bytes, lwo):
     """Read the layer's skelegons."""
     print(f"\tReading Layer ({object_layers[-1].name}) Bones")
-    #print("\tReading Layer (" + lwo.layers[-1].name + ") Bones")
     offset = 0
     bones_count = len(bone_bytes)
 
@@ -598,7 +594,6 @@ def read_bone_tags(tag_bytes, lwo, type):
 def read_surf_tags(tag_bytes, object_layers, last_pols_count):
     """Read the list of PolyIDs and tag indexes."""
     print(f"\tReading Layer ({object_layers[-1].name}) Surface Assignments")
-    #print("\tReading Layer (" + object_layers[-1].name + ") Surface Assignments")
     offset = 0
     chunk_len = len(tag_bytes)
 
@@ -729,7 +724,7 @@ def read_surf(surf_bytes, lwo):
                         texture.uvname, name_len = read_lwostring(
                             surf_bytes[offset + suboffset :]
                         )
-                        print("VMAP", texture.uvname)
+                        #print(f"VMAP {texture.uvname}")
                     elif subsubchunk_name == b"NEGA":
                         pass
                     elif subsubchunk_name == b"TMAP":
@@ -748,7 +743,6 @@ def read_surf(surf_bytes, lwo):
                         pass
                     else:
                         print(f"Unimplemented SubSubBlock: {subsubchunk_name}")
-                        #print("Unimplemented SubSubBlock: " + str(subsubchunk_name))
                     suboffset += subsubchunk_len
 
                 if colormap:
@@ -789,7 +783,6 @@ def read_surf(surf_bytes, lwo):
            pass
         else:
             print(f"Unimplemented SubBlock: {subchunk_name}")
-            #print("Unimplemented SubBlock: " + str(subchunk_name))
 
         offset += subchunk_len
 
@@ -889,7 +882,6 @@ def read_surf_5(surf_bytes, lwo, dirpath=None):
             pass # SKIPPING
         else:
             print(f"Unimplemented SubBlock: {subchunk_name}")
-            #print("Unimplemented SubBlock: " + str(subchunk_name))
 
         offset += subchunk_len
 
@@ -898,7 +890,7 @@ def read_surf_5(surf_bytes, lwo, dirpath=None):
 
 def read_clip(clip_bytes, lwo):
     """Read texture clip path"""
-    print("Read clip")
+    #print("Read clip")
     cwd = os.getcwd()
     c_id = struct.unpack(">L", clip_bytes[0:4])[0]
     orig_path, path_len = read_lwostring(clip_bytes[10:])
@@ -966,7 +958,6 @@ class lwoObj(object):
             )
         except:
             print(f"Error parsing file header! Filename {self.filename}")
-            #print("Error parsing file header! Filename " + self.filename)
             self.f.close()
             return
 
@@ -996,7 +987,6 @@ class lwoObj(object):
         self.last_pols_count = 0
         self.just_read_bones = False
         print(f"Importing LWO: {self.filename}\nLWO v2 Format")
-        #print("Importing LWO: " + self.filename + "\nLWO v2 Format")
 
         while True:
             try:
@@ -1030,7 +1020,7 @@ class lwoObj(object):
                 elif vmap_type == b"PICK":
                     rootchunk.skip() # SKIPPING
                 else:
-                    print("Skipping vmap_type:", vmap_type)
+                    print(f"Skipping vmap_type: {vmap_type}")
                     rootchunk.skip()
 
             elif rootchunk.chunkname == b"VMAD" and self.handle_layer:
@@ -1046,7 +1036,7 @@ class lwoObj(object):
                 elif vmad_type == b"NORM":
                     read_normal_vmad(rootchunk.read(), self.layers)
                 else:
-                    print("Skipping vmad_type:", vmad_type)
+                    print(f"Skipping vmad_type: {vmad_type}")
                     rootchunk.skip()
 
             elif rootchunk.chunkname == b"POLS" and self.handle_layer:
@@ -1063,7 +1053,7 @@ class lwoObj(object):
                     read_bones(rootchunk.read(), self)
                     self.just_read_bones = True
                 else:
-                    print("Skipping face_type:", face_type)
+                    print(f"Skipping face_type: {face_type}")
                     rootchunk.skip()
 
             elif rootchunk.chunkname == b"PTAG" and self.handle_layer:
@@ -1082,10 +1072,10 @@ class lwoObj(object):
                     elif tag_type == b"COLR":
                         rootchunk.skip() # SKIPPING
                     else:
-                        print("Skipping tag:", tag_type)
+                        print(f"Skipping tag: {tag_type}")
                         rootchunk.skip()
                 else:
-                    print("Skipping tag_type:", tag_type)
+                    print(f"Skipping tag_type: {tag_type}")
                     rootchunk.skip()
             elif rootchunk.chunkname == b"SURF":
                 read_surf(rootchunk.read(), self)
@@ -1097,14 +1087,13 @@ class lwoObj(object):
                 rootchunk.skip() # SKIPPING
             else:
                 # if self.handle_layer:
-                print("Skipping Chunk:", rootchunk.chunkname)
+                print(f"Skipping Chunk: {rootchunk.chunkname}")
                 rootchunk.skip()
 
     def read_lwob(self):
         """Read version 1 file, LW < 6."""
         self.last_pols_count = 0
         print(f"Importing LWO: {self.filename}\nLWO v1 Format")
-        #print("Importing LWO: " + self.filename + "\nLWO v1 Format")
 
         while True:
             try:
@@ -1139,5 +1128,5 @@ class lwoObj(object):
             else:
                 # For Debugging \/.
                 # if handle_layer:
-                print("Skipping Chunk: ", rootchunk.chunkname)
+                print(f"Skipping Chunk: {rootchunk.chunkname}")
                 rootchunk.skip()

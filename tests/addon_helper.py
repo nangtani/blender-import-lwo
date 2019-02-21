@@ -75,6 +75,9 @@ class SetupAddon(object):
                 
         bpy.ops.wm.save_mainfile(filepath=outfile)
 
+    def set_cycles(self):
+        bpy.context.scene.render.engine = 'CYCLES'
+
 
 def get_version(bpy_module):
     mod = sys.modules[bpy_module]
