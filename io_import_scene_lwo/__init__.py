@@ -286,9 +286,9 @@ def build_objects(lwo, use_existing_materials):
     # Single layer objects use the object file's name instead.
     if len(lwo.layers) and lwo.layers[-1].name == "Layer 1":
         lwo.layers[-1].name = lwo.name
-        print("Building '%s' Object" % lwo.name)
+        print(f"Building '{lwo.name}' Object")
     else:
-        print("Building %d Objects" % len(lwo.layers))
+        print("Building {len(lwo.layers)} Objects")
 
     # Before adding any meshes or armatures go into Object mode.
     if bpy.ops.object.mode_set.poll():
@@ -377,7 +377,7 @@ def build_objects(lwo, use_existing_materials):
                 mat_slot += 1
 
         #bpy.context.object.data.use_auto_smooth = True
-        bpy.ops.object.modifier_add(type='EDGE_SPLIT')
+        #bpy.ops.object.modifier_add(type='EDGE_SPLIT')
         
         # Create the Vertex Normals.
         if len(layer_data.vnorms) > 0:
@@ -410,7 +410,7 @@ def build_objects(lwo, use_existing_materials):
 
         # Create the Vertex Groups (LW's Weight Maps).
         if len(layer_data.wmaps) > 0:
-            print("Adding %d Vertex Groups" % len(layer_data.wmaps))
+            print(f"Adding {len(layer_data.wmaps)} Vertex Groups")
             for wmap_key in layer_data.wmaps:
                 vgroup = ob.vertex_groups.new()
                 vgroup.name = wmap_key
@@ -420,7 +420,7 @@ def build_objects(lwo, use_existing_materials):
 
         # Create the Shape Keys (LW's Endomorphs).
         if len(layer_data.morphs) > 0:
-            print("Adding %d Shapes Keys" % len(layer_data.morphs))
+            print(f"Adding {len(layer_data.morphs)} Shapes Keys")
             ob.shape_key_add("Basis")  # Got to have a Base Shape.
             for morph_key in layer_data.morphs:
                 skey = ob.shape_key_add(morph_key)
@@ -434,7 +434,7 @@ def build_objects(lwo, use_existing_materials):
 
         # Create the Vertex Color maps.
         if len(layer_data.colmaps) > 0:
-            print("Adding %d Vertex Color Maps" % len(layer_data.colmaps))
+            print(f"Adding {len(layer_data.colmaps)} Vertex Color Maps")
             for cmap_key in layer_data.colmaps:
                 map_pack = create_mappack(layer_data, cmap_key, "COLOR")
                 me.vertex_colors.new(cmap_key)
@@ -458,7 +458,7 @@ def build_objects(lwo, use_existing_materials):
         if len(layer_data.uvmaps_vmad) > 0 or len(layer_data.uvmaps_vmap) > 0:
             allmaps = set(list(layer_data.uvmaps_vmad.keys()))
             allmaps = allmaps.union(set(list(layer_data.uvmaps_vmap.keys())))
-            print("Adding %d UV Textures" % len(allmaps))
+            print(f"Adding {len(allmaps)} UV Textures")
             if len(allmaps) > 8:
                 bm = bmesh.new()
                 bm.from_mesh(me)
@@ -563,7 +563,7 @@ def build_objects(lwo, use_existing_materials):
 
         # We may have some invalid mesh data, See: [#27916]
         # keep this last!
-        print("validating mesh: %r..." % me.name)
+        print(f"validating mesh: {me.name}...")
         me.validate()
         # Texture slots have been removed from 2.80, is there a corresponding any thing?
         if (2, 80, 0) < bpy.app.version:
