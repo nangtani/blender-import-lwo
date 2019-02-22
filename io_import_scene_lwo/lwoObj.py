@@ -890,10 +890,10 @@ def read_surf_5(surf_bytes, lwo, dirpath=None):
 
 def read_clip(clip_bytes, lwo):
     """Read texture clip path"""
-    #print("Read clip")
     cwd = os.getcwd()
     c_id = struct.unpack(">L", clip_bytes[0:4])[0]
     orig_path, path_len = read_lwostring(clip_bytes[10:])
+    #print(f"Read clip {c_id} {orig_path}")
 
     path = re.sub("\\\\", "/", orig_path)
     imagefile = path.split("/")[-1]
@@ -1089,6 +1089,20 @@ class lwoObj(object):
                 # if self.handle_layer:
                 print(f"Skipping Chunk: {rootchunk.chunkname}")
                 rootchunk.skip()
+
+        print(f"Validating LWO: {self.filename}")
+        #print(self.clips)
+        #print(self.images)
+        for surf_key in self.surfs:
+            surf_data = self.surfs[surf_key]
+            for texture in surf_data.textures:
+                ci = texture.clipid
+                if not ci in self.clips:
+                    print(f"WARNING in material {surf_data.name}")
+                    print(f"\tci={ci}, not present in self.clips.keys():")
+                    #pprint(self.clips)
+                    self.clips[ci] = None
+#                    raise
 
     def read_lwob(self):
         """Read version 1 file, LW < 6."""

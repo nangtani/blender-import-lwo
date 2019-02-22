@@ -1,4 +1,5 @@
 import os
+import re
 #import time
 import copy
 import bpy
@@ -159,9 +160,12 @@ class blCopy:
 
 def setup_lwo(infile):
     print("Setting up!")
-    name = os.path.basename(infile)
-    dst_path = "tests/dst_blend"
-    ref_path = "tests/ref_blend"
+    if re.search("src_lwo", infile):
+        name = infile.split("src_lwo/")[-1]
+    else:
+        name = os.path.basename(infile)
+    dst_path = f"tests/dst_blend/{bpy.app.version[0]}.{bpy.app.version[1]}"
+    ref_path = f"tests/ref_blend/{bpy.app.version[0]}.{bpy.app.version[1]}"
 
     outfile0 = "{0}/{1}.blend".format(dst_path, name)
     outfile1 = "{0}/{1}.blend".format(ref_path, name)
@@ -171,10 +175,11 @@ def setup_lwo(infile):
     if os.path.isfile(outfile0):
         os.remove(outfile0)
 
-    if not os.path.exists(dst_path):
-        os.makedirs(dst_path)
-    if not os.path.exists(ref_path):
-        os.makedirs(ref_path)
+    os.path.split(outfile0)[0]
+    if not os.path.exists(os.path.split(outfile0)[0]):
+        os.makedirs(os.path.split(outfile0)[0])
+    if not os.path.exists(os.path.split(outfile1)[0]):
+        os.makedirs(os.path.split(outfile1)[0])
 
     return (outfile0, outfile1)
 

@@ -70,6 +70,7 @@ from mathutils.geometry import tessellate_polygon
 from pprint import pprint
 
 from .lwoObj import lwoObj
+#from .NodeArrange import nodemargin, ArrangeNodesOp, values
 
 
 def load_lwo(
@@ -202,11 +203,11 @@ def lwo2BI(lwo, surf_key, use_existing_materials):
             tex_slot = surf_data.bl_mat.texture_slots.add()
             #print(lwo.clips)
             try:
-                path = lwo.clips[ci]
-                image = bpy.data.images.get(path)
+                image_path = lwo.clips[ci]
+                basename = os.path.basename(image_path)
+                image = bpy.data.images.get(basename)
                 if None == image:
-                    image = bpy.data.images.load(path)
-                #print(path, image)
+                    image = bpy.data.images.load(image_path)
             except KeyError:
                 path = ""
                 continue
@@ -239,6 +240,7 @@ def lwo2cycles(lwo, surf_key, use_existing_materials):
     surf_data = lwo.surfs[surf_key]
     mat = None
     mat_name = surf_data.name
+    
     if use_existing_materials:
         mat = bpy.data.materials.get(mat_name)
     
@@ -246,22 +248,55 @@ def lwo2cycles(lwo, surf_key, use_existing_materials):
         mat = bpy.data.materials.new(mat_name)
         mat.use_nodes = True
         nodes = mat.node_tree.nodes
+        m = nodes['Material Output']
         if (2, 80, 0) < bpy.app.version:
             pass
         else:
             mat.diffuse_color = surf_data.colr[:]
-            m = nodes['Material Output']
             d = nodes.new('ShaderNodeBsdfPrincipled')
             mat.node_tree.links.new(d.outputs['BSDF'], m.inputs['Surface']) 
             nodes.remove(nodes['Diffuse BSDF'])
                    
+        color = (surf_data.colr[0], surf_data.colr[1], surf_data.colr[2], surf_data.diff)
+        #print(color)
+        #print(surf_data.diff, surf_data.tran)
         d = nodes['Principled BSDF']
-        color = (surf_data.colr[0], surf_data.colr[1], surf_data.colr[2], 1)
         d.inputs[0].default_value = color
+        
+#         print(d.parent)
+#         print(m.parent)
+#         d.parent = m
+#         #d.set_parent(m)
+#         #print(dir(d))
+#         print(d.parent)
+#         print(m.parent)
 
+        for texture in surf_data.textures:
+            ci = texture.clipid
+            image_path = lwo.clips[ci]
+            if None == image_path:
+                continue
+
+            basename = os.path.basename(image_path)
+            image = bpy.data.images.get(basename)
+            if None == image:
+                image = bpy.data.images.load(image_path)
+            i = nodes.new('ShaderNodeTexImage')
+            i.image = image
+            #print(ci, image)
+
+#     #nodes.update()    
+#     v = values
+#     v.mat_name = mat_name
+# 
+#     bpy.types.Scene.nodemargin_x = v.margin_x
+#     bpy.types.Scene.nodemargin_y = v.margin_y
+#     bpy.types.Scene.node_center  = True
+# 
+#     N = ArrangeNodesOp
+#     N.nodemargin2(v, bpy.context)
     
     surf_data.bl_mat = mat
-    #print(surf_data.bl_mat)
 
 def build_materials(lwo, use_existing_materials):
     print(f"Adding {len(lwo.surfs)} Materials")
@@ -277,10 +312,6 @@ def build_objects(lwo, use_existing_materials):
     """Using the gathered data, create the objects."""
     ob_dict = {}  # Used for the parenting setup.
     
-#     pprint(lwo.images)
-#     pprint(lwo.clips)
-#     raise
-
     build_materials(lwo, use_existing_materials)
 
     # Single layer objects use the object file's name instead.
@@ -288,7 +319,7 @@ def build_objects(lwo, use_existing_materials):
         lwo.layers[-1].name = lwo.name
         print(f"Building '{lwo.name}' Object")
     else:
-        print("Building {len(lwo.layers)} Objects")
+        print(f"Building {len(lwo.layers)} Objects")
 
     # Before adding any meshes or armatures go into Object mode.
     if bpy.ops.object.mode_set.poll():
@@ -327,7 +358,6 @@ def build_objects(lwo, use_existing_materials):
 #         # faster, would be faster again to use an array
 #         me.vertices.foreach_set("co", [axis for co in layer_data.pnts for axis in co])
 # 
-#         ngons = {}  # To keep the FaceIdx consistent, handle NGons later.
 #         edges = []  # Holds the FaceIdx of the 2-point polys.
 #         for fi, fpol in enumerate(layer_data.pols):
 #             fpol.reverse()  # Reversing gives correct normal directions
@@ -338,16 +368,32 @@ def build_objects(lwo, use_existing_materials):
 # 
 #             vlen = len(fpol)
 #             if vlen == 3 or vlen == 4:
-#                 if (2, 80, 0) < bpy.app.version:
-#                     pass # FIXME
-#                 else:
-#                     for i in range(vlen):
-#                         me.tessfaces[fi].vertices_raw[i] = fpol[i]
+#                 pass
+# #                 if (2, 80, 0) < bpy.app.version:
+# #                     pass # FIXME
+# #                 else:
+# #                     for i in range(vlen):
+# #                         me.tessfaces[fi].vertices_raw[i] = fpol[i]
 #             elif vlen == 2:
 #                 edges.append(fi)
 #             elif vlen != 1:
+#                 print(vlen)
 #                 ngons[fi] = fpol  # Deal with them later
 
+        ngons = {}  # To keep the FaceIdx consistent, handle NGons later.
+        for fi, fpol in enumerate(layer_data.pols):
+            fpol.reverse()  # Reversing gives correct normal directions
+            # PointID 0 in the last element causes Blender to think it's un-used.
+            if fpol[-1] == 0:
+                fpol.insert(0, fpol[-1])
+                del fpol[-1]
+             
+            vlen = len(fpol)
+            if vlen > 4:
+                ngons[fi] = fpol  # Deal with them later
+
+        #print(len(ngons))
+        
         ob = bpy.data.objects.new(layer_data.name, me)
         if (2, 80, 0) < bpy.app.version:
             scn = bpy.context.collection
@@ -493,25 +539,28 @@ def build_objects(lwo, use_existing_materials):
                 for pnt_id, (u, v) in uvcoords.items():
                     for li in vertloops[pnt_id]:
                         uvm.data[li].uv = [u, v]
-
+        print(len(me.polygons))
 #         # Now add the NGons.
 #         print(ngons)
 #         if len(ngons) > 0:
 #             for ng_key in ngons:
-#                 face_offset = len(me.tessfaces)
+#                 face_offset = len(me.polygons)
 #                 ng = ngons[ng_key]
 #                 v_locs = []
 #                 for vi in range(len(ng)):
 #                     v_locs.append(mathutils.Vector(layer_data.pnts[ngons[ng_key][vi]]))
 #                 tris = tessellate_polygon([v_locs])
-#                 me.tessfaces.add(len(tris))
+#                 me.polygons.add(len(tris))
 #                 for tri in tris:
-#                     face = me.tessfaces[face_offset]
-#                     face.vertices_raw[0] = ng[tri[0]]
-#                     face.vertices_raw[1] = ng[tri[1]]
-#                     face.vertices_raw[2] = ng[tri[2]]
-#                     face.material_index = me.tessfaces[ng_key].material_index
-#                     face.use_smooth = me.tessfaces[ng_key].use_smooth
+#                     face = me.polygons[face_offset]
+# #                     face.vertices_raw[0] = ng[tri[0]]
+# #                     face.vertices_raw[1] = ng[tri[1]]
+# #                     face.vertices_raw[2] = ng[tri[2]]
+#                     face.vertices = (ng[tri[0]], ng[tri[1]], ng[tri[2]])
+#                     #face.vertices = (0, 0, 0)
+#                     #print(face.vertices)
+#                     face.material_index = me.polygons[ng_key].material_index
+#                     face.use_smooth = me.polygons[ng_key].use_smooth
 #                     face_offset += 1
 
 #         # FaceIDs are no longer a concern, so now update the mesh.
