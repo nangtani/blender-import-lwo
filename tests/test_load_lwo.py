@@ -3,14 +3,21 @@ import bpy
 from lwo_helper import setup_lwo, diff_files, delete_everything
 
 def load_lwo(infile):
-    outfile0, outfile1 = setup_lwo(infile)
-
-    bpy.ops.import_scene.lwo(filepath=infile)
-    bpy.ops.wm.save_mainfile(filepath=outfile0)
-
-    diff_files(outfile1, outfile0)
-
-    delete_everything()
+    renderers = ['BLENDER_RENDER', 'CYCLES']
+    for render in renderers:
+    
+        if (2, 80, 0) < bpy.app.version and not render == 'CYCLES':
+            continue
+        bpy.context.scene.render.engine = render
+        
+        outfile0, outfile1 = setup_lwo(infile)
+    
+        bpy.ops.import_scene.lwo(filepath=infile)
+        bpy.ops.wm.save_mainfile(filepath=outfile0)
+    
+        diff_files(outfile1, outfile0)
+    
+        delete_everything()
 
 def test_load_lwo_box1():
     infile = "tests/src_lwo/LWO2/box/box1.lwo"

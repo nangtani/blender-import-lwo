@@ -211,7 +211,7 @@ def lwo2BI(lwo, surf_key, use_existing_materials):
             except KeyError:
                 path = ""
                 continue
-            tex = bpy.data.textures.new(os.path.basename(path), "IMAGE")
+            tex = bpy.data.textures.new(basename, "IMAGE")
             tex.image = image
             tex_slot.texture = tex
             if texture.projection == 5:

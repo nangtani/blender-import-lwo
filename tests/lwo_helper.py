@@ -164,11 +164,13 @@ def setup_lwo(infile):
         name = infile.split("src_lwo/")[-1]
     else:
         name = os.path.basename(infile)
+    
+    render = bpy.context.scene.render.engine.lower()
     dst_path = f"tests/dst_blend/{bpy.app.version[0]}.{bpy.app.version[1]}"
     ref_path = f"tests/ref_blend/{bpy.app.version[0]}.{bpy.app.version[1]}"
 
-    outfile0 = "{0}/{1}.blend".format(dst_path, name)
-    outfile1 = "{0}/{1}.blend".format(ref_path, name)
+    outfile0 = f"{dst_path}/{render}/{name}.blend"
+    outfile1 = f"{ref_path}/{render}/{name}.blend"
 
     delete_everything()
 
