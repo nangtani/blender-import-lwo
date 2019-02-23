@@ -27,8 +27,9 @@ def main(infile):
 if __name__ == "__main__":
     #infile = "tests/src_lwo/box/box1.lwo"
     #infile = "tests/src_lwo/box/box1-uv.lwo"
-    infile = "tests/src_lwo/box/box2-uv.lwo"
-    infile = "tests/src_lwo/box/box3-uv-layers.lwo"
+    infile = "tests/src_lwo/LWO2/box/box2-uv.lwo"
+    infile = "tests/src_lwo/LWO2/box/box3-uv-layers.lwo"
+    infile = "tests/src_lwo/LWO/box/box3-uv-layers.lwo"
     #infile = "tests/src_lwo/LWO2/box/box4-uv-layers.lwo"
     #infile = "tests/src_lwo/LWO2/box/box5-ngon.lwo"
     #infile = "tests/src_lwo/LWO2/src_lwo/Federation - Phobos/objects/USS-Phobos.lwo"

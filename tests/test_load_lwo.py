@@ -31,6 +31,10 @@ def test_load_lwo_box2_uv():
     infile = 'tests/src_lwo/LWO2/box/box2-uv.lwo'
     load_lwo(infile)
 
+def test_load_lwo5_box3_uv_layers():
+    infile = 'tests/src_lwo/LWO/box/box3-uv-layers.lwo'
+    load_lwo(infile)
+
 def test_load_lwo_box3_uv_layers():
     infile = 'tests/src_lwo/LWO2/box/box3-uv-layers.lwo'
     load_lwo(infile)
