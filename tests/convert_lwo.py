@@ -35,7 +35,8 @@ if __name__ == "__main__":
     #infile = "tests/src_lwo/LWO2/src_lwo/Federation - Phobos/objects/USS-Phobos.lwo"
     #infile = "src_lwo/Federation - Phobos/objects/USS-Phobos.lwo"
     #infile = "src_lwo/Federation - Phobos/objects/USS-Phobos.11.5.lwo"
-    #infile = "src_lwo/Federation - Interceptor/objects/interceptor_hull.lwo"
+    infile = "tests/src_lwo/LWO2/Federation - Interceptor/objects/interceptor_hull.lwo"
     #infile = "tests/src_lwo/LWO2/box/box3-uv-layers.lwo"
     #infile = "tests/src_lwo/LWO3/box/box3-uv-layers.lwo"
+    #infile = "tests/src_lwo/LWO2/ISS models 2011/Objects/Modules/columbus/columbus.lwo"
     main(infile)

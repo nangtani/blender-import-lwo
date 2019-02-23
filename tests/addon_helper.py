@@ -55,6 +55,12 @@ def cleanup(addon, bpy_module):
 class SetupAddon(object):
     def __init__(self, addon):
         self.addon = addon
+        self.zdel_dir = None
+        self.infile = None
+        
+        self.lwozfile = None
+        self.lwozpath = None
+        self.lwozfiles = None
 
     def configure(self):
         (self.bpy_module, self.zfile) = zip_addon(self.addon)
@@ -62,14 +68,38 @@ class SetupAddon(object):
 
     def unconfigure(self):
         cleanup(self.addon, self.bpy_module)
+        if not None == self.zdel_dir:
+            print("Clean up zip file here")
+            shutil.rmtree(self.zdel_dir)
 
     def convert_lwo(self, infile, outfile=None):
-        bpy.ops.import_scene.lwo(filepath=infile)
+        self.infile = infile
+        self.infile = re.sub("\\\\", "/", self.infile)
+        if not os.path.exists(infile):
+            elem = self.infile.split("/")
+            for i in range(len(elem)):
+                self.lwozpath = "/".join(elem[0:i])
+                self.lwozfile = "/".join(elem[0:i+1]) + ".zip"
+                if os.path.exists(self.lwozfile):
+                    print(f"ZIP file found {self.lwozfile}")
+                    break
+            
+            if not None == self.lwozfile:
+                zf = zipfile.ZipFile(self.lwozfile, "r")
+                zf.extractall(self.lwozpath)
+                self.lwozfiles = zf.namelist()
+                zf.close()
+                self.zdel_dir = os.path.join(self.lwozpath, self.lwozfiles[0].split("/")[0])
+                if not os.path.isdir(self.zdel_dir):
+                    raise
+                print(self.zdel_dir)
+        
+        bpy.ops.import_scene.lwo(filepath=self.infile)
         
         if None == outfile:
             rev = f"{bpy.app.version[0]}.{bpy.app.version[1]}"
-            new_path = f"ref_blend/{rev}"
-            outfile = re.sub("src_lwo", new_path, infile + ".blend")
+            new_path = f"ref_blend/{rev}/{bpy.context.scene.render.engine.lower()}"
+            outfile = re.sub("src_lwo", new_path, self.infile + ".blend")
         
         mkdir_p(outfile)
                 

@@ -3,11 +3,12 @@ import bpy
 from lwo_helper import setup_lwo, diff_files, delete_everything
 
 def load_lwo(infile):
-    renderers = ['BLENDER_RENDER', 'CYCLES']
-    for render in renderers:
+    if (2, 80, 0) < bpy.app.version:
+        renderers = ['CYCLES']
+    else:
+        renderers = ['BLENDER_RENDER', 'CYCLES']
     
-        if (2, 80, 0) < bpy.app.version and not render == 'CYCLES':
-            continue
+    for render in renderers:
         bpy.context.scene.render.engine = render
         
         outfile0, outfile1 = setup_lwo(infile)

@@ -13,7 +13,7 @@ def delete_everything():
             o = bpy.data.objects[k]
         except KeyError:
             continue
-            #print(o)
+
         if (2, 80, 0) < bpy.app.version:
             o.select_get()
         else:
@@ -160,6 +160,8 @@ class blCopy:
 
 def setup_lwo(infile):
     print("Setting up!")
+    
+    
     if re.search("src_lwo", infile):
         name = infile.split("src_lwo/")[-1]
     else:
@@ -185,88 +187,6 @@ def setup_lwo(infile):
 
     return (outfile0, outfile1)
 
-
-# def compare_obj(x, y):
-#     fail = False
-# 
-#     if (
-#         str(x).startswith("<bpy_boolean")
-#         or str(x).startswith("<bpy_int")
-#         or str(x).startswith("<bpy_float")
-#         or str(x).startswith("<bpy_collection")
-#     ):
-#         if not len(x) == len(y):
-#             fail = True
-#         else:
-#             for i in range(len(x)):
-#                 fail = compare_obj(x[i], y[i])
-#     elif str(x).startswith("<bpy_func"):
-#         # print(x1, True)
-#         return None
-#     elif str(x).startswith("<bpy_struct"):
-#         # print(a, x1)
-#         return None
-#     elif str(x).startswith("<bound"):
-#         # print(a, x1)
-#         return True
-#     #     elif str(x) == "name":
-#     #         #print(a, x1)
-#     #         return True
-#     else:
-#         if not x == y:
-#             fail = True
-#         # fail = True
-# 
-#     return fail
-# 
-# 
-# def compare_bpy(a, x, y, error_count=0):
-#     from mathutils import Vector, Matrix, Euler, Quaternion
-# 
-#     fail = False
-#     try:
-#         x1 = getattr(x, a)
-#     except:
-#         print("ERROR: x1 does not have attribute: {0}".format(a))
-#         assert False
-#     try:
-#         y1 = getattr(y, a)
-#     except:
-#         print("ERROR: y1 does not have attribute: {0}".format(a))
-#         assert False
-# 
-#     if "name" == a:
-#         x1 = x1.split(".")[0]
-#         y1 = y1.split(".")[0]
-# 
-#     #     if 'active_material' == a or \
-#     #        'material_slots' == a:
-#     #         #print(x1, True)
-#     #         pass
-#     #         return(0)
-#     #     el
-#     if "bound_box" == a:
-#         return 0
-#     elif "deepcopy" == a:  # this is a method on the class
-#         return 0
-#     else:
-#         fail = compare_obj(x1, y1)
-#         # print(a, fail, x1)
-# 
-#     if fail:
-#         error_count += 1
-#         print("ERROR: Attributes do not match: {0} - {1} - {2}".format(a, x1, y1))
-#         if "color" == a:
-#             print(x1, x1[0], x1[1], x1[1], x1[3])
-#             print(y1, y1[0], y1[1], y1[1], y1[3])
-#         if "material_slots" == a:
-#             print(x1)
-#             print(y1)
-# 
-#         assert False
-# 
-#     return error_count
-# 
 
 def diff_files(outfile0, outfile1, error_count=0):
     print("Diffing files!")
