@@ -7,6 +7,7 @@ import shutil
 import bpy
 
 def mkdir_p(outfile):
+    outfile = re.sub("\\\\", "/", outfile)
     dirname = os.path.dirname(outfile).split("/")
     for i in range(len(dirname)):
         new_path = "/".join(dirname[0:i+1])
@@ -55,7 +56,7 @@ def cleanup(addon, bpy_module):
 class SetupAddon(object):
     def __init__(self, addon):
         self.addon = addon
-        self.zdel_dir = None
+        self.zdel_dir = []
         self.infile = None
         
         self.lwozfile = None
@@ -68,9 +69,9 @@ class SetupAddon(object):
 
     def unconfigure(self):
         cleanup(self.addon, self.bpy_module)
-        if not None == self.zdel_dir:
-            print("Clean up zip file here")
-            shutil.rmtree(self.zdel_dir)
+        for z in self.zdel_dir: 
+            print(f"Clean up zip file for {z}")
+            shutil.rmtree(z)
 
     def convert_lwo(self, infile, outfile=None):
         self.infile = infile
@@ -89,9 +90,10 @@ class SetupAddon(object):
                 zf.extractall(self.lwozpath)
                 self.lwozfiles = zf.namelist()
                 zf.close()
-                self.zdel_dir = os.path.join(self.lwozpath, self.lwozfiles[0].split("/")[0])
-                if not os.path.isdir(self.zdel_dir):
+                zdir = os.path.join(self.lwozpath, self.lwozfiles[0].split("/")[0])
+                if not os.path.isdir(zdir):
                     raise
+                self.zdel_dir.append(zdir)
                 print(self.zdel_dir)
         
         bpy.ops.import_scene.lwo(filepath=self.infile)

@@ -197,29 +197,32 @@ def lwo2BI(lwo, surf_key, use_existing_materials):
         surf_data.bl_mat.specular_hardness = (
             int(4 * ((10 * surf_data.glos) * (10 * surf_data.glos))) + 4
         )
-        surf_data.textures.reverse()
-        for texture in surf_data.textures:
-            ci = texture.clipid
-            tex_slot = surf_data.bl_mat.texture_slots.add()
-            #print(lwo.clips)
-            try:
-                image_path = lwo.clips[ci]
+        
+        for textures_type, textures in surf_data.textures.items():
+            for texture in textures:
+                if not textures_type == "COLR":
+                    continue
+                tex_slot = surf_data.bl_mat.texture_slots.add()
+                image_path = texture.clip['new_path']
+                if None == image_path:
+                    continue
+                
+                #print(image_path)
                 basename = os.path.basename(image_path)
                 image = bpy.data.images.get(basename)
                 if None == image:
                     image = bpy.data.images.load(image_path)
-            except KeyError:
-                path = ""
-                continue
-            tex = bpy.data.textures.new(basename, "IMAGE")
-            tex.image = image
-            tex_slot.texture = tex
-            if texture.projection == 5:
-                tex_slot.texture_coords = "UV"
-                tex_slot.uv_layer = texture.uvname
-            tex_slot.diffuse_color_factor = texture.opac
-            if not (texture.enab):
-                tex_slot.use_textures[ci - 1] = False
+
+                tex = bpy.data.textures.new(basename, "IMAGE")
+                tex.image = image
+                tex_slot.texture = tex
+                if texture.projection == 5:
+                    tex_slot.texture_coords = "UV"
+                    tex_slot.uv_layer = texture.uvname
+                tex_slot.diffuse_color_factor = texture.opac
+                if not (texture.enab):
+                    tex_slot.use_textures[ci - 1] = False
+        
         for texture in surf_data.textures_5:
             tex_slot = surf_data.bl_mat.texture_slots.add()
             tex = bpy.data.textures.new(os.path.basename(texture.path), "IMAGE")
@@ -258,6 +261,7 @@ def lwo2cycles(lwo, surf_key, use_existing_materials):
             nodes.remove(nodes['Diffuse BSDF'])
                    
         color = (surf_data.colr[0], surf_data.colr[1], surf_data.colr[2], surf_data.diff)
+        #surf_data.diff = 0 == black
         #print(color)
         #print(surf_data.diff, surf_data.tran)
         d = nodes['Principled BSDF']
@@ -271,19 +275,23 @@ def lwo2cycles(lwo, surf_key, use_existing_materials):
 #         print(d.parent)
 #         print(m.parent)
 
-        for texture in surf_data.textures:
-            ci = texture.clipid
-            image_path = lwo.clips[ci]
-            if None == image_path:
-                continue
+        for textures_type, textures in surf_data.textures.items():
+            for texture in textures:
+                if not textures_type == "COLR":
+                    continue
 
-            basename = os.path.basename(image_path)
-            image = bpy.data.images.get(basename)
-            if None == image:
-                image = bpy.data.images.load(image_path)
-            i = nodes.new('ShaderNodeTexImage')
-            i.image = image
-            #print(ci, image)
+                #print(texture.clip, texture.lwoprint())
+                image_path = texture.clip['new_path']
+                if None == image_path:
+                    continue
+    
+                basename = os.path.basename(image_path)
+                image = bpy.data.images.get(basename)
+                if None == image:
+                    image = bpy.data.images.load(image_path)
+                i = nodes.new('ShaderNodeTexImage')
+                i.image = image
+                #print(ci, image)
 
 #     #nodes.update()    
 #     v = values
