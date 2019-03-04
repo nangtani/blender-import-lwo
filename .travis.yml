@@ -4,8 +4,9 @@ env:
     global:
         - BLENDER_CACHE=$HOME/.cache/blender
     matrix:
-        - BLENDER_VERSION="2.79"
-        - BLENDER_VERSION="2.80"
+        - BLENDER_VERSION="2.79b"
+        - BLENDER_VERSION="2.79-nightly"
+        - BLENDER_VERSION="2.80-nightly"
 
 language: python
 python:
@@ -29,32 +30,14 @@ before_install:
     - yolk -l
     - mkdir -p blender_build
     - cd $TRAVIS_BUILD_DIR
-    - BLENDER_VERSION_SUFFIX=`python tests/get_blender.py ${BLENDER_VERSION}`
+#    - BLENDER_VERSION_SUFFIX=`python tests/get_blender.py ${BLENDER_VERSION}`
 
 install:
-    - echo ${BLENDER_VERSION}
-    - echo ${BLENDER_VERSION_SUFFIX}
-    - BLENDER_ARCHIVE="blender-${BLENDER_VERSION}${BLENDER_VERSION_SUFFIX}-linux-glibc224-x86_64"
-    - BLENDER_ZIPFILE=${BLENDER_ARCHIVE}.tar.bz2
-    - BLENDER_DIR=blender-${BLENDER_VERSION}
-    - BLENDER_PYTHONBIN=${BLENDER_DIR}/${BLENDER_VERSION}/python/bin
-    - cd ${BLENDER_CACHE}
-    - touch blender-${BLENDER_VERSION}.txt
-    - ls | grep -v ${BLENDER_ZIPFILE} | xargs rm
-    - wget -nc https://builder.blender.org/download/${BLENDER_ZIPFILE}
-    - cd $TRAVIS_BUILD_DIR ; cd blender_build
-    - tar jxf ${BLENDER_CACHE}/${BLENDER_ZIPFILE}
-    - mv ${BLENDER_ARCHIVE} ${BLENDER_DIR}
-    - ls ${BLENDER_DIR}/${BLENDER_VERSION}/python/bin
-    - ${BLENDER_PYTHONBIN}/python3.7m -m ensurepip
-    - ${BLENDER_PYTHONBIN}/pip3 install -r ${TRAVIS_BUILD_DIR}/blender_requirements.txt  --upgrade
-    - ${BLENDER_PYTHONBIN}/yolk -l
+    - python python tests/get_blender.py ${BLENDER_VERSION}
 
 script:
     - cd ${TRAVIS_BUILD_DIR}
     - blender_build/blender-${BLENDER_VERSION}/blender --version
-#     - PYTHONPATH="${TRAVIS_BUILD_DIR}/tests"
-#     - export ${PYTHONPATH} ; blender_build/blender-${BLENDER_VERSION}/blender --background --python "tests/load_pytest.py"
     - python tests/run_blender.py ${BLENDER_VERSION}
 
 #after_success:

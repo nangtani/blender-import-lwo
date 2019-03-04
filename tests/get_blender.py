@@ -19,78 +19,77 @@ def checkPath(path):
     return path
 
 
-def getSuffix(blender_version):
-    url = "https://builder.blender.org/download"
+def getSuffix(blender_version, nightly):
+    if "win32" == sys.platform or "win64" == sys.platform or "cygwin" == sys.platform:
+        machine = "win64"
+        ext = "zip"
+    else:
+        machine = "linux.+x86_64"
+        ext = "tar.bz2"
+
+    if False == nightly:
+        url = "https://www.blender.org/download"
+        download_url = "https://ftp.nluug.nl/pub/graphics/blender/release"
+        if "win64" == machine:
+            machine = "windows64"
+    else:
+        url = "https://builder.blender.org/download"
+        download_url = url
 
     page = requests.get(url)
     data = page.text
     soup = BeautifulSoup(data, features="html.parser")
 
     blender_version_suffix = ""
-    # print(sys.platform)
-    if "win32" == sys.platform or "win64" == sys.platform or "cygwin" == sys.platform:
-        machine = "win64"
-    else:
-        machine = "linux.+x86_64"
-    # machine = "linux.+x86_64"
     for link in soup.find_all("a"):
         x = str(link.get("href"))
-        # of the format blender-2.79-e6acb4fba094-linux-glibc224-x86_64.tar.bz2
-        g = re.search("blender-{0}-(\w+)-{1}.+".format(blender_version, machine), x)
+        g = re.search(f".+blender-{blender_version}.+{machine}.+{ext}", x)
         if g:
-            blender_zipfile = g.group(0)
-            blender_version_suffix = g.group(1)
-    return (blender_version_suffix, blender_zipfile)
+            blender_zippath = re.sub("^.+download", download_url, g.group(0))
+            break
+
+#     g = re.search(f"blender-{blender_version}-(\w+).+", blender_zippath)
+#     if g:
+#         blender_version_suffix = g.group(1)
+    return (blender_zippath)
 
 
-def getBlender(blender_version, blender_version_suffix, blender_zipfile):
+def getBlender(blender_version, blender_zippath):
     cwd = checkPath(os.getcwd())
     os.chdir("..")
 
-    if re.search("linux", blender_zipfile):
-        machine = "linux"
-        s = "blender*{0}*{1}*x86_64".format(blender_version, blender_version_suffix)
-    else:
-        machine = "windows"
-        s = "blender*{0}*{1}*windows64".format(blender_version, blender_version_suffix)
-    # print(blender_zipfile)
-    files = glob(s)
+    blender_zipfile = blender_zippath.split("/")[-1]
+
+    files = glob(blender_zipfile)
+
     if 0 == len(files):
         if not os.path.exists(blender_zipfile):
-            url = "https://builder.blender.org/download/{0}".format(blender_zipfile)
-            r = requests.get(url, stream=True)
-            print("Downloading {0}".format(url))
+            r = requests.get(blender_zippath, stream=True)
+            print(f"Downloading {blender_zippath}")
             open(blender_zipfile, "wb").write(r.content)
 
-        print("Unpacking {0}".format(blender_zipfile))
-        if blender_zipfile.endswith("zip"):
-            z = zipfile.ZipFile(blender_zipfile, "r")
-            z.extractall()
-            z.close()
-            # cmd = "unzip {0}".format(blender_zipfile)
-        else:
-            z = tarfile.open(blender_zipfile)
-            z.extractall()
-            z.close()
-        # os.remove(blender_zipfile)
-
-    files = glob(s)
-    blender_archive = files[0]
-
-    if "linux" == machine:
-        python = os.path.realpath(
-            "{0}/{1}/python/bin/python3.7m".format(blender_archive, blender_version)
-        )
+    if blender_zipfile.endswith("zip"):
+        z = zipfile.ZipFile(blender_zipfile, "r")
+        zfiles = z.namelist()
     else:
-        python = os.path.realpath(
-            "{0}/{1}/python/bin/python".format(blender_archive, blender_version)
-        )
-    cmd = "{0} -m ensurepip".format(python)
+        z = tarfile.open(blender_zipfile)
+        zfiles = z.getnames()
+
+    zdir = zfiles[0].split("/")[0]
+    if not os.path.isdir(zdir):
+        print(f"Unpacking {blender_zipfile}")
+        z.extractall()
+    z.close()
+    blender_archive = zdir
+    # os.remove(blender_zipfile)
+
+    for zfile in zfiles:
+        if re.search("bin/python.exe", zfile) or re.search("bin/python\d.\d", zfile):
+            python = os.path.realpath(zfile)
+
+    cmd = f"{python} -m ensurepip"
     os.system(cmd)
-    cmd = "{0} -m pip install --upgrade -r {1}/blender_requirements.txt -r {1}/tests/requirements.txt".format(
-        python, cwd
-    )
-    # print(cmd)
+    cmd = f"{python} -m pip install --upgrade -r {cwd}/blender_requirements.txt -r {cwd}/tests/requirements.txt"
     os.system(cmd)
 
     os.chdir(cwd)
@@ -102,33 +101,34 @@ def getBlender(blender_version, blender_version_suffix, blender_zipfile):
         os.mkdir(blender_dir)
 
     os.chdir(blender_dir)
-    link_path = "blender-{0}".format(blender_version)
+    link_path = f"blender-{blender_version}"
 
     if os.path.exists(link_path):
         os.remove(link_path)
 
     try:
-        os.symlink("../../{0}".format(blender_archive), link_path)
+        os.symlink(f"../../{blender_archive}", link_path)
     except OSError:  # Windows can't add links
         pass
 
 
-def main(blender_version, download=False):
+def main(blender_version, nightly=True):
 
-    (blender_version_suffix, blender_zipfile) = getSuffix(blender_version)
-    print("-" + blender_version_suffix)
+    blender_zipfile = getSuffix(blender_version, nightly)
 
-    if download:
-        getBlender(blender_version, blender_version_suffix, blender_zipfile)
+    getBlender(blender_version, blender_zipfile)
 
 
 if __name__ == "__main__":
-    download = False
-    if len(sys.argv) >= 3:
-        download = True
-
     if len(sys.argv) >= 2:
         blender_rev = sys.argv[1]
     else:
-        blender_rev = "2.79"
-    main(blender_rev, download)
+        blender_rev = "2.79b"
+    
+    if re.search("-", blender_rev):
+        blender_rev, _ = blender_rev.split("-")
+        nightly = True
+    else:    
+        nightly = False
+        
+    main(blender_rev, nightly)
