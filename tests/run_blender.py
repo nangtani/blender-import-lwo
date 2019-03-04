@@ -13,12 +13,12 @@ def checkPath(path):
     return path
 
 
-def main(blender, test_file):
+def main(blender, test_file, background="--background"):
     test_file = checkPath(test_file)
     os.environ["PYTHONPATH"] = os.getcwd() + "/tests"
     os.environ["PYTHONPATH"] = checkPath(os.environ["PYTHONPATH"])
 
-    cmd = '{0} --background --python "{1}"'.format(blender, test_file)
+    cmd = f'{blender} {background} --python "{test_file}"'
     result = int(os.system(cmd))
     if 0 == result:
         return 0
@@ -27,20 +27,17 @@ def main(blender, test_file):
 
 
 if __name__ == "__main__":
-
-    infile = "tests/load_pytest.py"
-    if len(sys.argv) >= 3:
-        infile = sys.argv[2]
-
-    try:
+    if len(sys.argv) >= 2:
         blender_rev = sys.argv[1]
-    except:
-        blender_rev = "2.79"
-
+    else:
+        blender_rev = "2.79b"
+    
     blender_dir = "blender_build/blender-{0}".format(blender_rev)
 
     blender = os.path.realpath("{0}/blender".format(blender_dir))
 
-    exit_val = main(blender, infile)
+    test_file = "tests/load_pytest.py"
+
+    exit_val = main(blender, test_file)
 
     sys.exit(exit_val)

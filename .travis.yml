@@ -30,7 +30,6 @@ before_install:
     - yolk -l
     - mkdir -p blender_build
     - cd $TRAVIS_BUILD_DIR
-#    - BLENDER_VERSION_SUFFIX=`python tests/get_blender.py ${BLENDER_VERSION}`
 
 install:
     - python tests/get_blender.py ${BLENDER_VERSION}

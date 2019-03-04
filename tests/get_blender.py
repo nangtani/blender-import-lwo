@@ -54,7 +54,7 @@ def getSuffix(blender_version, nightly):
     return (blender_zippath)
 
 
-def getBlender(blender_version, blender_zippath):
+def getBlender(blender_version, blender_zippath, nightly):
     cwd = checkPath(os.getcwd())
     os.chdir("..")
 
@@ -100,8 +100,11 @@ def getBlender(blender_version, blender_zippath):
     if not os.path.exists(blender_dir):
         os.mkdir(blender_dir)
 
+    ext = ""
+    if nightly == True:
+        ext = "-nightly"
     os.chdir(blender_dir)
-    link_path = f"blender-{blender_version}"
+    link_path = f"blender-{blender_version}{ext}"
 
     if os.path.exists(link_path):
         os.remove(link_path)
@@ -110,13 +113,15 @@ def getBlender(blender_version, blender_zippath):
         os.symlink(f"../../{blender_archive}", link_path)
     except OSError:  # Windows can't add links
         pass
-
+    
+    #cmd = f"rm -rf blender_build/*/*/scripts/addons/io_import_scene_lwo.py"
+    #os.system(cmd)
 
 def main(blender_version, nightly=True):
 
     blender_zipfile = getSuffix(blender_version, nightly)
 
-    getBlender(blender_version, blender_zipfile)
+    getBlender(blender_version, blender_zipfile, nightly)
 
 
 if __name__ == "__main__":
@@ -130,5 +135,5 @@ if __name__ == "__main__":
         nightly = True
     else:    
         nightly = False
-        
+#        
     main(blender_rev, nightly)

@@ -1,6 +1,10 @@
 import sys
 import pytest
-from addon_helper import SetupAddon
+try:
+    from addon_helper import SetupAddon
+except Exception as e:
+    print(e)
+    sys.exit(1)
 
 class SetupPytest(SetupAddon):
 
