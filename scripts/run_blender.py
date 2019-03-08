@@ -1,24 +1,21 @@
 import os
 import sys
+import subprocess
 import re
 
 
 def checkPath(path):
-    path = os.path.realpath(path)
-    if re.match("/cygdrive/", path):
-        path = re.sub("/cygdrive/", "", path)
-        path = re.sub("/", "\\\\", path)
-        path = (path[:1] + ":" + path[1:]).capitalize()
-
+    if "cygwin" == sys.platform:
+        cmd = "cygpath -wa {0}".format(path)
+        path = subprocess.check_output(cmd.split()).decode('ascii').rstrip()
     return path
 
-
-def main(blender, test_file, background="--background"):
+def main(blender, test_file):
     test_file = checkPath(test_file)
-    os.environ["PYTHONPATH"] = os.getcwd() + "/tests"
+    os.environ["PYTHONPATH"] = os.getcwd() + "/scripts"
     os.environ["PYTHONPATH"] = checkPath(os.environ["PYTHONPATH"])
 
-    cmd = f'{blender} {background} --python "{test_file}"'
+    cmd = '{0} --background --python "{1}"'.format(blender, test_file)
     result = int(os.system(cmd))
     if 0 == result:
         return 0
@@ -32,11 +29,11 @@ if __name__ == "__main__":
     else:
         blender_rev = "2.79b"
     
-    blender_dir = "blender_build/blender-{0}".format(blender_rev)
+    blender_dir = "../blender-{0}".format(blender_rev)
 
     blender = os.path.realpath("{0}/blender".format(blender_dir))
 
-    test_file = "tests/load_pytest.py"
+    test_file = "scripts/load_pytest.py"
 
     exit_val = main(blender, test_file)
 

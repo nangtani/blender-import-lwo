@@ -1,9 +1,15 @@
 dist: xenial
 
+os:
+    - linux
+#    - osx 
+#    - windows #No python support
+
 env:
     global:
         - BLENDER_CACHE=$HOME/.cache/blender
     matrix:
+        - BLENDER_VERSION="2.78c"
         - BLENDER_VERSION="2.79b"
         - BLENDER_VERSION="2.79-nightly"
         - BLENDER_VERSION="2.80-nightly"
@@ -17,27 +23,27 @@ cache:
     directories:
         - $HOME/.cache/pip
         - ${BLENDER_CACHE}
+
 addons:
     apt:
         packages:
             - blender
 
 before_install:
-    - env
     - mkdir -p ${BLENDER_CACHE}
     - ls ${BLENDER_CACHE}
-    - pip install -r tests/requirements.txt --upgrade
+    - pip3 install -r scripts/requirements.txt --upgrade
     - yolk -l
-    - mkdir -p blender_build
-    - cd $TRAVIS_BUILD_DIR
 
 install:
-    - python tests/get_blender.py ${BLENDER_VERSION}
+    - cd $TRAVIS_BUILD_DIR
+    - python3 --version
+    - python3 scripts/get_blender.py ${BLENDER_VERSION}
 
 script:
     - cd ${TRAVIS_BUILD_DIR}
-    - blender_build/blender-${BLENDER_VERSION}/blender --version
-    - python tests/run_blender.py ${BLENDER_VERSION}
+    - ../blender-${BLENDER_VERSION}/blender --version
+    - python3 scripts/run_blender.py ${BLENDER_VERSION}
 
 #after_success:
 #    - codecov -f tests_output/coverage.xml

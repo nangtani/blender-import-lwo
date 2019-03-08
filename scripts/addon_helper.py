@@ -33,25 +33,33 @@ def zip_addon(addon):
 
 
 def copy_addon(bpy_module, zfile):
-    print(f"Copying addon - {bpy_module}")
+    print(f"Copying addon - {bpy_module} {zfile}")
 
-    bpy.ops.wm.addon_install(overwrite=True, filepath=zfile)
-    bpy.ops.wm.addon_enable(module=bpy_module)
+    if (2, 80, 0) < bpy.app.version:
+        bpy.ops.preferences.addon_install(overwrite=True, filepath=zfile)
+        bpy.ops.preferences.addon_enable(module=bpy_module)
+    else:
+        bpy.ops.wm.addon_install(overwrite=True, filepath=zfile)
+        bpy.ops.wm.addon_enable(module=bpy_module)
 
 
 def cleanup(addon, bpy_module):
     print(f"Cleaning up - {bpy_module}")
-    bpy.ops.wm.addon_disable(module=bpy_module)
-
-    # addon_remove does not work correctly in CLI
-    # bpy.ops.wm.addon_remove(bpy_module=bpy_module)
-    addon_dirs = bpy.utils.script_paths(subdir="addons")
-    addon = os.path.join(addon_dirs[-1], addon)
-    if os.path.isdir(addon):
-        time.sleep(0.1)  # give some time for the disable to take effect
-        shutil.rmtree(addon)
+    if (2, 80, 0) < bpy.app.version:
+        bpy.ops.preferences.addon_disable(module=bpy_module)
+        bpy.ops.preferences.addon_remove(bpy_module=bpy_module)
     else:
-        os.remove(addon)
+        bpy.ops.wm.addon_disable(module=bpy_module)
+    
+        # addon_remove does not work correctly in CLI
+        # bpy.ops.wm.addon_remove(bpy_module=bpy_module)
+        addon_dirs = bpy.utils.script_paths(subdir="addons")
+        addon = os.path.join(addon_dirs[-1], addon)
+        if os.path.isdir(addon):
+            time.sleep(0.1)  # give some time for the disable to take effect
+            shutil.rmtree(addon)
+        else:
+            os.remove(addon)
 
 class SetupAddon(object):
     def __init__(self, addon):

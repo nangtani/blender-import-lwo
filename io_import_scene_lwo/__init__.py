@@ -72,6 +72,13 @@ from pprint import pprint
 from .lwoObj import lwoObj
 #from .NodeArrange import nodemargin, ArrangeNodesOp, values
 
+def draw(self, context):
+    self.layout.label("Hello World")
+
+# scn = bpy.context.scene
+# row = layout.row()
+# row.prop(scn.ignit_panel, "screen_path")  # <-- just for display purposes
+# row.operator("macbook_controller.identifier_file_selector", text="", icon='FILE')
 
 def load_lwo(
     filename,
@@ -79,15 +86,22 @@ def load_lwo(
     ADD_SUBD_MOD=True,
     LOAD_HIDDEN=False,
     SKEL_TO_ARM=True,
-    USE_EXISTING_MATERIALS=False,
 ):
     """Read the LWO file, hand off to version specific function."""
-
+    #bpy.context.object = {}
+    #bpy.context.object["ImportLwo"] = {}
     lwo = lwoObj(filename)
+    lwo.search_paths.extend([
+        "dirpath",
+        "{dirpath}/images",
+        "{dirpath}/..",
+        "{dirpath}/../images",
+#        "{dirpath}/../../../Textures",
+    ])
     lwo.read(ADD_SUBD_MOD, LOAD_HIDDEN, SKEL_TO_ARM)
-
-    # With the data gathered, build the object(s).
-    build_objects(lwo, USE_EXISTING_MATERIALS)
+    
+    return lwo
+    
 
 
 def create_mappack(data, map_name, map_type):
@@ -669,6 +683,63 @@ def build_objects(lwo, use_existing_materials):
 
 from bpy.props import StringProperty, BoolProperty
 
+from bpy_extras.io_utils import ImportHelper
+
+class IdentifierFileSelector(bpy.types.Operator, ImportHelper):
+    bl_idname = "open.file_selector"
+    bl_label = "Select Path"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        fdir = self.properties.filepath
+        
+        return{'FINISHED'}
+        
+class OpenBrowser(bpy.types.Operator):
+    bl_idname = "open.browser"
+    bl_label = "Select Path"
+    bl_options = {"REGISTER", "UNDO"}
+
+    directory = StringProperty(subtype="DIR_PATH") 
+    cancel_search = BoolProperty(
+        name="Cancel Search",
+        description="If no further images are to be found",
+        default=False,
+    )
+
+#     def draw(self, context):
+#         layout = self.layout
+#         scn = context.scene
+#         
+#         #UI
+#         col = layout.column()
+#         row = col.row(align=True)
+#         row.prop(scn.io_import_scene_lwo, 'directory', text='directory:')
+#         row.operator("scn.open.browser", icon="FILE_FOLDER", text="")
+    
+    def execute(self, context):
+        #display = "dirpath=" + self.directory  
+        print(self.directory)  
+        #context.scene.ignit_panel.screen_path = self.properties.filepath
+        #print(dir(context.object))
+        #print(dir(bpy.context.object))
+        #bpy.context.object["ImportLwo"] = {}
+        #bpy.context.object["ImportLwo"]["directory"] = self.directory
+        #print(bpy.context.object.keys(), self)
+        #bpy.data.scenes["Scene"].set("ImportLwo", self.directory)
+        #print()
+        context.scene.lwo_directory = "y" + self.directory
+        bpy.types.Scene.lwo_directory = "xx"
+        #context.scene.lwo_directoryx = "x" + self.directory
+        print("lwo_directory", context.scene.lwo_directory)
+        #print("lwo_directoryx", context.scene.lwo_directoryx)
+        return {'FINISHED'}
+
+    def invoke(self, context, event): 
+        wm = context.window_manager
+        wm.fileselect_add(self)
+        return {'RUNNING_MODAL'}  
+
 
 class IMPORT_OT_lwo(bpy.types.Operator):
     """Import LWO Operator"""
@@ -677,6 +748,9 @@ class IMPORT_OT_lwo(bpy.types.Operator):
     bl_label = "Import LWO"
     bl_description = "Import a LightWave Object file"
     bl_options = {"REGISTER", "UNDO"}
+    
+    bpy.types.Scene.lwo_directory = StringProperty()
+
 
     if (2, 80, 0) < bpy.app.version:
         filepath: StringProperty(
@@ -736,16 +810,33 @@ class IMPORT_OT_lwo(bpy.types.Operator):
         )
 
     def execute(self, context):
-        load_lwo(
+        #context.scene.lwo_directory = ""
+        lwo = load_lwo(
             self.filepath,
             context,
             self.ADD_SUBD_MOD,
             self.LOAD_HIDDEN,
             self.SKEL_TO_ARM,
-            self.USE_EXISTING_MATERIALS,
         )
-        return {"FINISHED"}
+    
+#         #bpy.ops.open.browser('INVOKE_DEFAULT')
+#         #bpy.ops.open.file_selector('EXEC_DEFAULT')
+#         bpy.ops.open.browser('INVOKE_DEFAULT')
+#         
+#         print("xexd", context.scene.lwo_directory)
+#         context.scene.lwo_directory = "tree"
+#         #print("xfxd", context.scene.lwo_directoryx)
+#         #print("12", bpy.types.Object.lwo_directoryx)
+#         #print("xexd", context.scene.directory)
+#         #print("k", OpenBrowser)
+#         #print("j", OpenBrowser.directory)
+#         lwo.resolve_clips()
+#         print("swer", context.scene.lwo_directory)
 
+        # With the data gathered, build the object(s).
+        build_objects(lwo,  self.USE_EXISTING_MATERIALS)
+        return {"FINISHED"}
+    
     def invoke(self, context, event):
         wm = context.window_manager
         wm.fileselect_add(self)
@@ -755,9 +846,7 @@ class IMPORT_OT_lwo(bpy.types.Operator):
 def menu_func(self, context):
     self.layout.operator(IMPORT_OT_lwo.bl_idname, text="LightWave Object (.lwo)")
 
-
-classes = (IMPORT_OT_lwo,)
-
+classes = (IMPORT_OT_lwo, OpenBrowser, IdentifierFileSelector,)
 
 def register():
     if (2, 80, 0) < bpy.app.version:
@@ -766,6 +855,7 @@ def register():
 
         bpy.types.TOPBAR_MT_file_import.append(menu_func)
     else:
+        #bpy.types.Scene.lwo_directoryx = StringProperty()
         bpy.utils.register_module(__name__)
         bpy.types.INFO_MT_file_import.append(menu_func)
 
@@ -778,6 +868,7 @@ def unregister():
         bpy.types.TOPBAR_MT_file_import.remove(menu_func)
     else:
         bpy.utils.unregister_module(__name__)
+        #del bpy.types.Object.lwo_directoryx
         bpy.types.INFO_MT_file_import.remove(menu_func)
 
 

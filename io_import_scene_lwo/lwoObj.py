@@ -992,13 +992,14 @@ class lwoObj(object):
         self.clips = {}
         self.images = []
 
-        self.search_paths = [
-            "dirpath",
-            "{dirpath}/images",
-            "{dirpath}/..",
-            "{dirpath}/../images",
-#            "{dirpath}/../../../Textures",
-        ]
+        self.search_paths = []
+#         self.search_paths = [
+#             "dirpath",
+#             "{dirpath}/images",
+#             "{dirpath}/..",
+#             "{dirpath}/../images",
+# #            "{dirpath}/../../../Textures",
+#         ]
         self.allow_missing_images = False
         
         #self.read()

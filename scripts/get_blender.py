@@ -27,14 +27,13 @@ def getSuffix(blender_version, nightly):
         machine = "linux.+x86_64"
         ext = "tar.bz2"
 
+    rev = re.sub("\w$", "", blender_version)
     if False == nightly:
-        url = "https://www.blender.org/download"
-        download_url = "https://ftp.nluug.nl/pub/graphics/blender/release"
+        url = f"https://ftp.nluug.nl/pub/graphics/blender/release/Blender{rev}"
         if "win64" == machine:
             machine = "windows64"
     else:
         url = "https://builder.blender.org/download"
-        download_url = url
 
     page = requests.get(url)
     data = page.text
@@ -43,20 +42,22 @@ def getSuffix(blender_version, nightly):
     blender_version_suffix = ""
     for link in soup.find_all("a"):
         x = str(link.get("href"))
-        g = re.search(f".+blender-{blender_version}.+{machine}.+{ext}", x)
+        g = re.search(f"blender-{blender_version}.+{machine}.+{ext}", x)
         if g:
-            blender_zippath = re.sub("^.+download", download_url, g.group(0))
+            blender_zippath = f"{url}/{g.group(0)}"
             break
 
-#     g = re.search(f"blender-{blender_version}-(\w+).+", blender_zippath)
-#     if g:
-#         blender_version_suffix = g.group(1)
     return (blender_zippath)
 
 
 def getBlender(blender_version, blender_zippath, nightly):
     cwd = checkPath(os.getcwd())
-    os.chdir("..")
+    if 'BLENDER_CACHE' in os.environ.keys():
+        print(f"BLENDER_CACHE found {os.environ['BLENDER_CACHE']}")
+        cache_dir = os.environ['BLENDER_CACHE']
+    else:
+        cache_dir = ".."
+    os.chdir(cache_dir)
 
     blender_zipfile = blender_zippath.split("/")[-1]
 
@@ -81,7 +82,6 @@ def getBlender(blender_version, blender_zippath, nightly):
         z.extractall()
     z.close()
     blender_archive = zdir
-    # os.remove(blender_zipfile)
 
     for zfile in zfiles:
         if re.search("bin/python.exe", zfile) or re.search("bin/python\d.\d", zfile):
@@ -89,34 +89,25 @@ def getBlender(blender_version, blender_zippath, nightly):
 
     cmd = f"{python} -m ensurepip"
     os.system(cmd)
-    cmd = f"{python} -m pip install --upgrade -r {cwd}/blender_requirements.txt -r {cwd}/tests/requirements.txt"
+    cmd = f"{python} -m pip install --upgrade -r {cwd}/blender_requirements.txt -r {cwd}/scripts/requirements.txt"
     os.system(cmd)
 
     os.chdir(cwd)
 
     shutil.rmtree("tests/__pycache__", ignore_errors=True)
 
-    blender_dir = "blender_build"
-    if not os.path.exists(blender_dir):
-        os.mkdir(blender_dir)
-
     ext = ""
     if nightly == True:
         ext = "-nightly"
-    os.chdir(blender_dir)
-    link_path = f"blender-{blender_version}{ext}"
+    dst = f"../blender-{blender_version}{ext}"
 
-    if os.path.exists(link_path):
-        os.remove(link_path)
+    if os.path.exists(dst):
+        shutil.rmtree(dst)
 
-    try:
-        os.symlink(f"../../{blender_archive}", link_path)
-    except OSError:  # Windows can't add links
-        pass
+    src = f"{cache_dir}/{blender_archive}"
+    print(f"move {src} to {dst}")
+    shutil.move(src, dst)
     
-    #cmd = f"rm -rf blender_build/*/*/scripts/addons/io_import_scene_lwo.py"
-    #os.system(cmd)
-
 def main(blender_version, nightly=True):
 
     blender_zipfile = getSuffix(blender_version, nightly)
@@ -135,5 +126,5 @@ if __name__ == "__main__":
         nightly = True
     else:    
         nightly = False
-#        
+
     main(blender_rev, nightly)
