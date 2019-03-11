@@ -18,7 +18,7 @@ def zip_addon(addon):
     bpy_module = re.sub(".py", "", os.path.basename(os.path.realpath(addon)))
     zfile = os.path.realpath(bpy_module + ".zip")
 
-    print(f"Zipping addon - {bpy_module}")
+    print("Zipping addon - {}".format(bpy_module))
 
     zf = zipfile.ZipFile(zfile, "w")
     if os.path.isdir(addon):
@@ -33,7 +33,7 @@ def zip_addon(addon):
 
 
 def copy_addon(bpy_module, zfile):
-    print(f"Copying addon - {bpy_module} {zfile}")
+    print("Copying addon - {} {}".format(bpy_module, zfile))
 
     if (2, 80, 0) < bpy.app.version:
         bpy.ops.preferences.addon_install(overwrite=True, filepath=zfile)
@@ -44,10 +44,19 @@ def copy_addon(bpy_module, zfile):
 
 
 def cleanup(addon, bpy_module):
-    print(f"Cleaning up - {bpy_module}")
+    print("Cleaning up - {}".format(bpy_module))
     if (2, 80, 0) < bpy.app.version:
         bpy.ops.preferences.addon_disable(module=bpy_module)
-        bpy.ops.preferences.addon_remove(bpy_module=bpy_module)
+
+        # addon_remove does not work correctly in CLI
+        # bpy.ops.preferences.addon_remove(module=bpy_module)
+        addon_dirs = bpy.utils.script_paths(subdir="addons")
+        addon = os.path.join(addon_dirs[-1], addon)
+        if os.path.isdir(addon):
+            time.sleep(0.1)  # give some time for the disable to take effect
+            shutil.rmtree(addon)
+        else:
+            os.remove(addon)
     else:
         bpy.ops.wm.addon_disable(module=bpy_module)
     
@@ -78,7 +87,7 @@ class SetupAddon(object):
     def unconfigure(self):
         cleanup(self.addon, self.bpy_module)
         for z in self.zdel_dir: 
-            print(f"Clean up zip file for {z}")
+            print("Clean up zip file for {}".format(z))
             shutil.rmtree(z)
 
     def convert_lwo(self, infile, outfile=None):
@@ -90,7 +99,7 @@ class SetupAddon(object):
                 self.lwozpath = "/".join(elem[0:i])
                 self.lwozfile = "/".join(elem[0:i+1]) + ".zip"
                 if os.path.exists(self.lwozfile):
-                    print(f"ZIP file found {self.lwozfile}")
+                    print("ZIP file found {}".format(self.lwozfile))
                     break
             
             if not None == self.lwozfile:
@@ -107,8 +116,8 @@ class SetupAddon(object):
         bpy.ops.import_scene.lwo(filepath=self.infile)
         
         if None == outfile:
-            rev = f"{bpy.app.version[0]}.{bpy.app.version[1]}"
-            new_path = f"ref_blend/{rev}/{bpy.context.scene.render.engine.lower()}"
+            rev = "{0}.{1}".format(bpy.app.version[0], bpy.app.version[1])
+            new_path = "ref_blend/{0}/{1}".format(rev, bpy.context.scene.render.engine.lower())
             outfile = re.sub("src_lwo", new_path, self.infile + ".blend")
         
         mkdir_p(outfile)

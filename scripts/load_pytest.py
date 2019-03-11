@@ -22,6 +22,7 @@ class SetupPytest(SetupAddon):
 addon = "io_import_scene_lwo"
 try:
     exit_val = pytest.main(["tests"], plugins=[SetupPytest(addon)])
-except:
+except Exception as e:
+    print(e)
     exit_val = 1
 sys.exit(exit_val)
