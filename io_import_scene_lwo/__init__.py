@@ -190,7 +190,7 @@ def lwo2BI(lwo, surf_key, use_existing_materials):
     if (2, 80, 0) < bpy.app.version:
         #return # FIXME
         raise Exception("Blender Internal has been removed")
-    
+    # endif
     if None == surf_data.bl_mat:
         surf_data.bl_mat = bpy.data.materials.new(surf_data.name)
         surf_data.bl_mat.diffuse_color = surf_data.colr[:]
@@ -268,11 +268,12 @@ def lwo2cycles(lwo, surf_key, use_existing_materials):
         m = nodes['Material Output']
         if (2, 80, 0) < bpy.app.version:
             pass
-        else:
+        else: # else bpy.app.version
             mat.diffuse_color = surf_data.colr[:]
             d = nodes.new('ShaderNodeBsdfPrincipled')
             mat.node_tree.links.new(d.outputs['BSDF'], m.inputs['Surface']) 
             nodes.remove(nodes['Diffuse BSDF'])
+        # endif
                    
         color = (surf_data.colr[0], surf_data.colr[1], surf_data.colr[2], surf_data.diff)
         #surf_data.diff = 0 == black
@@ -422,11 +423,13 @@ def build_objects(lwo, use_existing_materials):
             scn.objects.link(ob)
             bpy.context.view_layer.objects.active = ob
             ob.select_set(state=True)
-        else:
+        else:  # else bpy.app.version
             scn = bpy.context.scene
             scn.objects.link(ob)
             scn.objects.active = ob
             ob.select = True
+        # endif
+        
         ob_dict[layer_data.index] = [ob, layer_data.parent_index]
 
         # Move the object so the pivot is in the right place.
@@ -538,8 +541,9 @@ def build_objects(lwo, use_existing_materials):
                 for uvmap_key in allmaps:
                     if (2, 80, 0) < bpy.app.version:
                         uvm = me.uv_layers.new()
-                    else:
+                    else:  # else bpy.app.version
                         uvm = me.uv_textures.new()
+                    # endif
                     uvm.name = uvmap_key
             vertloops = {}
             for v in me.vertices:
@@ -639,9 +643,9 @@ def build_objects(lwo, use_existing_materials):
         # Texture slots have been removed from 2.80, is there a corresponding any thing?
         if (2, 80, 0) < bpy.app.version:
             me.update(calc_loop_triangles=True)
-        else:
+        else:  # else bpy.app.version
             me.update(calc_tessface=True)
-        
+        # endif
         
         # Create the 3D View visualisation textures.
         if 'CYCLES' == bpy.context.scene.render.engine:
@@ -666,8 +670,9 @@ def build_objects(lwo, use_existing_materials):
         empty = bpy.data.objects.new(name=lwo.name + "_empty", object_data=None)
         if (2, 80, 0) < bpy.app.version:
             bpy.context.collection.objects.link(empty)
-        else:
+        else:  # else bpy.app.version
             bpy.context.scene.objects.link(empty)
+        # endif
     for ob_key in ob_dict:
         if ob_dict[ob_key][1] != -1 and ob_dict[ob_key][1] in ob_dict:
             parent_ob = ob_dict[ob_dict[ob_key][1]]
@@ -780,7 +785,7 @@ class IMPORT_OT_lwo(bpy.types.Operator):
             description="Use existing materials if a material by that name already exists",
             default=False,
         )
-    else:
+    else:  # else bpy.app.version
         filepath = StringProperty(
             name="File Path",
             description="Filepath used for importing the LWO file",
@@ -808,7 +813,8 @@ class IMPORT_OT_lwo(bpy.types.Operator):
             description="Use existing materials if a material by that name already exists",
             default=False,
         )
-
+    # endif
+    
     def execute(self, context):
         #context.scene.lwo_directory = ""
         lwo = load_lwo(
@@ -854,11 +860,11 @@ def register():
             bpy.utils.register_class(cls)
 
         bpy.types.TOPBAR_MT_file_import.append(menu_func)
-    else:
+    else:  # else bpy.app.version
         #bpy.types.Scene.lwo_directoryx = StringProperty()
         bpy.utils.register_module(__name__)
         bpy.types.INFO_MT_file_import.append(menu_func)
-
+    # endif
 
 def unregister():
     if (2, 80, 0) < bpy.app.version:
@@ -866,11 +872,11 @@ def unregister():
             bpy.utils.unregister_class(cls)
 
         bpy.types.TOPBAR_MT_file_import.remove(menu_func)
-    else:
+    else:  # else bpy.app.version
         bpy.utils.unregister_module(__name__)
         #del bpy.types.Object.lwo_directoryx
         bpy.types.INFO_MT_file_import.remove(menu_func)
-
+    # endif
 
 if __name__ == "__main__":
     register()

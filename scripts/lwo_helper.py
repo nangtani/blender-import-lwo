@@ -22,11 +22,17 @@ def delete_everything():
 
     for k in bpy.data.textures.keys():
         j = bpy.data.textures[k]
-        bpy.data.textures.remove(j)
+        if (2, 79, 0) < bpy.app.version:
+            bpy.data.textures.remove(j)
+        else:
+            bpy.data.textures.remove(j, do_unlink=True)
 
     for k in bpy.data.materials.keys():
         j = bpy.data.materials[k]
-        bpy.data.materials.remove(j)
+        if (2, 79, 0) < bpy.app.version:
+            bpy.data.materials.remove(j)
+        else:
+            bpy.data.materials.remove(j, do_unlink=True)
 
     for k in bpy.data.images.keys():
         j = bpy.data.images[k]
@@ -139,7 +145,8 @@ def checkType(x):
         print(x, "Unknown", type(x))
         t = type(x)
         print(t)
-        raise Exception(f"Attribute <{x}> of Unknown type {t}")
+        #raise Exception(f"Attribute <{x}> of Unknown type {t}")
+        raise Exception("Attribute <{0}> of Unknown type {1}".format(x, t))
         x = None
     return x
     
@@ -168,11 +175,15 @@ def setup_lwo(infile):
         name = os.path.basename(infile)
     
     render = bpy.context.scene.render.engine.lower()
-    dst_path = f"tests/dst_blend/{bpy.app.version[0]}.{bpy.app.version[1]}"
-    ref_path = f"tests/ref_blend/{bpy.app.version[0]}.{bpy.app.version[1]}"
+    #dst_path = f"tests/dst_blend/{bpy.app.version[0]}.{bpy.app.version[1]}"
+    #ref_path = f"tests/ref_blend/{bpy.app.version[0]}.{bpy.app.version[1]}"
+    dst_path = "tests/dst_blend/{0}.{1}".format(bpy.app.version[0],bpy.app.version[1])
+    ref_path = "tests/ref_blend/{0}.{1}".format(bpy.app.version[0],bpy.app.version[1])
 
-    outfile0 = f"{dst_path}/{render}/{name}.blend"
-    outfile1 = f"{ref_path}/{render}/{name}.blend"
+    #outfile0 = f"{dst_path}/{render}/{name}.blend"
+    #outfile1 = f"{ref_path}/{render}/{name}.blend"
+    outfile0 = "{0}/{1}/{2}.blend".format(dst_path, render, name)
+    outfile1 = "{0}/{1}/{2}.blend".format(ref_path, render, name)
 
     delete_everything()
 
@@ -222,9 +233,9 @@ def diff_files(outfile0, outfile1, error_count=0):
         for a in x.bl.keys():
             #print(a)
             if not a in y.bl.keys():
-                print(f"<{a}> in not in dst")
+                print("<{}> in not in dst".format(a))
             if not x.bl[a] == y.bl[a]:
-               print(f"<{a}> is different")
-               pprint(x.bl[a])
-               pprint(y.bl[a])
-               assert False
+                print("<{}> is different".format(a))
+                pprint(x.bl[a])
+                pprint(y.bl[a])
+                assert False

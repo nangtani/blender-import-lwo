@@ -5,8 +5,10 @@ from lwo_helper import setup_lwo, diff_files, delete_everything
 def load_lwo(infile):
     if (2, 80, 0) < bpy.app.version:
         renderers = ['CYCLES']
-    else:
+    elif (2, 79, 0) < bpy.app.version:
         renderers = ['BLENDER_RENDER', 'CYCLES']
+    else:
+        renderers = ['BLENDER_RENDER']
     
     for render in renderers:
         bpy.context.scene.render.engine = render

@@ -60,7 +60,7 @@ class _obj_layer(object):
         return d
 
     def __repr__(self):
-        return f"_obj_layer <{self.name}>"
+        return "_obj_layer <{}>".format(self.name)
 
 class _obj_surf(object):
     __slots__ = (
@@ -116,7 +116,7 @@ class _obj_surf(object):
         return d
         
     def __repr__(self):
-        return f"_obj_surf <{self.name}>"
+        return "_obj_surf <{}>".format(self.name)
 
     def lwoprint(self):
         print(f"SURFACE")
@@ -266,7 +266,8 @@ def read_layr_5(layr_bytes, object_layers):
     if name_len > 2 and layr_name != "noname":
         new_layr.name = layr_name
     else:
-        new_layr.name = f"Layer {new_layr.index}"
+        #new_layr.name = f"Layer {new_layr.index}"
+        new_layr.name = "Layer {}".format(new_layr.index)
 
     object_layers.append(new_layr)
 
@@ -1074,7 +1075,8 @@ class lwoObj(object):
                         self.images.append(ifile)
                     continue
             if None == ifile and not self.allow_missing_images:
-                raise lwoNoImageFoundException(f"No valid image found for path: {orig_path}")
+                #raise lwoNoImageFoundException(f"No valid image found for path: {orig_path}")
+                raise lwoNoImageFoundException("No valid image found for path: {}".format(orig_path))
         
             os.chdir(cwd)
             self.clips[c_id]['new_path'] = ifile

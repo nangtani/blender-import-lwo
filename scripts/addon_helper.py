@@ -14,21 +14,79 @@ def mkdir_p(outfile):
         if not os.path.isdir(new_path):
             os.mkdir(new_path)
 
+def clean_file(filename):
+    f = open(filename, 'r')
+    lines = f.readlines()
+    f.close()
+    
+    fix_fstrings = False
+    if bpy.app.version <= (2, 79, 0):
+        fix_fstrings = True
+    
+    trim_code = False
+    active_print0 = None
+    f = open(filename, 'w')
+    for line in lines:
+        line2 = line
+        if re.search("^\s+else", line) and re.search("else bpy.app.version", line):
+            active_print0 = not(active_print0)
+            line2 = ""
+        
+        if re.search("endif", line):
+            active_print0 = None
+            trim_code = False
+            line2 = ""
+        
+        h = re.search("^\s+if \((\d+), (\d+), (\d+)\) < bpy.app.version", line)
+        if h:
+            current_blender_rev = (int(h.group(1)), int(h.group(2)), int(h.group(3)))
+            trim_code = True
+            active_print0 = (current_blender_rev <= bpy.app.version)
+            line2 = ""
+        
+        if trim_code:
+            line2 = re.sub("^    ", "", line2)
+        if not active_print0 and not active_print0 == None:
+            line2 = ""
+        line = line2
+        
+        if re.search("print\(f\"", line) and fix_fstrings:
+            line = re.sub("print", "pass ; # print", line)
+        f.write(line)
+    f.close()
+
 def zip_addon(addon):
     bpy_module = re.sub(".py", "", os.path.basename(os.path.realpath(addon)))
     zfile = os.path.realpath(bpy_module + ".zip")
 
-    print("Zipping addon - {}".format(bpy_module))
+    print("Zipping addon - {0}".format(bpy_module))
+    
+    cwd = os.getcwd()
+    temp_dir = "tmp"
+    if os.path.isdir(temp_dir):
+        shutil.rmtree(temp_dir)
 
+    shutil.copytree(addon, temp_dir + "/" + addon)
+    os.chdir(temp_dir)
+    if os.path.isdir("__pycache__"):
+        shutil.rmtree("__pycache__")
     zf = zipfile.ZipFile(zfile, "w")
     if os.path.isdir(addon):
         for dirname, subdirs, files in os.walk(addon):
             zf.write(dirname)
             for filename in files:
-                zf.write(os.path.join(dirname, filename))
+                filename = os.path.join(dirname, filename)
+#                 if "io_import_scene_lwo\__init__.py" == filename:
+#                     print(filename)
+                clean_file(filename)
+                zf.write(filename)
     else:
+        clean_file(addon)
         zf.write(addon)
     zf.close()
+        
+    os.chdir(cwd)
+    #shutil.rmtree(temp_dir)
     return (bpy_module, zfile)
 
 
