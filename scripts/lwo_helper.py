@@ -22,11 +22,17 @@ def delete_everything():
 
     for k in bpy.data.textures.keys():
         j = bpy.data.textures[k]
-        bpy.data.textures.remove(j)
+        if (2, 79, 0) < bpy.app.version:
+            bpy.data.textures.remove(j)
+        else:
+            bpy.data.textures.remove(j, do_unlink=True)
 
     for k in bpy.data.materials.keys():
         j = bpy.data.materials[k]
-        bpy.data.materials.remove(j)
+        if (2, 79, 0) < bpy.app.version:
+            bpy.data.materials.remove(j)
+        else:
+            bpy.data.materials.remove(j, do_unlink=True)
 
     for k in bpy.data.images.keys():
         j = bpy.data.images[k]
