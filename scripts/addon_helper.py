@@ -50,6 +50,11 @@ def clean_file(filename):
             line2 = ""
         line = line2
         
+        #k = re.search("\"blender\": (\d+, \d+, \d+)", line)
+        k = re.search("\"blender\":\s\(\d+, \d+, \d+\)", line)
+        if k:
+            line = "    \"blender\": {0},\n".format(bpy.app.version)
+        
         if re.search("print\(f\"", line) and fix_fstrings:
             line = re.sub("print", "pass ; # print", line)
         f.write(line)
@@ -76,8 +81,6 @@ def zip_addon(addon):
             zf.write(dirname)
             for filename in files:
                 filename = os.path.join(dirname, filename)
-#                 if "io_import_scene_lwo\__init__.py" == filename:
-#                     print(filename)
                 clean_file(filename)
                 zf.write(filename)
     else:
@@ -86,7 +89,7 @@ def zip_addon(addon):
     zf.close()
         
     os.chdir(cwd)
-    #shutil.rmtree(temp_dir)
+    shutil.rmtree(temp_dir)
     return (bpy_module, zfile)
 
 
