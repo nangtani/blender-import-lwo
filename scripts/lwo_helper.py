@@ -22,17 +22,11 @@ def delete_everything():
 
     for k in bpy.data.textures.keys():
         j = bpy.data.textures[k]
-        if (2, 79, 0) < bpy.app.version:
-            bpy.data.textures.remove(j)
-        else:
-            bpy.data.textures.remove(j, do_unlink=True)
+        bpy.data.textures.remove(j)
 
     for k in bpy.data.materials.keys():
         j = bpy.data.materials[k]
-        if (2, 79, 0) < bpy.app.version:
-            bpy.data.materials.remove(j)
-        else:
-            bpy.data.materials.remove(j, do_unlink=True)
+        bpy.data.materials.remove(j)
 
     for k in bpy.data.images.keys():
         j = bpy.data.images[k]
@@ -168,20 +162,15 @@ class blCopy:
 def setup_lwo(infile):
     print("Setting up!")
     
-    
     if re.search("src_lwo", infile):
-        name = infile.split("src_lwo/")[-1]
+        head, name = infile.split("/src_lwo/")
     else:
         name = os.path.basename(infile)
     
     render = bpy.context.scene.render.engine.lower()
-    #dst_path = f"tests/dst_blend/{bpy.app.version[0]}.{bpy.app.version[1]}"
-    #ref_path = f"tests/ref_blend/{bpy.app.version[0]}.{bpy.app.version[1]}"
-    dst_path = "tests/dst_blend/{0}.{1}".format(bpy.app.version[0],bpy.app.version[1])
-    ref_path = "tests/ref_blend/{0}.{1}".format(bpy.app.version[0],bpy.app.version[1])
+    dst_path = "{0}/dst_blend/{1}.{2}".format(head, bpy.app.version[0],bpy.app.version[1])
+    ref_path = "{0}/ref_blend/{1}.{2}".format(head, bpy.app.version[0],bpy.app.version[1])
 
-    #outfile0 = f"{dst_path}/{render}/{name}.blend"
-    #outfile1 = f"{ref_path}/{render}/{name}.blend"
     outfile0 = "{0}/{1}/{2}.blend".format(dst_path, render, name)
     outfile1 = "{0}/{1}/{2}.blend".format(ref_path, render, name)
 

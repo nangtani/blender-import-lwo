@@ -50,7 +50,6 @@ def clean_file(filename):
             line2 = ""
         line = line2
         
-        #k = re.search("\"blender\": (\d+, \d+, \d+)", line)
         k = re.search("\"blender\":\s\(\d+, \d+, \d+\)", line)
         if k:
             line = "    \"blender\": {0},\n".format(bpy.app.version)
