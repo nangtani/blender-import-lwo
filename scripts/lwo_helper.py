@@ -234,3 +234,24 @@ def diff_files(outfile0, outfile1, error_count=0):
                 pprint(x.bl[a])
                 pprint(y.bl[a])
                 assert False
+
+def load_lwo(infile):
+    if (2, 80, 0) < bpy.app.version:
+        renderers = ['CYCLES']
+    elif (2, 79, 0) < bpy.app.version:
+        renderers = ['BLENDER_RENDER', 'CYCLES']
+    else:
+        renderers = ['BLENDER_RENDER']
+    
+    for render in renderers:
+        bpy.context.scene.render.engine = render
+        
+        outfile0, outfile1 = setup_lwo(infile)
+    
+        bpy.ops.import_scene.lwo(filepath=infile)
+        bpy.ops.wm.save_mainfile(filepath=outfile0)
+    
+        diff_files(outfile1, outfile0)
+    
+        delete_everything()
+
