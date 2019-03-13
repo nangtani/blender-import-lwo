@@ -6,13 +6,13 @@ import zipfile
 import shutil
 import bpy
 
-def mkdir_p(outfile):
-    outfile = re.sub("\\\\", "/", outfile)
-    dirname = os.path.dirname(outfile).split("/")
-    for i in range(len(dirname)):
-        new_path = "/".join(dirname[0:i+1])
-        if not os.path.isdir(new_path):
-            os.mkdir(new_path)
+# def mkdir_p(outfile):
+#     outfile = re.sub("\\\\", "/", outfile)
+#     dirname = os.path.dirname(outfile).split("/")
+#     for i in range(len(dirname)):
+#         new_path = "/".join(dirname[0:i+1])
+#         if not os.path.isdir(new_path):
+#             os.mkdir(new_path)
 
 def clean_file(filename):
     f = open(filename, 'r')
@@ -149,40 +149,6 @@ class SetupAddon(object):
         for z in self.zdel_dir: 
             print("Clean up zip file for {}".format(z))
             shutil.rmtree(z)
-
-    def convert_lwo(self, infile, outfile=None):
-        self.infile = infile
-        self.infile = re.sub("\\\\", "/", self.infile)
-        if not os.path.exists(infile):
-            elem = self.infile.split("/")
-            for i in range(len(elem)):
-                self.lwozpath = "/".join(elem[0:i])
-                self.lwozfile = "/".join(elem[0:i+1]) + ".zip"
-                if os.path.exists(self.lwozfile):
-                    print("ZIP file found {}".format(self.lwozfile))
-                    break
-            
-            if not None == self.lwozfile:
-                zf = zipfile.ZipFile(self.lwozfile, "r")
-                zf.extractall(self.lwozpath)
-                self.lwozfiles = zf.namelist()
-                zf.close()
-                zdir = os.path.join(self.lwozpath, self.lwozfiles[0].split("/")[0])
-                if not os.path.isdir(zdir):
-                    raise
-                self.zdel_dir.append(zdir)
-                print(self.zdel_dir)
-        
-        bpy.ops.import_scene.lwo(filepath=self.infile)
-        
-        if None == outfile:
-            rev = "{0}.{1}".format(bpy.app.version[0], bpy.app.version[1])
-            new_path = "ref_blend/{0}/{1}".format(rev, bpy.context.scene.render.engine.lower())
-            outfile = re.sub("src_lwo", new_path, self.infile + ".blend")
-        
-        mkdir_p(outfile)
-                
-        bpy.ops.wm.save_mainfile(filepath=outfile)
 
     def set_cycles(self):
         bpy.context.scene.render.engine = 'CYCLES'

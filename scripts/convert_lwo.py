@@ -1,5 +1,5 @@
 from addon_helper import SetupAddon
-from lwo_helper import delete_everything
+from lwo_helper import delete_everything, ImportFile
 import bpy
 
 
@@ -7,9 +7,10 @@ def convert_file(infile, addon):
     x = SetupAddon(addon)
     x.configure()
     
-    #x.set_cycles()
-
-    x.convert_lwo(infile)
+    importfile = ImportFile(infile)
+    importfile.check_file()
+    importfile.import_object()
+    importfile.save_blend()
 
     x.unconfigure()
 
@@ -29,14 +30,14 @@ if __name__ == "__main__":
     #infile = "tests/src_lwo/box/box1.lwo"
     #infile = "tests/src_lwo/box/box1-uv.lwo"
     infile = "tests/src_lwo/LWO2/box/box2-uv.lwo"
-    infile = "tests/src_lwo/LWO2/box/box3-uv-layers.lwo"
-    infile = "tests/src_lwo/LWO/box/box3-uv-layers.lwo"
+    infile = "tests/basic/src_lwo/LWO2/box/box3-uv-layers.lwo"
+    #infile = "tests/basic/src_lwo/LWO/box/box3-uv-layers.lwo"
     #infile = "tests/src_lwo/LWO2/box/box4-uv-layers.lwo"
     #infile = "tests/src_lwo/LWO2/box/box5-ngon.lwo"
     #infile = "tests/src_lwo/LWO2/src_lwo/Federation - Phobos/objects/USS-Phobos.lwo"
     #infile = "tests/src_lwo/LWO2/Federation - Phobos/objects/USS-Phobos.lwo"
     #infile = "src_lwo/Federation - Phobos/objects/USS-Phobos.11.5.lwo"
-    infile = "tests/src_lwo/LWO2/Federation - Interceptor/objects/interceptor_hull.lwo"
+    #infile = "tests/src_lwo/LWO2/Federation - Interceptor/objects/interceptor_hull.lwo"
     #infile = "tests/src_lwo/LWO2/box/box3-uv-layers.lwo"
     #infile = "tests/src_lwo/LWO3/box/box3-uv-layers.lwo"
     #infile = "tests/src_lwo/LWO2/ISS models 2011/Objects/Modules/columbus/columbus.lwo"
