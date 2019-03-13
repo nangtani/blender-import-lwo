@@ -1050,9 +1050,7 @@ class lwoObj(object):
             cwd = os.getcwd()
 
             orig_path = self.clips[c_id]['orig_path']
-            path = re.sub("\\\\", "/", orig_path)
-#             #path = re.sub("\\", "/", path)
-            imagefile = path.split("/")[-1]
+            imagefile = os.path.basename(orig_path)
             dirpath = os.path.dirname(self.filename)
             os.chdir(dirpath)
         
