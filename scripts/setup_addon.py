@@ -1,5 +1,5 @@
 from addon_helper import SetupAddon
-from lwo_helper import delete_everything
+from lwo_helper import ImportFile
 import bpy
 
 
@@ -7,10 +7,11 @@ def convert_file(infile, addon):
     x = SetupAddon(addon)
     x.configure()
     
-#     #x.set_cycles()
-# 
-    x.convert_lwo(infile)
-# 
+    importfile = ImportFile(infile)
+    importfile.check_file()
+    importfile.import_object()
+    importfile.save_blend()
+
 #    x.unconfigure()
 
 
@@ -24,6 +25,6 @@ def main(infile):
 
 
 if __name__ == "__main__":
-    infile = "tests/src_lwo/LWO2/box/box3-uv-layers.lwo"
+    infile = "tests/basic/src/LWO2/box/box3-uv-layers.lwo"
     #infile = "tests/src_lwo/LWO2/ISS models 2011/Objects/Modules/columbus/columbus.lwo"
     main(infile)

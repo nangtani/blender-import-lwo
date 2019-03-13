@@ -7,7 +7,7 @@ from blend_helper import delete_everything, diff_files
 
 class ImportFile(object):
     
-    def __init__(self, infile, delimit="/src_lwo/"):
+    def __init__(self, infile, delimit="/src/"):
         self.infile = infile
         self.zdel_dir = []
 
