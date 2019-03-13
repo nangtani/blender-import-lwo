@@ -1073,7 +1073,6 @@ class lwoObj(object):
                         self.images.append(ifile)
                     continue
             if None == ifile and not self.allow_missing_images:
-                #raise lwoNoImageFoundException(f"No valid image found for path: {orig_path}")
                 raise lwoNoImageFoundException("No valid image found for path: {} {} {} {}".format(orig_path, imagefile, dirpath, files))
         
             os.chdir(cwd)
