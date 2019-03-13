@@ -1,6 +1,4 @@
-import pytest
-import bpy
-from lwo_helper import setup_lwo, diff_files, delete_everything, load_lwo
+from lwo_helper import load_lwo
 
 def test_load_lwo_box1():
     infile = "tests/basic/src_lwo/LWO2/box/box1.lwo"

@@ -1,239 +1,74 @@
 import os
 import re
-#import time
-import copy
+import zipfile
+import shutil
 import bpy
-from mathutils import Vector, Matrix, Euler, Quaternion
-from pprint import pprint
+from blend_helper import delete_everything, diff_files
 
-def delete_everything():
+class ImportFile(object):
     
-    for k in bpy.data.objects.keys():
-        try:
-            o = bpy.data.objects[k]
-        except KeyError:
-            continue
+    def __init__(self, infile, delimit="/src_lwo/"):
+        self.infile = infile
+        self.zdel_dir = []
 
-        if (2, 80, 0) < bpy.app.version:
-            o.select_get()
+        if re.search(delimit, infile):
+            head, name = infile.split(delimit)
         else:
-            o.select = True
-        bpy.ops.object.delete()
-
-    for k in bpy.data.textures.keys():
-        j = bpy.data.textures[k]
-        if (2, 79, 0) < bpy.app.version:
-            bpy.data.textures.remove(j)
-        else:
-            bpy.data.textures.remove(j, do_unlink=True)
-
-    for k in bpy.data.materials.keys():
-        j = bpy.data.materials[k]
-        if (2, 79, 0) < bpy.app.version:
-            bpy.data.materials.remove(j)
-        else:
-            bpy.data.materials.remove(j, do_unlink=True)
-
-    for k in bpy.data.images.keys():
-        j = bpy.data.images[k]
-        bpy.data.images.remove(j)
-
-
-def objToDict(m):
-    n = {}
-    for k in dir(m):
-        if k.startswith("__"):
-            continue
-        n[k] = copy.deepcopy(checkType(getattr(m, k)))
-    return n
-
-def checkType(x):
-    stype = (type(None), bool, int, float, tuple, list, str, Vector, Matrix, Euler, Quaternion)
+            name = os.path.basename(infile)
     
-    if isinstance(x, bpy.types.bpy_struct):
-        i = type(x)
-#         if isinstance(x, bpy.types.Material):
-#             pass
-#             #print(True)
-#             print(i, dir(x))
-#         elif isinstance(x, bpy.types.MaterialSlot):
-#             pass
-#             #print(True)
-#             print(i, dir(x))
-        
-        #print(x.items())
-#         if hasattr(x, "description"):
-#             print(x.base)
-#             print(x.description)
-#             print(x.name)
-#             print(x.nested)
-#             print(x.properties[0])
-        
-        if hasattr(x, "material"):
-            #print(True)
-            #print("Known", i)
-            #print(i)
-            i = objToDict(x)
-        else:
-            pass
-            #print(i)
-#         try:
-# #            print(x.name)
-#             print(x.material)
-# #             print(x.link)
-# #             print(x.bl_rna)
-#             print(x.rna_type)
-#             #pprint(i)
-#         except:
-#             pass
-        return i
-    elif isinstance(x, bpy.types.bpy_func):
-        #print(k, x, "bpy.types.bpy_func")
-        i = type(x)
-        return i
-#     elif isinstance(x, type(object)):
-#         print(k, x, "bpy.types.bpy_method")
-#         i = type(x)
-#         return i
-#     elif isinstance(x, bpy.types.bpy_prop_array):
-#         #print(x, "bpy.types.bpy_prop_array")
-#         i = type(x)
-#         w = {i: []}
-#         for y in x:
-#             z = checkType(y)
-#             w[i].append(z)
-#         return(w)
-#     elif isinstance(x, bpy.types.bpy_prop_collection):
-#         #print(x, "bpy.types.bpy_prop_collection")
-#         i = type(x)
-#         w = {i: []}
-#         for y in x:
-#             z = checkType(y)
-#             #print("z", z)
-#             w[i].append(z)
-#         #print(w)
-#         return(w)
-    elif isinstance(x, (bpy.types.bpy_prop_array, bpy.types.bpy_prop_collection)):
-        #print(x, "bpy.types.bpy_prop_collection")
-        i = type(x)
-        w = {i: []}
-        for y in x:
-            z = checkType(y)
-            #print("z", z)
-            w[i].append(z)
-        #print(w)
-        return(w)
-#     elif isinstance(x, (Vector, Matrix, Euler, Quaternion)):
-#         pass
-    elif isinstance(x, stype):
-        pass
-#     elif isinstance(x, type(None)):
-#         pass
-#     elif isinstance(x, bool):
-#         pass
-#     elif isinstance(x, int):
-#         pass
-#     elif isinstance(x, float):
-#         pass
-#     elif isinstance(x, str):
-#         pass
-#     elif isinstance(x, tuple):
-#         pass
-#     elif isinstance(x, list):
-#         pass
-    else:
-        print(x, "Unknown", type(x))
-        t = type(x)
-        print(t)
-        #raise Exception(f"Attribute <{x}> of Unknown type {t}")
-        raise Exception("Attribute <{0}> of Unknown type {1}".format(x, t))
-        x = None
-    return x
+        render = bpy.context.scene.render.engine.lower()
+        dst_path = "{0}/dst_blend/{1}.{2}".format(head, bpy.app.version[0],bpy.app.version[1])
+        self.outfile = "{0}/{1}/{2}.blend".format(dst_path, render, name)
     
-class blCopy:
+    @property
+    def reffile(self):
+        return re.sub("dst_blend", "ref_blend", self.outfile)
     
-    def __init__(self, m, name):
-        self.bl = objToDict(m)
-        self.bl["name"] = name
-        self.bl.pop("active_material", None) # not really something that can be diffed
-        self.bl.pop("select", None) # not really something that can be diffed
+    def check_file(self):
+        #self.infile = re.sub("\\\\", "/", self.infile)
+        if not os.path.exists(self.infile):
+            elem = self.infile.split("/")
+            for i in range(len(elem)):
+                self.zpath = "/".join(elem[0:i])
+                self.zfile = "/".join(elem[0:i+1]) + ".zip"
+                if os.path.exists(self.zfile):
+                    print("ZIP file found {}".format(self.zfile))
+                    break
+            
+            if not None == self.zfile:
+                zf = zipfile.ZipFile(self.zfile, "r")
+                zf.extractall(self.zpath)
+                self.zfiles = zf.namelist()
+                zf.close()
+                zdir = os.path.join(self.zpath, self.zfiles[0].split("/")[0])
+                if not os.path.isdir(zdir):
+                    raise Exception(zdir)
+                self.zdel_dir.append(zdir)
+
+        if os.path.isfile(self.outfile):
+            os.remove(self.outfile)
+
+        if not os.path.exists(os.path.split(self.outfile)[0]):
+            os.makedirs(os.path.split(self.outfile)[0])
+        if not os.path.exists(os.path.split(self.reffile)[0]):
+            os.makedirs(os.path.split(self.reffile)[0])
     
-    def __repr__(self):
-        return self.bl_name
-        
-    def pprint(self):
-        pprint(self.bl)
-
-
-def setup_lwo(infile):
-    print("Setting up!")
+    def diff_result(self):
+        diff_files(self.reffile, self.outfile)
     
-    if re.search("src_lwo", infile):
-        head, name = infile.split("/src_lwo/")
-    else:
-        name = os.path.basename(infile)
+    def clean_up(self):
+        delete_everything()
+        for z in self.zdel_dir: 
+            print("Clean up zip file for {}".format(z))
+            shutil.rmtree(z)
     
-    render = bpy.context.scene.render.engine.lower()
-    dst_path = "{0}/dst_blend/{1}.{2}".format(head, bpy.app.version[0],bpy.app.version[1])
-    ref_path = "{0}/ref_blend/{1}.{2}".format(head, bpy.app.version[0],bpy.app.version[1])
+    def import_object(self):
+        delete_everything()
+        bpy.ops.import_scene.lwo(filepath=self.infile)
 
-    outfile0 = "{0}/{1}/{2}.blend".format(dst_path, render, name)
-    outfile1 = "{0}/{1}/{2}.blend".format(ref_path, render, name)
+    def save_blend(self):
+        bpy.ops.wm.save_mainfile(filepath=self.outfile)
 
-    delete_everything()
-
-    if os.path.isfile(outfile0):
-        os.remove(outfile0)
-
-    os.path.split(outfile0)[0]
-    if not os.path.exists(os.path.split(outfile0)[0]):
-        os.makedirs(os.path.split(outfile0)[0])
-    if not os.path.exists(os.path.split(outfile1)[0]):
-        os.makedirs(os.path.split(outfile1)[0])
-
-    return (outfile0, outfile1)
-
-
-def diff_files(outfile0, outfile1, error_count=0):
-    print("Diffing files!")
-    if os.path.isfile(outfile1):
-        print("Reference blend present: {0}".format(outfile1))
-    else:
-        print("No reference blend present: {0}".format(outfile1))
-        assert False
-        return
-
-    bpy.ops.wm.open_mainfile(filepath=outfile0)
-    o0 = {}
-    for k in bpy.data.objects.keys():
-        j = bpy.data.objects[k].copy()
-        o0[k] = blCopy(j, bpy.data.objects[k].name)
-        bpy.data.objects.remove(j)
-
-
-    bpy.ops.wm.open_mainfile(filepath=outfile1)
-    o1 = {}
-    for k in bpy.data.objects.keys():
-        j = bpy.data.objects[k].copy()
-        o1[k] = blCopy(j, bpy.data.objects[k].name)
-        bpy.data.objects.remove(j)
-        
-    for k in o0.keys():
-        x = o0[k]
-        y = o1[k]
-        
-        #x.pprint()
-        #y.pprint()
-        
-        for a in x.bl.keys():
-            #print(a)
-            if not a in y.bl.keys():
-                print("<{}> in not in dst".format(a))
-            if not x.bl[a] == y.bl[a]:
-                print("<{}> is different".format(a))
-                pprint(x.bl[a])
-                pprint(y.bl[a])
-                assert False
 
 def load_lwo(infile):
     if (2, 80, 0) < bpy.app.version:
@@ -246,12 +81,10 @@ def load_lwo(infile):
     for render in renderers:
         bpy.context.scene.render.engine = render
         
-        outfile0, outfile1 = setup_lwo(infile)
-    
-        bpy.ops.import_scene.lwo(filepath=infile)
-        bpy.ops.wm.save_mainfile(filepath=outfile0)
-    
-        diff_files(outfile1, outfile0)
-    
-        delete_everything()
+        importfile = ImportFile(infile)
+        importfile.check_file()
+        importfile.import_object()
+        importfile.save_blend()
+        importfile.diff_result()
+        importfile.clean_up()
 
