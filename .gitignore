@@ -4,8 +4,8 @@ blender_build
 __pycache__
 *.zip
 .pytest_cache
-tests/dst_blend
-tests/src_lwo
+tests/*/dst_blend
+tests/src
 *.blend1
 *.bak
 ~*
