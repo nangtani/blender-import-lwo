@@ -1,0 +1,3 @@
+[submodule "tests/lwo_phobos"]
+	path = tests/lwo_phobos
+	url = https://github.com/douglaskastle/lwo_phobos.git
