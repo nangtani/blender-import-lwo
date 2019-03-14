@@ -36,7 +36,6 @@ git:
 before_install:
     - echo -e "machine github.com\n  login douglaskastle\n  password $GITHUB_PASSWORD" > ~/.netrc
     - git submodule update --init --recursive
-    - more ~/.netrc
     - mkdir -p ${BLENDER_CACHE}
     - ls ${BLENDER_CACHE}
     - pip3 install -r scripts/requirements.txt --upgrade
