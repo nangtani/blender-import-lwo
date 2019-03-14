@@ -36,7 +36,7 @@ git:
 before_install:
     - if [[ ! -z "${GITHUB_PASSWORD}" ]]; then
         echo -e "machine github.com\n  login douglaskastle\n  password $GITHUB_PASSWORD" > ~/.netrc ;
-        git submodule init --recursive ;
+        git submodule update --init --recursive ;
         git submodule update --remote ;
       fi
     - mkdir -p ${BLENDER_CACHE}
@@ -52,7 +52,6 @@ install:
 script:
     - cd ${TRAVIS_BUILD_DIR}
     - ../blender-${BLENDER_VERSION}/blender --version
-    - cat tests/lwo_phobos/test_load_lwo_phobos.py
     - python3 scripts/run_blender.py ${BLENDER_VERSION}
 
 #after_success:
