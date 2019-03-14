@@ -25,15 +25,17 @@ class ImportFile(object):
         return re.sub("dst_blend", "ref_blend", self.outfile)
     
     def check_file(self):
-        #self.infile = re.sub("\\\\", "/", self.infile)
+        edit_infile = self.infile
+        #edit_infile = re.sub("\\\\", "/", edit_infile)
         if not os.path.exists(self.infile):
-            elem = self.infile.split("/")
+            elem = edit_infile.split("/")
             for i in range(len(elem)):
                 self.zpath = "/".join(elem[0:i])
                 self.zfile = "/".join(elem[0:i+1]) + ".zip"
                 if os.path.exists(self.zfile):
                     print("ZIP file found {}".format(self.zfile))
                     break
+                self.zfile = None
             
             if not None == self.zfile:
                 zf = zipfile.ZipFile(self.zfile, "r")

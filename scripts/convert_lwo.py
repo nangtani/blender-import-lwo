@@ -11,6 +11,7 @@ def convert_file(infile, addon):
     importfile.check_file()
     importfile.import_object()
     importfile.save_blend()
+    importfile.clean_up()
 
     x.unconfigure()
 
@@ -34,7 +35,7 @@ if __name__ == "__main__":
     #infile = "tests/basic/src/LWO2/box/box4-uv-layers.lwo"
     #infile = "tests/basic/src/LWO2/box/box5-ngon.lwo"
     #infile = "tests/basic/src/LWO2/src/Federation - Phobos/objects/USS-Phobos.lwo"
-    #infile = "tests/basic/src/LWO2/Federation - Phobos/objects/USS-Phobos.lwo"
+    infile = "tests/lwo_phobos/src/LWO2/Federation - Phobos/objects/USS-Phobos.lwo"
     #infile = "src/Federation - Phobos/objects/USS-Phobos.11.5.lwo"
     #infile = "tests/interceptor/src/LWO2/Federation - Interceptor/objects/interceptor_hull.lwo"
     #infile = "tests/basic/src/LWO2/box/box3-uv-layers.lwo"
