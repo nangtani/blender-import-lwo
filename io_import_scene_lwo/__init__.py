@@ -93,10 +93,10 @@ def load_lwo(
     lwo = lwoObj(filename)
     lwo.search_paths.extend([
         "dirpath",
-        "{dirpath}/images",
-        "{dirpath}/..",
-        "{dirpath}/../images",
-#        "{dirpath}/../../../Textures",
+        "dirpath/images",
+        "dirpath/..",
+        "dirpath/../images",
+#        "dirpath/../../../Textures",
     ])
     lwo.read(ADD_SUBD_MOD, LOAD_HIDDEN, SKEL_TO_ARM)
     

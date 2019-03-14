@@ -5,7 +5,7 @@ __pycache__
 *.zip
 .pytest_cache
 tests/*/dst_blend
-tests/src
+tests/*/src
 *.blend1
 *.bak
 ~*

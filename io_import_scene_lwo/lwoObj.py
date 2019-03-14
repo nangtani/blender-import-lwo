@@ -994,13 +994,6 @@ class lwoObj(object):
         self.images = []
 
         self.search_paths = []
-#         self.search_paths = [
-#             "dirpath",
-#             "{dirpath}/images",
-#             "{dirpath}/..",
-#             "{dirpath}/../images",
-# #            "{dirpath}/../../../Textures",
-#         ]
         self.allow_missing_images = False
         
         #self.read()
@@ -1073,7 +1066,7 @@ class lwoObj(object):
                         self.images.append(ifile)
                     continue
             if None == ifile and not self.allow_missing_images:
-                raise lwoNoImageFoundException("No valid image found for path: {} {} {} {}".format(orig_path, imagefile, dirpath, files))
+                raise lwoNoImageFoundException("No valid image found for path: {} {}".format(orig_path, search_paths))
         
             os.chdir(cwd)
             self.clips[c_id]['new_path'] = ifile
