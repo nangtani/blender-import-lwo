@@ -46,6 +46,9 @@ class ImportFile(object):
                 if not os.path.isdir(zdir):
                     raise Exception(zdir)
                 self.zdel_dir.append(zdir)
+        
+        if not os.path.exists(self.infile):
+            raise Exception("Infile or zip file not found {} {}".format(self.infile, edit_infile))
 
         if os.path.isfile(self.outfile):
             os.remove(self.outfile)
