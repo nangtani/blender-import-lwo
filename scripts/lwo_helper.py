@@ -27,11 +27,13 @@ class ImportFile(object):
     def check_file(self):
         edit_infile = self.infile
         #edit_infile = re.sub("\\\\", "/", edit_infile)
+        x = []
         if not os.path.exists(self.infile):
             elem = edit_infile.split("/")
             for i in range(len(elem)):
                 self.zpath = "/".join(elem[0:i])
                 self.zfile = "/".join(elem[0:i+1]) + ".zip"
+                x.append(self.zfile)
                 if os.path.exists(self.zfile):
                     print("ZIP file found {}".format(self.zfile))
                     break
@@ -48,7 +50,7 @@ class ImportFile(object):
                 self.zdel_dir.append(zdir)
         
         if not os.path.exists(self.infile):
-            raise Exception("Infile or zip file not found {} {}".format(self.infile, edit_infile))
+            raise Exception("Infile or zip file not found {} {}".format(self.infile, x))
 
         if os.path.isfile(self.outfile):
             os.remove(self.outfile)
