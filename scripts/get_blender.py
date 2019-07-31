@@ -1,6 +1,7 @@
 import os
 import sys
 import shutil
+import subprocess
 import zipfile
 import tarfile
 import requests
@@ -10,12 +11,9 @@ from bs4 import BeautifulSoup
 
 
 def checkPath(path):
-    path = os.path.realpath(path)
-    if re.match("/cygdrive/", path):
-        path = re.sub("/cygdrive/", "", path)
-        path = re.sub("/", "\\\\", path)
-        path = (path[:1] + ":" + path[1:]).capitalize()
-
+    if "cygwin" == sys.platform:
+        cmd = "cygpath -wa {0}".format(path)
+        path = subprocess.check_output(cmd.split()).decode("ascii").rstrip()
     return path
 
 
@@ -27,7 +25,12 @@ def getSuffix(blender_version, nightly):
         machine = "linux.+x86_64"
         ext = "tar.bz2"
 
-    rev = re.sub("\w$", "", blender_version)
+    g = re.search(f"\d\.\d\d", blender_version)
+    if g:
+        rev = g.group(0)
+    else:
+        raise
+        
     if False == nightly:
         url = f"https://ftp.nluug.nl/pub/graphics/blender/release/Blender{rev}"
         if "win64" == machine:
@@ -40,24 +43,30 @@ def getSuffix(blender_version, nightly):
     soup = BeautifulSoup(data, features="html.parser")
 
     blender_version_suffix = ""
+    blender_zippath = None
+    versions_found = []
     for link in soup.find_all("a"):
         x = str(link.get("href"))
-        g = re.search(f"blender-{blender_version}.+{machine}.+{ext}", x)
+        g = re.search(f"blender-(.+)-{machine}.+{ext}", x)
         if g:
-            blender_zippath = f"{url}/{g.group(0)}"
-            break
+            version_found = g.group(1).split("-")[0]
+            versions_found.append(version_found)
+            if version_found == blender_version:
+                blender_zippath = f"{url}/{g.group(0)}"
 
-    return (blender_zippath)
+    if None == blender_zippath:
+        raise Exception(f"Unable to find {blender_version} in nightlies, here is what is available {versions_found}")
+    return blender_zippath
 
 
 def getBlender(blender_version, blender_zippath, nightly):
     cwd = checkPath(os.getcwd())
-    if 'BLENDER_CACHE' in os.environ.keys():
+    if "BLENDER_CACHE" in os.environ.keys():
         print(f"BLENDER_CACHE found {os.environ['BLENDER_CACHE']}")
-        cache_dir = os.environ['BLENDER_CACHE']
+        os.chdir(os.environ["BLENDER_CACHE"])
     else:
-        cache_dir = ".."
-    os.chdir(cache_dir)
+        os.chdir("..")
+    cache_dir = checkPath(os.getcwd())
 
     blender_zipfile = blender_zippath.split("/")[-1]
 
@@ -107,7 +116,8 @@ def getBlender(blender_version, blender_zippath, nightly):
     src = f"{cache_dir}/{blender_archive}"
     print(f"move {src} to {dst}")
     shutil.move(src, dst)
-    
+
+
 def main(blender_version, nightly=True):
 
     blender_zipfile = getSuffix(blender_version, nightly)
@@ -120,11 +130,11 @@ if __name__ == "__main__":
         blender_rev = sys.argv[1]
     else:
         blender_rev = "2.79b"
-    
+
     if re.search("-", blender_rev):
         blender_rev, _ = blender_rev.split("-")
         nightly = True
-    else:    
+    else:
         nightly = False
 
     main(blender_rev, nightly)
