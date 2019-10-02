@@ -38,8 +38,6 @@ if __name__ == "__main__":
 
     blender = os.path.realpath("{0}/blender".format(blender_dir))
 
-    #test_file = "scripts/load_pytest.py"
-
     exit_val = main(blender, test_file)
 
     sys.exit(exit_val)

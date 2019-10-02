@@ -114,7 +114,7 @@ def getBlender(blender_version, blender_zippath, nightly):
         shutil.rmtree(dst)
 
     src = f"{cache_dir}/{blender_archive}"
-    print(f"move {src} to {dst}")
+    print(f"Move {src} to {dst}")
     shutil.move(src, dst)
 
 
@@ -126,6 +126,10 @@ def main(blender_version, nightly=True):
 
 
 if __name__ == "__main__":
+    if "cygwin" == sys.platform:
+        print("ERROR, do not run this under cygwin, run it under Linux and Windows cmd!!")
+        exit()
+
     if len(sys.argv) >= 2:
         blender_rev = sys.argv[1]
     else:
