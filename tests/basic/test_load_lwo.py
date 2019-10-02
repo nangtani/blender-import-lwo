@@ -24,3 +24,7 @@ def test_load_lwo_box5_ngon():
     infile = 'tests/basic/src/LWO2/box/box5-ngon.lwo'
     load_lwo(infile)
 
+def test_load_lwo_ngon0():
+    infile = 'tests/basic/src/LWO2/ngon/ngon0.lwo'
+    load_lwo(infile)
+
