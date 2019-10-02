@@ -681,7 +681,11 @@ def build_objects(lwo, use_existing_materials):
         elif len(ob_dict.keys()) > 1:
             ob_dict[ob_key][0].parent = empty
 
-    bpy.context.scene.update()
+    if (2, 80, 0) < bpy.app.version:
+        bpy.context.view_layer.update()
+    else:  # else bpy.app.version
+        bpy.context.scene.update()
+    # endif
 
     print("Done Importing LWO File")
 
