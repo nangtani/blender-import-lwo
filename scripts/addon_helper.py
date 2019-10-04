@@ -37,12 +37,13 @@ def clean_file(filename):
             trim_code = False
             line2 = ""
         
-        h = re.search("^\s+if \((\d+), (\d+), (\d+)\) < bpy.app.version", line)
+        h = re.search("^\s+[el]?if \((\d+), (\d+), (\d+)\) < bpy.app.version", line)
         if h:
             current_blender_rev = (int(h.group(1)), int(h.group(2)), int(h.group(3)))
             trim_code = True
             active_print0 = (current_blender_rev <= bpy.app.version)
             line2 = ""
+            #line = re.sub("elif", "if", line)
         
         if trim_code:
             line2 = re.sub("^    ", "", line2)
