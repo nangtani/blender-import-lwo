@@ -19,7 +19,7 @@ def checkPath(path):
 
 def getSuffix(blender_version, nightly):
     if "win32" == sys.platform or "win64" == sys.platform or "cygwin" == sys.platform:
-        machine = "win64"
+        machine = "windows64"
         ext = "zip"
     else:
         machine = "linux.+x86_64"
@@ -33,8 +33,6 @@ def getSuffix(blender_version, nightly):
         
     if False == nightly:
         url = f"https://ftp.nluug.nl/pub/graphics/blender/release/Blender{rev}"
-        if "win64" == machine:
-            machine = "windows64"
     else:
         url = "https://builder.blender.org/download"
 
