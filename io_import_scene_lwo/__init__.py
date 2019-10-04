@@ -637,20 +637,42 @@ def build_objects(lwo, use_existing_materials):
         layer_data.morphs.clear()
         layer_data.surf_tags.clear()
 
+        
         # We may have some invalid mesh data, See: [#27916]
         # keep this last!
-        print(f"validating mesh: {me.name}...")
-        me.validate()
-        # Texture slots have been removed from 2.80, is there a corresponding any thing?
         if (2, 80, 0) < bpy.app.version:
-            pass
-            #me.update(calc_loop_triangles=True)
+            print("loop_triangles", me.calc_loop_triangles())
+            if not None == me.calc_loop_triangles():
+                raise Exception("me.calc_loop_triangles tripped")
+#         elxf (2, 80, 0) < bpy.app.version:
+#             if not None == me.calc_loop_triangles():
+#                 raise Exception("me.calc_loop_triangles tripped")
+#             print("loop_triangles", me.calc_loop_triangles())
+#             me.update(calc_loop_triangles=True)
         else:  # else bpy.app.version
+            print("tessface", me.calc_tessface())
+            if not None == me.calc_tessface():
+                raise Exception("me.calc_tessface tripped")
             me.update(calc_tessface=True)
         # endif
         
+#         if (2, 80, 0) < bpy.app.version:
+#             pass
+#             #me.update(calc_loop_triangles=True)
+#             #me.update(calc_edges=True)
+#             #me.update(calc_edges_loose=True)
+#         else:  # else bpy.app.version
+#             me.update(calc_tessface=True)
+#         # endif
+
+        print(f"Validating mesh: {me.name}...")
+        #me.validate(verbose=True)
+        me.validate()
+        #print("1", me.validate())
+        
+        # Texture slots have been removed from 2.80, is there a corresponding any thing?
         # Create the 3D View visualisation textures.
-        if 'CYCLES' == bpy.context.scene.render.engine:
+        if 'CYCLES' == bpy.context.scene.render.engine or 'BLENDER_EEVEE' == bpy.context.scene.render.engine:
             pass
         else:
             for tf in me.polygons:
