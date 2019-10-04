@@ -79,6 +79,7 @@ class ImportFile(object):
 
 def load_lwo(infile):
     if (2, 80, 0) < bpy.app.version:
+        #renderers = ['CYCLES', 'BLENDER_EEVEE']
         renderers = ['CYCLES']
     elif (2, 79, 0) < bpy.app.version:
         renderers = ['BLENDER_RENDER', 'CYCLES']

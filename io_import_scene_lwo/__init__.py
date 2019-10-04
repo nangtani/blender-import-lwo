@@ -324,8 +324,9 @@ def lwo2cycles(lwo, surf_key, use_existing_materials):
 def build_materials(lwo, use_existing_materials):
     print(f"Adding {len(lwo.surfs)} Materials")
 
+    renderer = bpy.context.scene.render.engine
     for surf_key in lwo.surfs:
-        if 'CYCLES' == bpy.context.scene.render.engine:
+        if 'CYCLES' == renderer or 'BLENDER_EEVEE' == renderer or 'BLENDER_WORKBENCH' == renderer:
             surf_data = lwo2cycles(lwo, surf_key, use_existing_materials)
         else:
             surf_data = lwo2BI(lwo, surf_key, use_existing_materials)
@@ -642,7 +643,8 @@ def build_objects(lwo, use_existing_materials):
         me.validate()
         # Texture slots have been removed from 2.80, is there a corresponding any thing?
         if (2, 80, 0) < bpy.app.version:
-            me.update(calc_loop_triangles=True)
+            pass
+            #me.update(calc_loop_triangles=True)
         else:  # else bpy.app.version
             me.update(calc_tessface=True)
         # endif
