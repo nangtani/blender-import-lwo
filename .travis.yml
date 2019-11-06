@@ -12,7 +12,8 @@ env:
         - BLENDER_VERSION="2.78c"
         - BLENDER_VERSION="2.79b"
         - BLENDER_VERSION="2.80"
-        - BLENDER_VERSION="2.81-nightly"
+        - BLENDER_VERSION="2.81"
+        - BLENDER_VERSION="2.82"
 
 language: python
 python:
@@ -51,7 +52,7 @@ install:
 
 script:
     - cd ${TRAVIS_BUILD_DIR}
-    - ../blender-${BLENDER_VERSION}/blender --version
+    #- ../blender-${BLENDER_VERSION}/blender --version
     - python3 scripts/run_blender.py ${BLENDER_VERSION}
 
 #after_success:

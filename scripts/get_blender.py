@@ -17,7 +17,7 @@ def checkPath(path):
     return path
 
 
-def getSuffix(blender_version, nightly):
+def getSuffix(blender_version):
     if "win32" == sys.platform or "win64" == sys.platform or "cygwin" == sys.platform:
         machine = "windows64"
         ext = "zip"
@@ -31,30 +31,36 @@ def getSuffix(blender_version, nightly):
     else:
         raise
         
-    if False == nightly:
-        url = f"https://ftp.nluug.nl/pub/graphics/blender/release/Blender{rev}"
-    else:
-        url = "https://builder.blender.org/download"
-
-    page = requests.get(url)
-    data = page.text
-    soup = BeautifulSoup(data, features="html.parser")
-
-    blender_version_suffix = ""
+    urls = [
+        f"https://ftp.nluug.nl/pub/graphics/blender/release/Blender{rev}",
+        "https://builder.blender.org/download",
+    ]
     blender_zippath = None
-    versions_found = []
-    for link in soup.find_all("a"):
-        x = str(link.get("href"))
-        g = re.search(f"blender-(.+)-{machine}.+{ext}", x)
-        if g:
-            version_found = g.group(1).split("-")[0]
-            versions_found.append(version_found)
-            if version_found == blender_version:
-                blender_zippath = f"{url}/{g.group(0)}"
-
+    nightly = False
+    for url in urls:
+        page = requests.get(url)
+        data = page.text
+        soup = BeautifulSoup(data, features="html.parser")
+        
+        blender_version_suffix = ""
+        versions_found = []
+        for link in soup.find_all("a"):
+            x = str(link.get("href"))
+            g = re.search(f"blender-(.+)-{machine}.+{ext}", x)
+            if g:
+                version_found = g.group(1).split("-")[0]
+                versions_found.append(version_found)
+                if version_found == blender_version:
+                    blender_zippath = f"{url}/{g.group(0)}"
+                    if url == urls[1]:
+                        nightly = True
+     
     if None == blender_zippath:
         raise Exception(f"Unable to find {blender_version} in nightlies, here is what is available {versions_found}")
-    return blender_zippath
+    
+    #print(blender_zippath, nightly)
+    #exit()
+    return blender_zippath, nightly
 
 
 def getBlender(blender_version, blender_zippath, nightly):
@@ -116,9 +122,9 @@ def getBlender(blender_version, blender_zippath, nightly):
     shutil.move(src, dst)
 
 
-def main(blender_version, nightly=True):
+def main(blender_version):
 
-    blender_zipfile = getSuffix(blender_version, nightly)
+    blender_zipfile, nightly = getSuffix(blender_version)
 
     getBlender(blender_version, blender_zipfile, nightly)
 
@@ -135,8 +141,5 @@ if __name__ == "__main__":
 
     if re.search("-", blender_rev):
         blender_rev, _ = blender_rev.split("-")
-        nightly = True
-    else:
-        nightly = False
 
-    main(blender_rev, nightly)
+    main(blender_rev)
