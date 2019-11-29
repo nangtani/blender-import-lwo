@@ -23,7 +23,7 @@ def getSuffix(blender_version):
         ext = "zip"
     else:
         machine = "linux.+x86_64"
-        ext = "tar.bz2"
+        ext = "tar.+"
 
     g = re.search(f"\d\.\d\d", blender_version)
     if g:
