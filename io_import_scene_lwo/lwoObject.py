@@ -129,9 +129,7 @@ class _obj_surf(_lwo_base):
     def lwoprint(self):
         print(f"SURFACE")
         print(f"Surface Name:       {self.name}")
-        print(
-            f"Color:              {int(self.colr[0]*256)} {int(self.colr[1]*256)} {int(self.colr[2]*256)}"
-        )
+        print(f"Color:              {int(self.colr[0]*256)} {int(self.colr[1]*256)} {int(self.colr[2]*256)}")
         print(f"Luminosity:         {self.lumi*100:>8.1f}%")
         print(f"Diffuse:            {self.diff*100:>8.1f}%")
         print(f"Specular:           {self.spec*100:>8.1f}%")
