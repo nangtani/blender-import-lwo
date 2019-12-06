@@ -69,7 +69,7 @@ import mathutils
 from mathutils.geometry import tessellate_polygon
 from pprint import pprint
 
-from .lwoObj import lwoObj
+from .lwoObject import lwoObject
 #from .NodeArrange import nodemargin, ArrangeNodesOp, values
 
 def draw(self, context):
@@ -90,7 +90,7 @@ def load_lwo(
     """Read the LWO file, hand off to version specific function."""
     #bpy.context.object = {}
     #bpy.context.object["ImportLwo"] = {}
-    lwo = lwoObj(filename)
+    lwo = lwoObject(filename)
     lwo.search_paths.extend([
         "dirpath",
         "dirpath/images",
@@ -354,13 +354,32 @@ def build_objects(lwo, use_existing_materials):
         me = bpy.data.meshes.new(layer_data.name)
         me.from_pydata(layer_data.pnts, face_edges, layer_data.pols)
 #         print(dir(me))
-#         print(me.vertices)
-#         print(me.polygons)
+        print(layer_data.pnts)
+        print(layer_data.pols)
+        print(me.vertices)
+        print(me.edges)
+        print(me.polygons)
+        #me.polygons.add(1)
+        
 #         print(me.tessfaces)
 #         me.calc_tessface()
 #         print(me.tessfaces)
-#         print(me.edges)
 #         
+        print(dir(me.vertices[0]))
+        print(me.vertices[0].co)
+        print(me.vertices[1].co)
+#         print(me.polygons[0].vertices)
+#         for v in me.polygons[0].vertices:
+#             print(v)
+ 
+        print(me.edges[0].vertices[0], me.edges[0].vertices[1])
+        print(me.edges[1].vertices[0], me.edges[1].vertices[1])
+        print(dir(me.edges[0]))
+        #bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
+        print(me.vertices)
+        print(me.edges)
+        print(me.polygons)
+        
 #         me_old = bpy.data.meshes.new(layer_data.name)
 #         me_old.vertices.add(len(layer_data.pnts))
 #         me_old.tessfaces.add(len(layer_data.pols))
@@ -567,8 +586,9 @@ def build_objects(lwo, use_existing_materials):
                     for li in vertloops[pnt_id]:
                         uvm.data[li].uv = [u, v]
         print(len(me.polygons))
+
 #         # Now add the NGons.
-#         print(ngons)
+#         print("ngons", ngons)
 #         if len(ngons) > 0:
 #             for ng_key in ngons:
 #                 face_offset = len(me.polygons)
@@ -577,30 +597,34 @@ def build_objects(lwo, use_existing_materials):
 #                 for vi in range(len(ng)):
 #                     v_locs.append(mathutils.Vector(layer_data.pnts[ngons[ng_key][vi]]))
 #                 tris = tessellate_polygon([v_locs])
-#                 me.polygons.add(len(tris))
+#                 print(tris)
+#                 print(len(tris), face_offset)
+#                 #me.polygons.add(1)
+#                 #me.polygons.add(len(tris))
 #                 for tri in tris:
-#                     face = me.polygons[face_offset]
-# #                     face.vertices_raw[0] = ng[tri[0]]
-# #                     face.vertices_raw[1] = ng[tri[1]]
-# #                     face.vertices_raw[2] = ng[tri[2]]
-#                     face.vertices = (ng[tri[0]], ng[tri[1]], ng[tri[2]])
-#                     #face.vertices = (0, 0, 0)
-#                     #print(face.vertices)
-#                     face.material_index = me.polygons[ng_key].material_index
-#                     face.use_smooth = me.polygons[ng_key].use_smooth
-#                     face_offset += 1
-
-#         # FaceIDs are no longer a concern, so now update the mesh.
-#         has_edges = len(edges) > 0 or len(layer_data.edge_weights) > 0
-#         me.update(calc_edges=has_edges)
+#                     pass
+# #                     face = me.polygons[face_offset]
+# # #                     face.vertices_raw[0] = ng[tri[0]]
+# # #                     face.vertices_raw[1] = ng[tri[1]]
+# # #                     face.vertices_raw[2] = ng[tri[2]]
+# #                     face.vertices = (ng[tri[0]], ng[tri[1]], ng[tri[2]])
+# #                     #face.vertices = (0, 0, 0)
+# #                     #print(face.vertices)
+# #                     face.material_index = me.polygons[ng_key].material_index
+# #                     face.use_smooth = me.polygons[ng_key].use_smooth
+# #                     face_offset += 1
 # 
-#         # Add the edges.
-#         edge_offset = len(me.edges)
-#         me.edges.add(len(edges))
-#         for edge_fi in edges:
-#             me.edges[edge_offset].vertices[0] = layer_data.pols[edge_fi][0]
-#             me.edges[edge_offset].vertices[1] = layer_data.pols[edge_fi][1]
-#             edge_offset += 1
+# #         # FaceIDs are no longer a concern, so now update the mesh.
+# #         has_edges = len(edges) > 0 or len(layer_data.edge_weights) > 0
+# #         me.update(calc_edges=has_edges)
+# # 
+# #         # Add the edges.
+# #         edge_offset = len(me.edges)
+# #         me.edges.add(len(edges))
+# #         for edge_fi in edges:
+# #             me.edges[edge_offset].vertices[0] = layer_data.pols[edge_fi][0]
+# #             me.edges[edge_offset].vertices[1] = layer_data.pols[edge_fi][1]
+# #             edge_offset += 1
 
         # Apply the Edge Weighting.
         if len(layer_data.edge_weights) > 0:
