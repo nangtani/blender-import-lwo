@@ -14,8 +14,8 @@ def checkPath(path):
 
 def main(blender, test_file):
     test_file = checkPath(test_file)
-    os.environ["PYTHONPATH"] = os.getcwd() + "/scripts"
-    os.environ["PYTHONPATH"] = checkPath(os.environ["PYTHONPATH"])
+    local_python = checkPath(os.path.join(os.getcwd(), "scripts"))
+    os.environ["LOCAL_PYTHONPATH"] = local_python
 
     cmd = f'{blender} -b --python "{test_file}"'
     result = int(os.system(cmd))
