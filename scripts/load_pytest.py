@@ -1,6 +1,8 @@
+import os
 import sys
 import pytest
 try:
+    sys.path.append(os.environ["LOCAL_PYTHONPATH"])
     from addon_helper import SetupAddon
 except Exception as e:
     print(e)

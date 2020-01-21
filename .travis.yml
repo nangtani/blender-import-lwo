@@ -12,7 +12,9 @@ env:
         - BLENDER_VERSION="2.79b"
         - BLENDER_VERSION="2.78c"
         - BLENDER_VERSION="2.80"
-        - BLENDER_VERSION="2.81-nightly"
+        - BLENDER_VERSION="2.81"
+        - BLENDER_VERSION="2.82"
+        - BLENDER_VERSION="2.83"
 
 language: python
 python:
