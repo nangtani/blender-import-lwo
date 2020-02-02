@@ -587,19 +587,37 @@ def build_objects(lwo, use_existing_materials):
                         uvm.data[li].uv = [u, v]
         print(len(me.polygons))
 
-#         # Now add the NGons.
-#         print("ngons", ngons)
-#         if len(ngons) > 0:
-#             for ng_key in ngons:
-#                 face_offset = len(me.polygons)
-#                 ng = ngons[ng_key]
-#                 v_locs = []
-#                 for vi in range(len(ng)):
-#                     v_locs.append(mathutils.Vector(layer_data.pnts[ngons[ng_key][vi]]))
-#                 tris = tessellate_polygon([v_locs])
-#                 print(tris)
-#                 print(len(tris), face_offset)
-#                 #me.polygons.add(1)
+        # Now add the NGons.
+        if not 0 == len(ngons):
+            import bmesh
+            bm = bmesh.new()
+            bm.from_mesh(me)
+            if hasattr(bm.faces, "ensure_lookup_table"): 
+                bm.faces.ensure_lookup_table()
+            #bmesh.ops.triangulate(bm, faces=bm.faces[:], quad_method=0, ngon_method=0)
+            #print(bm.faces[:])
+            print(bm.faces[0])
+            exit()
+            bmesh.ops.triangulate(bm, faces=bm.faces[:])
+
+            # Finish up, write the bmesh back to the mesh
+            bm.to_mesh(me)
+            bm.free()
+            #bm.polygons.add(1)
+            #print(len(bm.polygons))
+            
+            print(f"{len(ngons)} ngons")
+            for ng_key, ng in ngons.items():
+                #ng = ngons[ng_key]
+                print(f"{ng_key}: {ng}")
+                face_offset = len(me.polygons)
+                v_locs = []
+                for vi in range(len(ng)):
+                    v_locs.append(mathutils.Vector(layer_data.pnts[ngons[ng_key][vi]]))
+                tris = tessellate_polygon([v_locs])
+                print(tris)
+                print(len(tris), face_offset)
+                #me.polygons.add(1)
 #                 #me.polygons.add(len(tris))
 #                 for tri in tris:
 #                     pass
