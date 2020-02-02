@@ -1,3 +1,6 @@
+import os
+import sys
+sys.path.append(os.environ["LOCAL_PYTHONPATH"])
 from addon_helper import SetupAddon
 from lwo_helper import ImportFile
 import bpy

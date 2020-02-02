@@ -31,6 +31,11 @@ if __name__ == "__main__":
     else:
         blender_rev = "2.80"
 
+    if len(sys.argv) >= 3:
+        test_file = sys.argv[2]
+    else:
+        test_file = "scripts/load_pytest.py"
+
     if "win32" == sys.platform or "win64" == sys.platform or "cygwin" == sys.platform:
         ext = ".exe"
     else:
@@ -41,8 +46,6 @@ if __name__ == "__main__":
         raise Exception(f"Too many blenders returned: {files}")
     
     blender = os.path.realpath(files[0])
-
-    test_file = "scripts/load_pytest.py"
 
     exit_val = main(blender, test_file)
 
