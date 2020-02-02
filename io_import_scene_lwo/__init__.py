@@ -597,11 +597,11 @@ def build_objects(lwo, use_existing_materials):
             #bmesh.ops.triangulate(bm, faces=bm.faces[:], quad_method=0, ngon_method=0)
             #print(bm.faces[:])
             print(bm.faces[0])
-            exit()
+            #exit()
             bmesh.ops.triangulate(bm, faces=bm.faces[:])
 
             # Finish up, write the bmesh back to the mesh
-            bm.to_mesh(me)
+            #bm.to_mesh(me)
             bm.free()
             #bm.polygons.add(1)
             #print(len(bm.polygons))
