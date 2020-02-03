@@ -59,7 +59,7 @@ def objToDict(m):
     for k in dir(m):
         if k.startswith("__"):
             continue
-        print(m, dir(m))
+        #print(m, dir(m))
         x = getattr(m, k)
         n[k] = copy.deepcopy(checkType(x))
     return n
