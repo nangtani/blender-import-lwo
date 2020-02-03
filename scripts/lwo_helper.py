@@ -5,7 +5,7 @@ import shutil
 import bpy
 from blend_helper import delete_everything, diff_files
 
-class ImportFile:
+class ImportFile(object):
     
     def __init__(self, infile, delimit="/src/"):
         self.infile = infile
