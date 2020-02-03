@@ -385,7 +385,7 @@ def build_objects(lwo, use_existing_materials):
                 mat_slot += 1
 
         #bpy.context.object.data.use_auto_smooth = True
-        #bpy.ops.object.modifier_add(type='EDGE_SPLIT')
+        bpy.ops.object.modifier_add(type='EDGE_SPLIT')
         
         # Create the Vertex Normals.
         if len(layer_data.vnorms) > 0:

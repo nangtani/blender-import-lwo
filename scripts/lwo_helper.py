@@ -5,7 +5,7 @@ import shutil
 import bpy
 from blend_helper import delete_everything, diff_files
 
-class ImportFile(object):
+class ImportFile:
     
     def __init__(self, infile, delimit="/src/"):
         self.infile = infile
@@ -63,6 +63,9 @@ class ImportFile(object):
     def diff_result(self):
         diff_files(self.reffile, self.outfile)
     
+    def copt_dst2ref(self):
+        shutil.copyfile(self.outfile, self.reffile)
+    
     def clean_up(self):
         delete_everything()
         for z in self.zdel_dir: 
@@ -93,6 +96,7 @@ def load_lwo(infile):
         importfile.check_file()
         importfile.import_object()
         importfile.save_blend()
+        #importfile.copt_dst2ref()
         importfile.diff_result()
         importfile.clean_up()
 
