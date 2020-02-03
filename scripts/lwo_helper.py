@@ -96,7 +96,7 @@ def load_lwo(infile):
         importfile.check_file()
         importfile.import_object()
         importfile.save_blend()
-        importfile.copt_dst2ref()
+        #importfile.copt_dst2ref()
         importfile.diff_result()
         importfile.clean_up()
 
