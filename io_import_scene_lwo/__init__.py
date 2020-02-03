@@ -353,90 +353,7 @@ def build_objects(lwo, use_existing_materials):
         face_edges = []
         me = bpy.data.meshes.new(layer_data.name)
         me.from_pydata(layer_data.pnts, face_edges, layer_data.pols)
-#         print(dir(me))
-        print(layer_data.pnts)
-        print(layer_data.pols)
-        print(me.vertices)
-        print(me.edges)
-        print(me.polygons)
-        #me.polygons.add(1)
-        
-#         print(me.tessfaces)
-#         me.calc_tessface()
-#         print(me.tessfaces)
-#         
-        print(dir(me.vertices[0]))
-        print(me.vertices[0].co)
-        print(me.vertices[1].co)
-#         print(me.polygons[0].vertices)
-#         for v in me.polygons[0].vertices:
-#             print(v)
- 
-        print(me.edges[0].vertices[0], me.edges[0].vertices[1])
-        print(me.edges[1].vertices[0], me.edges[1].vertices[1])
-        print(dir(me.edges[0]))
-        #bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
-        print(me.vertices)
-        print(me.edges)
-        print(me.polygons)
-        
-#         me_old = bpy.data.meshes.new(layer_data.name)
-#         me_old.vertices.add(len(layer_data.pnts))
-#         me_old.tessfaces.add(len(layer_data.pols))
-#         print(me_old.vertices)
-#         print(me_old.tessfaces)
-#         raise
 
-#         if (2, 80, 0) < bpy.app.version:
-#             pass # FIXME
-# #             print(me.loop_triangle)
-# #             me.loop_triangles.add(len(layer_data.pols))
-#         else:
-#             #print("tessfaces.add", len(layer_data.pols))
-#             #print(layer_data.pols)
-#             me.tessfaces.add(len(layer_data.pols))
-#         # for vi in range(len(layer_data.pnts)):
-#         #     me.vertices[vi].co= laye  r_data.pnts[vi]
-# 
-#         # faster, would be faster again to use an array
-#         me.vertices.foreach_set("co", [axis for co in layer_data.pnts for axis in co])
-# 
-#         edges = []  # Holds the FaceIdx of the 2-point polys.
-#         for fi, fpol in enumerate(layer_data.pols):
-#             fpol.reverse()  # Reversing gives correct normal directions
-#             # PointID 0 in the last element causes Blender to think it's un-used.
-#             if fpol[-1] == 0:
-#                 fpol.insert(0, fpol[-1])
-#                 del fpol[-1]
-# 
-#             vlen = len(fpol)
-#             if vlen == 3 or vlen == 4:
-#                 pass
-# #                 if (2, 80, 0) < bpy.app.version:
-# #                     pass # FIXME
-# #                 else:
-# #                     for i in range(vlen):
-# #                         me.tessfaces[fi].vertices_raw[i] = fpol[i]
-#             elif vlen == 2:
-#                 edges.append(fi)
-#             elif vlen != 1:
-#                 print(vlen)
-#                 ngons[fi] = fpol  # Deal with them later
-
-        ngons = {}  # To keep the FaceIdx consistent, handle NGons later.
-        for fi, fpol in enumerate(layer_data.pols):
-            fpol.reverse()  # Reversing gives correct normal directions
-            # PointID 0 in the last element causes Blender to think it's un-used.
-            if fpol[-1] == 0:
-                fpol.insert(0, fpol[-1])
-                del fpol[-1]
-             
-            vlen = len(fpol)
-            if vlen > 4:
-                ngons[fi] = fpol  # Deal with them later
-
-        #print(len(ngons))
-        
         ob = bpy.data.objects.new(layer_data.name, me)
         if (2, 80, 0) < bpy.app.version:
             scn = bpy.context.collection
@@ -585,65 +502,26 @@ def build_objects(lwo, use_existing_materials):
                 for pnt_id, (u, v) in uvcoords.items():
                     for li in vertloops[pnt_id]:
                         uvm.data[li].uv = [u, v]
-        print(len(me.polygons))
 
-        # Now add the NGons.
-        if not 0 == len(ngons):
-            import bmesh
+        # Now triangulate the NGons.
+        #if not 0 == len(ngons):
+        if True:
             bm = bmesh.new()
             bm.from_mesh(me)
             if hasattr(bm.faces, "ensure_lookup_table"): 
                 bm.faces.ensure_lookup_table()
-            #bmesh.ops.triangulate(bm, faces=bm.faces[:], quad_method=0, ngon_method=0)
-            #print(bm.faces[:])
-            print(bm.faces[0])
-            #exit()
-            bmesh.ops.triangulate(bm, faces=bm.faces[:])
+
+            faces = []
+            for face in bm.faces:
+                if len(face.verts) > 4: # review this number
+                    faces.append(face)
+            print(f"{len(faces)} NGONs")
+            bmesh.ops.triangulate(bm, faces=faces)
 
             # Finish up, write the bmesh back to the mesh
-            #bm.to_mesh(me)
+            bm.to_mesh(me)
             bm.free()
-            #bm.polygons.add(1)
-            #print(len(bm.polygons))
             
-            print(f"{len(ngons)} ngons")
-            for ng_key, ng in ngons.items():
-                #ng = ngons[ng_key]
-                print(f"{ng_key}: {ng}")
-                face_offset = len(me.polygons)
-                v_locs = []
-                for vi in range(len(ng)):
-                    v_locs.append(mathutils.Vector(layer_data.pnts[ngons[ng_key][vi]]))
-                tris = tessellate_polygon([v_locs])
-                print(tris)
-                print(len(tris), face_offset)
-                #me.polygons.add(1)
-#                 #me.polygons.add(len(tris))
-#                 for tri in tris:
-#                     pass
-# #                     face = me.polygons[face_offset]
-# # #                     face.vertices_raw[0] = ng[tri[0]]
-# # #                     face.vertices_raw[1] = ng[tri[1]]
-# # #                     face.vertices_raw[2] = ng[tri[2]]
-# #                     face.vertices = (ng[tri[0]], ng[tri[1]], ng[tri[2]])
-# #                     #face.vertices = (0, 0, 0)
-# #                     #print(face.vertices)
-# #                     face.material_index = me.polygons[ng_key].material_index
-# #                     face.use_smooth = me.polygons[ng_key].use_smooth
-# #                     face_offset += 1
-# 
-# #         # FaceIDs are no longer a concern, so now update the mesh.
-# #         has_edges = len(edges) > 0 or len(layer_data.edge_weights) > 0
-# #         me.update(calc_edges=has_edges)
-# # 
-# #         # Add the edges.
-# #         edge_offset = len(me.edges)
-# #         me.edges.add(len(edges))
-# #         for edge_fi in edges:
-# #             me.edges[edge_offset].vertices[0] = layer_data.pols[edge_fi][0]
-# #             me.edges[edge_offset].vertices[1] = layer_data.pols[edge_fi][1]
-# #             edge_offset += 1
-
         # Apply the Edge Weighting.
         if len(layer_data.edge_weights) > 0:
             for edge in me.edges:
@@ -686,11 +564,6 @@ def build_objects(lwo, use_existing_materials):
             print("loop_triangles", me.calc_loop_triangles())
             if not None == me.calc_loop_triangles():
                 raise Exception("me.calc_loop_triangles tripped")
-#         elxf (2, 80, 0) < bpy.app.version:
-#             if not None == me.calc_loop_triangles():
-#                 raise Exception("me.calc_loop_triangles tripped")
-#             print("loop_triangles", me.calc_loop_triangles())
-#             me.update(calc_loop_triangles=True)
         else:  # else bpy.app.version
             print("tessface", me.calc_tessface())
             if not None == me.calc_tessface():
@@ -708,9 +581,7 @@ def build_objects(lwo, use_existing_materials):
 #         # endif
 
         print(f"Validating mesh: {me.name}...")
-        #me.validate(verbose=True)
         me.validate()
-        #print("1", me.validate())
         
         # Texture slots have been removed from 2.80, is there a corresponding any thing?
         # Create the 3D View visualisation textures.
