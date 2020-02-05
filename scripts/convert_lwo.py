@@ -10,7 +10,7 @@ def convert_file(infiles, addon):
     x = SetupAddon(addon)
     x.configure()
     
-    importfile = ImportFile(infiles)
+    importfile = ImportFile(infiles, USE_EXISTING_MATERIALS=False)
     importfile.check_file()
     importfile.import_objects()
     

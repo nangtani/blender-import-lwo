@@ -638,6 +638,7 @@ class IMPORT_OT_lwo(bpy.types.Operator):
 #         print("swer", context.scene.lwo_directory)
 
         # With the data gathered, build the object(s).
+        print(self.USE_EXISTING_MATERIALS)
         build_objects(lwo,  self.USE_EXISTING_MATERIALS)
         return {"FINISHED"}
     

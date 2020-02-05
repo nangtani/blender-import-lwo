@@ -9,5 +9,22 @@ def test_load_lwo1():
         "tests/lwo_interceptor/src/LWO2/Federation - Interceptor/objects/interceptor_hull.lwo",
         "tests/lwo_interceptor/src/LWO2/Federation - Interceptor/objects/interceptor_nacell_L.lwo",
     ]
-    load_lwo(infiles)
-    #load_lwo(infiles, "_b")
+    load_lwo(infiles, "_b")
+
+def test_load_lwo2():
+    infiles = [
+        "tests/lwo_interceptor/src/LWO2/Federation - Interceptor/objects/interceptor_hull.lwo",
+        "tests/lwo_interceptor/src/LWO2/Federation - Interceptor/objects/interceptor_nacell_L.lwo",
+    ]
+    load_lwo(infiles, "_c", USE_EXISTING_MATERIALS=True)
+
+def test_load_lwo3():
+    infiles = [
+        "tests/lwo_interceptor/src/LWO2/Federation - Interceptor/objects/interceptor_hull.lwo",
+        "tests/lwo_interceptor/src/LWO2/Federation - Interceptor/objects/interceptor_nacell_L.lwo",
+        "tests/lwo_interceptor/src/LWO2/Federation - Interceptor/objects/interceptor_nacell_R.lwo",
+        "tests/lwo_interceptor/src/LWO2/Federation - Interceptor/objects/interceptor_reg_hull.lwo",
+        "tests/lwo_interceptor/src/LWO2/Federation - Interceptor/objects/interceptor_reg_nacell_L.lwo",
+        "tests/lwo_interceptor/src/LWO2/Federation - Interceptor/objects/interceptor_reg_nacell_R.lwo",
+    ]
+    load_lwo(infiles, "_d", USE_EXISTING_MATERIALS=True)

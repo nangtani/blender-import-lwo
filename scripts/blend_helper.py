@@ -5,6 +5,7 @@ import zipfile
 import shutil
 import types
 import bpy
+import bmesh
 from mathutils import Vector, Matrix, Euler, Quaternion
 from pprint import pprint
 
@@ -53,6 +54,10 @@ def delete_everything():
     for k in bpy.data.images.keys():
         j = bpy.data.images[k]
         bpy.data.images.remove(j)
+    
+    for k in bpy.data.meshes.keys():
+        j = bpy.data.meshes[k]
+        bpy.data.meshes.remove(j)
 
 
 def objToDict(m):
@@ -195,6 +200,18 @@ def diff_files(outfile0, outfile1, error_count=0):
 #         j = bpy.data.meshes[k].copy()
 #         m0[k] = blCopy(j, bpy.data.meshes[k].name)
 #         bpy.data.meshes.remove(j)
+    n0 = {}
+    for k in bpy.data.meshes.keys():
+        bm = bmesh.new()
+        bm.from_mesh(bpy.data.meshes[k])
+        n0[k] ={}
+        #print("materials", dir(bm))
+        n0[k]["faces"] = len(bm.faces)
+        n0[k]["edges"] = len(bm.edges)
+        n0[k]["verts"] = len(bm.verts)
+        n0[k]["materials"] = len(bpy.data.materials) # should be independent from mesh
+        n0[k]["images"] = len(bpy.data.images)
+        bm.free()
 
 
     bpy.ops.wm.open_mainfile(filepath=outfile1)
@@ -208,7 +225,22 @@ def diff_files(outfile0, outfile1, error_count=0):
 #         j = bpy.data.meshes[k].copy()
 #         m1[k] = blCopy(j, bpy.data.meshes[k].name)
 #         bpy.data.meshes.remove(j)
-       
+    n1 = {}
+    for k in bpy.data.meshes.keys():
+        bm = bmesh.new()
+        bm.from_mesh(bpy.data.meshes[k])
+        n1[k] ={}
+        #print("materials", dir(bm))
+        n1[k]["faces"] = len(bm.faces)
+        n1[k]["edges"] = len(bm.edges)
+        n1[k]["verts"] = len(bm.verts)
+        n1[k]["materials"] = len(bpy.data.materials)
+        n1[k]["images"] = len(bpy.data.images)
+        bm.free()
+    
+    #pprint(n0) 
+    #pprint(n1) 
+      
     for k in o0.keys():
         x = o0[k]
         y = o1[k]
@@ -249,3 +281,25 @@ def diff_files(outfile0, outfile1, error_count=0):
 #             print(x.bl["edges"][j][0])
 #             print(dir(x.bl["edges"][j][0]))
 #             print(x.bl["edges"][j][0].values)
+
+    if not len(n0.keys()) == len(n1.keys()):
+        print("<> different set of mesh keys")
+        print(n0.keys())
+        print(n1.keys())
+        assert False
+    for k in n0.keys():
+        x = n0[k]
+        y = n1[k]
+        if not len(x.keys()) == len(y.keys()):
+            print("<> different set of keys")
+            print(x.keys())
+            print(y.keys())
+            assert False
+        for a, b in x.items():
+            if not a in y.keys():
+                print("<{}> in not in dst".format(a))
+            if not x[a] == y[a]:
+                print("<{}> is different".format(a))
+                pprint(x[a])
+                pprint(y[a])
+                assert False

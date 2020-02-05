@@ -7,13 +7,28 @@ from blend_helper import delete_everything, diff_files
 
 class ImportFile:
     
-    def __init__(self, infiles, post_pend="", delimit="/src/"):
+    def __init__(self, infiles, post_pend="", delimit="/src/", *args, **kwargs):
         if isinstance(infiles, str):
             self.infiles = [infiles]
         else:
             self.infiles = infiles
         self.post_pend = post_pend
         self.zdel_dir = []
+        self.args = args
+        self.kwargs = kwargs
+        
+        self.lw_args = ()
+        self.lw_kwargs = {}
+        
+        self.kwlist = [
+            "ADD_SUBD_MOD",
+            "LOAD_HIDDEN", 
+            "SKEL_TO_ARM", 
+            "USE_EXISTING_MATERIALS",
+        ]
+        for k in self.kwlist:
+            if k in self.kwargs.keys():
+                self.lw_kwargs[k] = self.kwargs[k]
 
         self.infile = self.infiles[0]
         if re.search(delimit, self.infile):
@@ -67,8 +82,9 @@ class ImportFile:
     def diff_result(self):
         diff_files(self.reffile, self.outfile)
     
-    def copt_dst2ref(self):
-        shutil.copyfile(self.outfile, self.reffile)
+    def copt_dst2ref(self, force=False):
+        if not os.path.exists(self.reffile) or force:
+            shutil.copyfile(self.outfile, self.reffile)
     
     def clean_up(self):
         delete_everything()
@@ -77,17 +93,18 @@ class ImportFile:
             shutil.rmtree(z)
     
     def import_objects(self):
-        #delete_everything()
-        
         for infile in self.infiles:
-            #print(infile)
-            bpy.ops.import_scene.lwo(filepath=infile)
+            bpy.ops.import_scene.lwo(
+                filepath=infile, 
+                *self.lw_args,
+                **self.lw_kwargs,
+            )
 
     def save_blend(self):
         bpy.ops.wm.save_mainfile(filepath=self.outfile)
 
 
-def load_lwo(infiles, post_pend=""):
+def load_lwo(infiles, post_pend="", *args, **kwargs):
     if (2, 80, 0) < bpy.app.version:
         #renderers = ['CYCLES', 'BLENDER_EEVEE']
         renderers = ['CYCLES']
@@ -97,13 +114,14 @@ def load_lwo(infiles, post_pend=""):
         renderers = ['BLENDER_RENDER']
     
     for render in renderers:
+        delete_everything()
         bpy.context.scene.render.engine = render
         
-        importfile = ImportFile(infiles, post_pend)
+        importfile = ImportFile(infiles, post_pend, *args, **kwargs)
         importfile.check_file()
         importfile.import_objects()
         importfile.save_blend()
-        #importfile.copt_dst2ref()
+        importfile.copt_dst2ref()
         importfile.diff_result()
         importfile.clean_up()
 
