@@ -69,7 +69,7 @@ import mathutils
 from pprint import pprint
 
 from .lwoObject import lwoObject
-from .gen_material import lwo2BI, lwo2cycles
+from .gen_material import lwo2BI, lwo2cycles, get_existing
 
 def draw(self, context):
     self.layout.label("Hello World")
@@ -181,11 +181,17 @@ def build_materials(lwo, use_existing_materials):
 
     renderer = bpy.context.scene.render.engine
     for surf_key in lwo.surfs:
-        if 'CYCLES' == renderer or 'BLENDER_EEVEE' == renderer or 'BLENDER_WORKBENCH' == renderer:
-            surf_data = lwo2cycles(lwo, surf_key, use_existing_materials)
-        else:
-            surf_data = lwo2BI(lwo, surf_key, use_existing_materials)
-
+        m = None
+        if use_existing_materials:
+            m = get_existing(lwo.surfs[surf_key])
+        
+        if None == m:
+            if 'CYCLES' == renderer or 'BLENDER_EEVEE' == renderer or 'BLENDER_WORKBENCH' == renderer:
+                m = lwo2cycles(lwo.surfs[surf_key])
+            else:
+                m = lwo2BI(lwo.surfs[surf_key])
+        
+        lwo.materials[surf_key] = m
 
 def build_objects(lwo, use_existing_materials):
     """Using the gathered data, create the objects."""
@@ -230,12 +236,12 @@ def build_objects(lwo, use_existing_materials):
         # Create the Material Slots and assign the MatIndex to the correct faces.
         mat_slot = 0
         for surf_key in layer_data.surf_tags:
-            if lwo.tags[surf_key] in lwo.surfs:
-                me.materials.append(lwo.surfs[lwo.tags[surf_key]].bl_mat)
+            if lwo.tags[surf_key] in lwo.materials:
+                me.materials.append(lwo.materials[lwo.tags[surf_key]].mat)
 
                 for fi in layer_data.surf_tags[surf_key]:
                     me.polygons[fi].material_index = mat_slot
-                    me.polygons[fi].use_smooth = lwo.surfs[lwo.tags[surf_key]].smooth
+                    me.polygons[fi].use_smooth = lwo.materials[lwo.tags[surf_key]].smooth
 
                 mat_slot += 1
 

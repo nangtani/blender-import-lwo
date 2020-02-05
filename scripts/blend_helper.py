@@ -3,13 +3,14 @@ import re
 import copy
 import zipfile
 import shutil
+import types
 import bpy
 from mathutils import Vector, Matrix, Euler, Quaternion
 from pprint import pprint
 
 class blCopy:
     
-    def __init__(self, m, name):
+    def __init__(self, m, name, keys=None):
         self.bl = objToDict(m)
         self.bl["name"] = name
         self.bl.pop("active_material", None) # not really something that can be diffed
@@ -61,7 +62,8 @@ def objToDict(m):
             continue
         #print(m, dir(m))
         x = getattr(m, k)
-        n[k] = copy.deepcopy(checkType(x))
+        y = checkType(x)
+        n[k] = copy.deepcopy(y)
     return n
 
 def checkType(x):
@@ -108,6 +110,10 @@ def checkType(x):
         #print(k, x, "bpy.types.bpy_func")
         i = type(x)
         return i
+    elif isinstance(x, bpy.types.MeshVertex):
+        print(k, x, "bpy.types.MeshVertex")
+        #i = type(x)
+        return None
 #     elif isinstance(x, type(object)):
 #         print(k, x, "bpy.types.bpy_method")
 #         i = type(x)
@@ -144,6 +150,8 @@ def checkType(x):
 #         pass
     elif isinstance(x, stype):
         pass
+    elif isinstance(x, types.MethodType):
+        return None
 #     elif isinstance(x, type(None)):
 #         pass
 #     elif isinstance(x, bool):
@@ -178,19 +186,29 @@ def diff_files(outfile0, outfile1, error_count=0):
 
     bpy.ops.wm.open_mainfile(filepath=outfile0)
     o0 = {}
+    m0 = {}
     for k in bpy.data.objects.keys():
         j = bpy.data.objects[k].copy()
         o0[k] = blCopy(j, bpy.data.objects[k].name)
         bpy.data.objects.remove(j)
+#     for k in bpy.data.meshes.keys():
+#         j = bpy.data.meshes[k].copy()
+#         m0[k] = blCopy(j, bpy.data.meshes[k].name)
+#         bpy.data.meshes.remove(j)
 
 
     bpy.ops.wm.open_mainfile(filepath=outfile1)
     o1 = {}
+    m1 = {}
     for k in bpy.data.objects.keys():
         j = bpy.data.objects[k].copy()
         o1[k] = blCopy(j, bpy.data.objects[k].name)
         bpy.data.objects.remove(j)
-        
+#     for k in bpy.data.meshes.keys():
+#         j = bpy.data.meshes[k].copy()
+#         m1[k] = blCopy(j, bpy.data.meshes[k].name)
+#         bpy.data.meshes.remove(j)
+       
     for k in o0.keys():
         x = o0[k]
         y = o1[k]
@@ -207,3 +225,27 @@ def diff_files(outfile0, outfile1, error_count=0):
                 pprint(x.bl[a])
                 pprint(y.bl[a])
                 assert False
+    
+#     for k in m0.keys():
+#         x = m0[k]
+#         y = m1[k]
+#         
+#         for a in x.bl.keys():
+#             #print(a)
+#             if not a in y.bl.keys():
+#                 print("<{}> in not in dst".format(a))
+#             if not x.bl[a] == y.bl[a]:
+#                 print("<{}> is different".format(a))
+#                 pprint(x.bl[a])
+#                 pprint(y.bl[a])
+#                 assert False
+        
+#         print(x.bl["edges"])
+#         print(y.bl["edges"])
+#         print(x.bl["edges"] == y.bl["edges"])
+#         
+#         for j in x.bl["edges"].keys():
+#             print(j)
+#             print(x.bl["edges"][j][0])
+#             print(dir(x.bl["edges"][j][0]))
+#             print(x.bl["edges"][j][0].values)

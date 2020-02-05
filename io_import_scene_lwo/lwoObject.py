@@ -11,7 +11,7 @@ class lwoNoImageFoundException(Exception):
     pass
 
 
-class _lwo_base(object):
+class _lwo_base:
     def __eq__(self, x):
         if not isinstance(x, self.__class__):
             return False
@@ -1003,13 +1003,14 @@ def read_surf_5(surf_bytes, lwo, dirpath=None):
     lwo.surfs[surf.name] = surf
 
 
-class lwoObject(object):
+class lwoObject:
     def __init__(self, filename):
         self.name, self.ext = os.path.splitext(os.path.basename(filename))
         # self.f = None
         self.filename = os.path.abspath(filename)
         self.layers = []
         self.surfs = {}
+        self.materials = {}
         self.tags = []
         self.clips = {}
         self.images = []
