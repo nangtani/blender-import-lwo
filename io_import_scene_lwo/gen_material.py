@@ -3,15 +3,25 @@ import bpy
 #from .NodeArrange import nodemargin, ArrangeNodesOp, values
 
 class _material:
+    __slots__ = (
+        "name",
+        "mat",
+        "smooth",
+    )
     def __init__(self, name=None):
         self.name = name
         self.mat = None
         self.smooth = False
 
-def get_existing(surf_data):
-    m = _material(surf_data.name)
-    m.mat = bpy.data.materials.get(surf_data.name)
-    m.smooth = surf_data.smooth
+def get_existing(surf, use_existing_materials):
+    m = None
+    if not use_existing_materials:
+        return m
+    x = bpy.data.materials.get(surf.name)
+    if not None == x:
+        m = _material(surf.name)
+        m.mat = x
+        m.smooth = surf.smooth
     return m
     
 def lwo2BI(surf_data):

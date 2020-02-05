@@ -180,18 +180,14 @@ def build_materials(lwo, use_existing_materials):
     print(f"Adding {len(lwo.surfs)} Materials")
 
     renderer = bpy.context.scene.render.engine
-    for surf_key in lwo.surfs:
-        m = None
-        if use_existing_materials:
-            m = get_existing(lwo.surfs[surf_key])
-        
+    for key, surf in lwo.surfs.items():
+        m = get_existing(surf, use_existing_materials)
         if None == m:
             if 'CYCLES' == renderer or 'BLENDER_EEVEE' == renderer or 'BLENDER_WORKBENCH' == renderer:
-                m = lwo2cycles(lwo.surfs[surf_key])
+                m = lwo2cycles(surf)
             else:
-                m = lwo2BI(lwo.surfs[surf_key])
-        
-        lwo.materials[surf_key] = m
+                m = lwo2BI(surf)
+        lwo.materials[key] = m
 
 def build_objects(lwo, use_existing_materials):
     """Using the gathered data, create the objects."""
