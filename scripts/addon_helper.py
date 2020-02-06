@@ -32,25 +32,25 @@ def clean_file(filename):
             line2 = line
             if re.search("^\s+else", line) and re.search("else bpy.app.version", line):
                 active_print0 = not(active_print0)
-                line2 = ""
+                line2 = "\n"
         
             if re.search("endif", line):
                 active_print0 = None
                 trim_code = False
-                line2 = ""
+                line2 = "\n"
         
             h = re.search("^\s+[el]?if \((\d+), (\d+), (\d+)\) < bpy.app.version", line)
             if h:
                 current_blender_rev = (int(h.group(1)), int(h.group(2)), int(h.group(3)))
                 trim_code = True
                 active_print0 = (current_blender_rev <= bpy.app.version)
-                line2 = ""
+                line2 = "\n"
                 #line = re.sub("elif", "if", line)
         
             if trim_code:
                 line2 = re.sub("^    ", "", line2)
             if not active_print0 and not active_print0 == None:
-                line2 = ""
+                line2 = "\n"
             line = line2
         
         k = re.search("\"blender\":\s\(\d+, \d+, \d+\)", line)
