@@ -1,3 +1,5 @@
+ADDON = "io_import_scene_lwo"
+
 import os
 import sys
 import pytest
@@ -8,22 +10,20 @@ except Exception as e:
     print(e)
     sys.exit(1)
 
-class SetupPytest(SetupAddon):
+class SetupPlugin(SetupAddon):
 
     def pytest_configure(self, config):
-        super().configure()
-        config.cache.set("bpy_module", self.bpy_module)
+        super().configure(config)
+        #config.cache.set("bpy_module", self.bpy_module)
 
     def pytest_unconfigure(self):
         super().unconfigure()
         print("*** test run reporting finished")
 
 
-# addon = "io_import_scene_lwo.py"
-# addon = "io_import_scene_lwo_1_2_edit.py"
-addon = "io_import_scene_lwo"
 try:
-    exit_val = pytest.main(["tests"], plugins=[SetupPytest(addon)])
+    #exit_val = pytest.main(["tests/basic/test_load_lwo.py::test_load_lwo_box1", "-v", "-x", "--cov", "--cov-report", "term-missing", "--cov-report", "xml",], plugins=[SetupPlugin(ADDON)])
+    exit_val = pytest.main(["tests", "-v", "-x", "--cov", "--cov-report", "term", "--cov-report", "xml",], plugins=[SetupPlugin(ADDON)])
 except Exception as e:
     print(e)
     exit_val = 1

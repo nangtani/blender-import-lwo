@@ -665,7 +665,7 @@ def register():
         bpy.types.INFO_MT_file_import.append(menu_func)
     # endif
 
-def unregister():
+def unregister(): # pragma: no cover
     if (2, 80, 0) < bpy.app.version:
         for cls in classes:
             bpy.utils.unregister_class(cls)

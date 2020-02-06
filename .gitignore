@@ -9,3 +9,5 @@ tests/*/src
 *.blend1
 *.bak
 ~*
+.coverage
+coverage.xml

@@ -19,6 +19,7 @@ def clean_file(filename):
     lines = f.readlines()
     f.close()
     
+    unique_blender = True
     fix_fstrings = False
     if bpy.app.version <= (2, 79, 0):
         fix_fstrings = True
@@ -27,29 +28,30 @@ def clean_file(filename):
     active_print0 = None
     f = open(filename, 'w')
     for line in lines:
-        line2 = line
-        if re.search("^\s+else", line) and re.search("else bpy.app.version", line):
-            active_print0 = not(active_print0)
-            line2 = ""
+        if unique_blender:
+            line2 = line
+            if re.search("^\s+else", line) and re.search("else bpy.app.version", line):
+                active_print0 = not(active_print0)
+                line2 = ""
         
-        if re.search("endif", line):
-            active_print0 = None
-            trim_code = False
-            line2 = ""
+            if re.search("endif", line):
+                active_print0 = None
+                trim_code = False
+                line2 = ""
         
-        h = re.search("^\s+[el]?if \((\d+), (\d+), (\d+)\) < bpy.app.version", line)
-        if h:
-            current_blender_rev = (int(h.group(1)), int(h.group(2)), int(h.group(3)))
-            trim_code = True
-            active_print0 = (current_blender_rev <= bpy.app.version)
-            line2 = ""
-            #line = re.sub("elif", "if", line)
+            h = re.search("^\s+[el]?if \((\d+), (\d+), (\d+)\) < bpy.app.version", line)
+            if h:
+                current_blender_rev = (int(h.group(1)), int(h.group(2)), int(h.group(3)))
+                trim_code = True
+                active_print0 = (current_blender_rev <= bpy.app.version)
+                line2 = ""
+                #line = re.sub("elif", "if", line)
         
-        if trim_code:
-            line2 = re.sub("^    ", "", line2)
-        if not active_print0 and not active_print0 == None:
-            line2 = ""
-        line = line2
+            if trim_code:
+                line2 = re.sub("^    ", "", line2)
+            if not active_print0 and not active_print0 == None:
+                line2 = ""
+            line = line2
         
         k = re.search("\"blender\":\s\(\d+, \d+, \d+\)", line)
         if k:
@@ -92,6 +94,21 @@ def zip_addon(addon):
     shutil.rmtree(temp_dir)
     return (bpy_module, zfile)
 
+def change_addon_dir(bpy_module, zfile, addon_dir):
+    print("Change addon dir - {0}".format(addon_dir))
+
+
+    if (2, 80, 0) < bpy.app.version:
+        bpy.context.preferences.filepaths.script_directory = addon_dir
+        bpy.utils.refresh_script_paths()
+        bpy.ops.preferences.addon_install(overwrite=True, filepath=zfile)
+        bpy.ops.preferences.addon_enable(module=bpy_module)
+    else:
+        bpy.context.user_preferences.filepaths.script_directory = addon_dir
+        bpy.utils.refresh_script_paths()
+        bpy.ops.wm.addon_install(overwrite=True, filepath=zfile)
+        bpy.ops.wm.addon_enable(module=bpy_module)
+
 
 def copy_addon(bpy_module, zfile):
     print("Copying addon - {} {}".format(bpy_module, zfile))
@@ -131,9 +148,10 @@ def cleanup(addon, bpy_module):
         else:
             os.remove(addon)
 
-class SetupAddon(object):
+class SetupAddon:
     def __init__(self, addon):
         self.addon = addon
+        self.addon_dir = "local_addon"
         self.zdel_dir = []
         self.infile = None
         
@@ -141,9 +159,11 @@ class SetupAddon(object):
         self.lwozpath = None
         self.lwozfiles = None
 
-    def configure(self):
+    def configure(self, config):
         (self.bpy_module, self.zfile) = zip_addon(self.addon)
-        copy_addon(self.bpy_module, self.zfile)
+        #copy_addon(self.bpy_module, self.zfile)
+        change_addon_dir(self.bpy_module, self.zfile, self.addon_dir)
+        config.cache.set("bpy_module", self.bpy_module)
 
     def unconfigure(self):
         cleanup(self.addon, self.bpy_module)
