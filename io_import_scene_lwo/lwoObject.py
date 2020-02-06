@@ -82,7 +82,6 @@ class _obj_layer(_lwo_base):
 
 class _obj_surf(_lwo_base):
     __slots__ = (
-        "bl_mat",
         "name",
         "source_name",
         "colr",
@@ -105,7 +104,6 @@ class _obj_surf(_lwo_base):
     )
 
     def __init__(self):
-        self.bl_mat = None
         self.name = "Default"
         self.source_name = ""
         self.colr = [1.0, 1.0, 1.0]

@@ -157,5 +157,4 @@ def lwo2cycles(surf_data):
 #     N = ArrangeNodesOp
 #     N.nodemargin2(v, bpy.context)
     
-    #surf_data.bl_mat = mat
     return m
