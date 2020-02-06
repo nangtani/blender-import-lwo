@@ -19,8 +19,6 @@ class SetupPytest(SetupAddon):
         print("*** test run reporting finished")
 
 
-# addon = "io_import_scene_lwo.py"
-# addon = "io_import_scene_lwo_1_2_edit.py"
 addon = "io_import_scene_lwo"
 try:
     exit_val = pytest.main(["tests"], plugins=[SetupPytest(addon)])
