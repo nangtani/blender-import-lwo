@@ -1,3 +1,8 @@
 [run]
 include =
     *addons*io_*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    raise Exception

@@ -422,7 +422,6 @@ def build_objects(lwo, use_existing_materials):
             if not None == me.calc_loop_triangles():
                 raise Exception("me.calc_loop_triangles tripped")
         else:  # else bpy.app.version
-            print("tessface", me.calc_tessface())
             if not None == me.calc_tessface():
                 raise Exception("me.calc_tessface tripped")
             me.update(calc_tessface=True)
@@ -677,5 +676,5 @@ def unregister(): # pragma: no cover
         bpy.types.INFO_MT_file_import.remove(menu_func)
     # endif
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
     register()
