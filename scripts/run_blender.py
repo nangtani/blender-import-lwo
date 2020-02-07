@@ -29,7 +29,7 @@ if __name__ == "__main__":
     if len(sys.argv) >= 2:
         blender_rev = sys.argv[1]
     else:
-        blender_rev = "2.80"
+        blender_rev = "2.82"
 
     if len(sys.argv) >= 3:
         test_file = sys.argv[2]
@@ -46,6 +46,7 @@ if __name__ == "__main__":
         raise Exception(f"Too many blenders returned: {files}")
     
     blender = os.path.realpath(files[0])
+    os.environ["LOCAL_BLENDER"] = blender
 
     exit_val = main(blender, test_file)
 

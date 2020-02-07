@@ -159,11 +159,10 @@ class SetupAddon:
         self.lwozpath = None
         self.lwozfiles = None
 
-    def configure(self, config):
+    def configure(self, config=None):
         (self.bpy_module, self.zfile) = zip_addon(self.addon)
         #copy_addon(self.bpy_module, self.zfile)
         change_addon_dir(self.bpy_module, self.zfile, self.addon_dir)
-        config.cache.set("bpy_module", self.bpy_module)
 
     def unconfigure(self):
         cleanup(self.addon, self.bpy_module)

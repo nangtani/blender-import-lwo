@@ -68,16 +68,8 @@ import bmesh
 import mathutils
 from pprint import pprint
 
-from .lwoObject import lwoObject
+from .lwoObject import lwoObject, lwoNoImageFoundException
 from .gen_material import lwo2BI, lwo2cycles, get_existing
-
-def draw(self, context):
-    self.layout.label("Hello World")
-
-# scn = bpy.context.scene
-# row = layout.row()
-# row.prop(scn.ignit_panel, "screen_path")  # <-- just for display purposes
-# row.operator("macbook_controller.identifier_file_selector", text="", icon='FILE')
 
 def load_lwo(
     filename,
@@ -87,9 +79,8 @@ def load_lwo(
     SKEL_TO_ARM=True,
 ):
     """Read the LWO file, hand off to version specific function."""
-    #bpy.context.object = {}
-    #bpy.context.object["ImportLwo"] = {}
     lwo = lwoObject(filename)
+    
     lwo.search_paths.extend([
         "dirpath",
         "dirpath/images",
@@ -97,8 +88,18 @@ def load_lwo(
         "dirpath/../images",
 #        "dirpath/../../../Textures",
     ])
-    lwo.read(ADD_SUBD_MOD, LOAD_HIDDEN, SKEL_TO_ARM)
-    
+    try:
+        lwo.read(ADD_SUBD_MOD, LOAD_HIDDEN, SKEL_TO_ARM)
+    except lwoNoImageFoundException:
+        print("Not Found!")
+        bpy.ops.open.browser('EXEC_DEFAULT')
+        print("bpy.context.scene.lwo_directory", bpy.context.scene.lwo_directory)
+        #raise Exception("Didn't Happen")
+        lwo.search_paths.extend([
+            "C:\\storage\\blender\\blender-import-lwo\\tests\\lwo_interceptor\\src\\LWO2\\Federation - Interceptor\\images",
+        ])
+        lwo.resolve_clips()
+
     return lwo
     
 
@@ -485,17 +486,17 @@ def build_objects(lwo, use_existing_materials):
 
 from bpy.props import StringProperty, BoolProperty
 
-from bpy_extras.io_utils import ImportHelper
-
-class IdentifierFileSelector(bpy.types.Operator, ImportHelper):
-    bl_idname = "open.file_selector"
-    bl_label = "Select Path"
-    bl_options = {"REGISTER", "UNDO"}
-
-    def execute(self, context):
-        fdir = self.properties.filepath
-        
-        return{'FINISHED'}
+# from bpy_extras.io_utils import ImportHelper
+# 
+# class IdentifierFileSelector(bpy.types.Operator, ImportHelper):
+#     bl_idname = "open.file_selector"
+#     bl_label = "Select Path"
+#     bl_options = {"REGISTER", "UNDO"}
+# 
+#     def execute(self, context):
+#         fdir = self.properties.filepath
+#         
+#         return{'FINISHED'}
         
 class OpenBrowser(bpy.types.Operator):
     bl_idname = "open.browser"
@@ -509,32 +510,10 @@ class OpenBrowser(bpy.types.Operator):
         default=False,
     )
 
-#     def draw(self, context):
-#         layout = self.layout
-#         scn = context.scene
-#         
-#         #UI
-#         col = layout.column()
-#         row = col.row(align=True)
-#         row.prop(scn.io_import_scene_lwo, 'directory', text='directory:')
-#         row.operator("scn.open.browser", icon="FILE_FOLDER", text="")
-    
     def execute(self, context):
-        #display = "dirpath=" + self.directory  
-        print(self.directory)  
-        #context.scene.ignit_panel.screen_path = self.properties.filepath
-        #print(dir(context.object))
-        #print(dir(bpy.context.object))
-        #bpy.context.object["ImportLwo"] = {}
-        #bpy.context.object["ImportLwo"]["directory"] = self.directory
-        #print(bpy.context.object.keys(), self)
-        #bpy.data.scenes["Scene"].set("ImportLwo", self.directory)
-        #print()
-        context.scene.lwo_directory = "y" + self.directory
-        bpy.types.Scene.lwo_directory = "xx"
-        #context.scene.lwo_directoryx = "x" + self.directory
-        print("lwo_directory", context.scene.lwo_directory)
-        #print("lwo_directoryx", context.scene.lwo_directoryx)
+        #print(self.directory)  
+        context.scene.lwo_directory = self.directory
+        #print("lwo_directory", context.scene.lwo_directory)
         return {'FINISHED'}
 
     def invoke(self, context, event): 
@@ -613,7 +592,6 @@ class IMPORT_OT_lwo(bpy.types.Operator):
     # endif
     
     def execute(self, context):
-        #context.scene.lwo_directory = ""
         lwo = load_lwo(
             self.filepath,
             context,
@@ -622,22 +600,7 @@ class IMPORT_OT_lwo(bpy.types.Operator):
             self.SKEL_TO_ARM,
         )
     
-#         #bpy.ops.open.browser('INVOKE_DEFAULT')
-#         #bpy.ops.open.file_selector('EXEC_DEFAULT')
-#         bpy.ops.open.browser('INVOKE_DEFAULT')
-#         
-#         print("xexd", context.scene.lwo_directory)
-#         context.scene.lwo_directory = "tree"
-#         #print("xfxd", context.scene.lwo_directoryx)
-#         #print("12", bpy.types.Object.lwo_directoryx)
-#         #print("xexd", context.scene.directory)
-#         #print("k", OpenBrowser)
-#         #print("j", OpenBrowser.directory)
-#         lwo.resolve_clips()
-#         print("swer", context.scene.lwo_directory)
-
         # With the data gathered, build the object(s).
-        print(self.USE_EXISTING_MATERIALS)
         build_objects(lwo,  self.USE_EXISTING_MATERIALS)
         return {"FINISHED"}
     
@@ -650,7 +613,23 @@ class IMPORT_OT_lwo(bpy.types.Operator):
 def menu_func(self, context):
     self.layout.operator(IMPORT_OT_lwo.bl_idname, text="LightWave Object (.lwo)")
 
-classes = (IMPORT_OT_lwo, OpenBrowser, IdentifierFileSelector,)
+# Panel
+class ImportPanel(bpy.types.Panel):
+    bl_label = "DEBUG"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'TOOLS'
+    bl_category = "Tools"
+    #bl_options = {"DEFAULT_CLOSED"}
+
+    def draw(self, context):
+        layout = self.layout
+
+        col = layout.column(align=True)
+        col.operator("import_scene.lwo", text="Import LWO")
+        col.operator("open.browser", text="File Browser")
+
+
+classes = (IMPORT_OT_lwo, OpenBrowser,)
 
 def register():
     if (2, 80, 0) < bpy.app.version:
@@ -659,7 +638,6 @@ def register():
 
         bpy.types.TOPBAR_MT_file_import.append(menu_func)
     else:  # else bpy.app.version
-        #bpy.types.Scene.lwo_directoryx = StringProperty()
         bpy.utils.register_module(__name__)
         bpy.types.INFO_MT_file_import.append(menu_func)
     # endif
@@ -672,7 +650,6 @@ def unregister(): # pragma: no cover
         bpy.types.TOPBAR_MT_file_import.remove(menu_func)
     else:  # else bpy.app.version
         bpy.utils.unregister_module(__name__)
-        #del bpy.types.Object.lwo_directoryx
         bpy.types.INFO_MT_file_import.remove(menu_func)
     # endif
 

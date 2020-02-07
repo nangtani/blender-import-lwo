@@ -9,8 +9,11 @@ import bpy
 def install_plugin(addon):
     x = SetupAddon(addon)
     x.configure()
-    cmd = "..\\blender-2.79b\\blender.exe"
-    os.system(cmd)
+    #rev = "2.79b"
+    blender = os.environ["LOCAL_BLENDER"]
+    #cmd = "..\\blender-{}-nightly\\blender.exe".format(rev)
+    print(blender)
+    os.system(blender)
     x.unconfigure()
 
 

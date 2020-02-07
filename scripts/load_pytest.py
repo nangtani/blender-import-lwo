@@ -13,8 +13,8 @@ except Exception as e:
 class SetupPlugin(SetupAddon):
 
     def pytest_configure(self, config):
-        super().configure(config)
-        #config.cache.set("bpy_module", self.bpy_module)
+        super().configure()
+        config.cache.set("bpy_module", self.bpy_module)
 
     def pytest_unconfigure(self):
         super().unconfigure()
