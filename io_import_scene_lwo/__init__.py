@@ -583,13 +583,13 @@ class IMPORT_OT_lwo(bpy.types.Operator):
         bpy.types.Scene.ch = ch
         bpy.types.Scene.lwo = lwo
         
-#         lwo.search_paths.extend([
-#             "dirpath",
-#             "dirpath/images",
-#             "dirpath/..",
-#             "dirpath/../images",
-# #            "dirpath/../../../Textures",
-#         ])
+        lwo.search_paths.extend([
+            "dirpath",
+            "dirpath/images",
+            "dirpath/..",
+            "dirpath/../images",
+#            "dirpath/../../../Textures",
+        ])
         try:
             lwo.read(ch)
             build_objects(lwo, ch)
