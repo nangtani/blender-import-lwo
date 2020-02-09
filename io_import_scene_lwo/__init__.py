@@ -467,7 +467,7 @@ def build_objects(lwo, ch):
 
 from bpy.props import StringProperty, BoolProperty
 
-def ShowMessageBox(message="", title="Message Box", icon='INFO'):
+def ShowMessageBox(message="", title="Message Box", icon='INFO'): # gui: no cover
 
     def draw(self, context):
         self.layout.label(text=message)
@@ -486,7 +486,7 @@ class OpenBrowser(bpy.types.Operator):
         default=False,
     )
 
-    def execute(self, context):
+    def execute(self, context): # gui: no cover
         lwo = bpy.types.Scene.lwo
         ch = bpy.types.Scene.ch
         
@@ -499,7 +499,7 @@ class OpenBrowser(bpy.types.Operator):
         del lwo
         return {'FINISHED'}
 
-    def invoke(self, context, event): 
+    def invoke(self, context, event): # gui: no cover
         wm = context.window_manager
         wm.fileselect_add(self)
         return {'RUNNING_MODAL'} 
@@ -602,24 +602,30 @@ class IMPORT_OT_lwo(bpy.types.Operator):
         # With the data gathered, build the object(s).
         return {"FINISHED"}
     
-    def invoke(self, context, event):
+    def invoke(self, context, event): # gui: no cover
         wm = context.window_manager
         wm.fileselect_add(self)
         return {"RUNNING_MODAL"}
 
 
-def menu_func(self, context):
+def menu_func(self, context): # gui: no cover
     self.layout.operator(IMPORT_OT_lwo.bl_idname, text="LightWave Object (.lwo)")
 
 # Panel
 class ImportPanel(bpy.types.Panel):
+    bl_idname = "OBJECT_PT_debug"
+    if (2, 80, 0) < bpy.app.version:
+        #region = "UI"
+        region = "WINDOW"
+    else: # else bpy.app.version
+        region = "TOOLS"
+    # endif
     bl_label = "DEBUG"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = region
     bl_category = "Tools"
-    #bl_options = {"DEFAULT_CLOSED"}
 
-    def draw(self, context):
+    def draw(self, context): # gui: no cover
         layout = self.layout
 
         col = layout.column(align=True)

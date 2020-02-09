@@ -7,3 +7,4 @@ exclude_lines =
     pragma: no cover
     raise Exception
     debug: no cover
+    gui: no cover
