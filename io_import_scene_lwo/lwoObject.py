@@ -128,7 +128,7 @@ class _obj_surf(_lwo_base):
         self.textures = {}  # Textures list
         self.textures_5 = []  # Textures list for LWOB
 
-    def lwoprint(self): #debug: no cover
+    def lwoprint(self): # debug: no cover
         print(f"SURFACE")
         print(f"Surface Name:       {self.name}")
         print(f"Color:              {int(self.colr[0]*256)} {int(self.colr[1]*256)} {int(self.colr[2]*256)}")
