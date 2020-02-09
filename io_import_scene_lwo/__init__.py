@@ -77,6 +77,7 @@ class _choices:
         "load_hidden",
         "skel_to_arm",
         "use_existing_materials",
+        "search_paths",
     )
      
     def __init__(self, ADD_SUBD_MOD=True, LOAD_HIDDEN=False, SKEL_TO_ARM=True, USE_EXISTING_MATERIALS=False):
@@ -84,6 +85,7 @@ class _choices:
         self.load_hidden = LOAD_HIDDEN
         self.skel_to_arm = SKEL_TO_ARM
         self.use_existing_materials = USE_EXISTING_MATERIALS
+        self.search_paths = []
         
 def create_mappack(data, map_name, map_type):
     """Match the map data to faces."""
@@ -467,12 +469,15 @@ def build_objects(lwo, ch):
 
 from bpy.props import StringProperty, BoolProperty
 
-def ShowMessageBox(message="", title="Message Box", icon='INFO'): # gui: no cover
+def ShowMessageBox(message="", title="Message Box", icon='INFO', exception=None): # gui: no cover
 
     def draw(self, context):
         self.layout.label(text=message)
 
     bpy.context.window_manager.popup_menu(draw, title=title, icon=icon)
+#     if lwoNoImageFoundException == exception:
+#         print("Hello")
+#         bpy.ops.open.browser('INVOKE_DEFAULT')
 
 class OpenBrowser(bpy.types.Operator):
     bl_idname = "open.browser"
@@ -486,23 +491,23 @@ class OpenBrowser(bpy.types.Operator):
         default=False,
     )
 
+    def invoke(self, context, event): # gui: no cover
+        wm = context.window_manager
+        wm.fileselect_add(self)
+        return {'RUNNING_MODAL'} 
+
     def execute(self, context): # gui: no cover
         lwo = bpy.types.Scene.lwo
         ch = bpy.types.Scene.ch
         
-        #context.scene.lwo_directory = self.directory
-        lwo.search_paths.append(self.directory)
+        ch.search_paths.append(self.directory)
         lwo.resolve_clips()
+        lwo.validate_lwo()
         
         build_objects(lwo, ch)
 
         del lwo
         return {'FINISHED'}
-
-    def invoke(self, context, event): # gui: no cover
-        wm = context.window_manager
-        wm.fileselect_add(self)
-        return {'RUNNING_MODAL'} 
 
 
 class IMPORT_OT_lwo(bpy.types.Operator):
@@ -576,6 +581,11 @@ class IMPORT_OT_lwo(bpy.types.Operator):
         )
     # endif
     
+    def invoke(self, context, event): # gui: no cover
+        wm = context.window_manager
+        wm.fileselect_add(self)
+        return {"RUNNING_MODAL"}
+    
     def execute(self, context):
         
         ch = _choices(self.ADD_SUBD_MOD, self.LOAD_HIDDEN, self.SKEL_TO_ARM, self.USE_EXISTING_MATERIALS)
@@ -583,29 +593,27 @@ class IMPORT_OT_lwo(bpy.types.Operator):
         bpy.types.Scene.ch = ch
         bpy.types.Scene.lwo = lwo
         
-        lwo.search_paths.extend([
-            "dirpath",
-            "dirpath/images",
-            "dirpath/..",
-            "dirpath/../images",
-#            "dirpath/../../../Textures",
+        ch.search_paths.extend([
+            "images",
+            "..",
+            "../images",
+#            "../../../Textures",
         ])
+
         try:
             lwo.read(ch)
+            lwo.resolve_clips()
+            lwo.validate_lwo()
             build_objects(lwo, ch)
         except lwoUnsupportedFileException:
             ShowMessageBox(self.filepath, "Invalid LWO File Type:", 'ERROR')
         except lwoNoImageFoundException:
+            #ShowMessageBox("png", "Unable to find image:", 'ERROR', lwoNoImageFoundException)
             bpy.ops.open.browser('INVOKE_DEFAULT')
 
         del lwo
         # With the data gathered, build the object(s).
         return {"FINISHED"}
-    
-    def invoke(self, context, event): # gui: no cover
-        wm = context.window_manager
-        wm.fileselect_add(self)
-        return {"RUNNING_MODAL"}
 
 
 def menu_func(self, context): # gui: no cover

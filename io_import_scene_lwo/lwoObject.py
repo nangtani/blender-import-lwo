@@ -1017,7 +1017,7 @@ class lwoObject:
         self.clips = {}
         self.images = []
 
-        self.search_paths = []
+        #self.search_paths = []
         self.allow_images_missing = False
         self.images_missing = True
         self.absfilepath = True
@@ -1090,11 +1090,10 @@ class lwoObject:
             dirpath = os.path.dirname(self.filename)
             os.chdir(dirpath)
 
-            search_paths = []
-            for spath in self.search_paths:
-                if re.search("dirpath", spath):
-                    spath = re.sub("dirpath", "", spath)
-                    spath = dirpath + spath
+            search_paths = [dirpath]
+            for spath in self.ch.search_paths:
+                if not re.search("^/", spath) and not re.search("^.:", spath):
+                    spath = os.path.join(dirpath, spath)
                 search_paths.append(spath)
 
             files = [orig_path]
@@ -1127,7 +1126,7 @@ class lwoObject:
         self.images_missing = False
 
     def validate_lwo(self):
-        self.resolve_clips()
+        print(f"Validating LWO: {self.filename}")
         for surf_key in self.surfs:
             surf_data = self.surfs[surf_key]
             for textures_type in surf_data.textures.keys():
@@ -1254,9 +1253,6 @@ class lwoObject:
                 # if self.handle_layer:
                 print(f"Skipping Chunk: {rootchunk.chunkname}")
                 rootchunk.skip()
-
-        print(f"Validating LWO: {self.filename}")
-        self.validate_lwo()
 
     def read_lwob(self):
         """Read version 1 file, LW < 6."""
