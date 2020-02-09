@@ -467,12 +467,12 @@ def build_objects(lwo, ch):
 
 from bpy.props import StringProperty, BoolProperty
 
-def ShowMessageBox(message = "", title = "Message Box", icon = 'INFO'):
+def ShowMessageBox(message="", title="Message Box", icon='INFO'):
 
     def draw(self, context):
-        self.layout.label(message)
+        self.layout.label(text=message)
 
-    bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
+    bpy.context.window_manager.popup_menu(draw, title=title, icon=icon)
 
 class OpenBrowser(bpy.types.Operator):
     bl_idname = "open.browser"
@@ -583,13 +583,13 @@ class IMPORT_OT_lwo(bpy.types.Operator):
         bpy.types.Scene.ch = ch
         bpy.types.Scene.lwo = lwo
         
-        lwo.search_paths.extend([
-            "dirpath",
-            "dirpath/images",
-            "dirpath/..",
-            "dirpath/../images",
-#            "dirpath/../../../Textures",
-        ])
+#         lwo.search_paths.extend([
+#             "dirpath",
+#             "dirpath/images",
+#             "dirpath/..",
+#             "dirpath/../images",
+# #            "dirpath/../../../Textures",
+#         ])
         try:
             lwo.read(ch)
             build_objects(lwo, ch)
