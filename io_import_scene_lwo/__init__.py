@@ -68,42 +68,23 @@ import bmesh
 import mathutils
 from pprint import pprint
 
-from .lwoObject import lwoObject, lwoNoImageFoundException
+from .lwoObject import lwoObject, lwoNoImageFoundException, lwoUnsupportedFileException
 from .gen_material import lwo2BI, lwo2cycles, get_existing
 
-def load_lwo(
-    filename,
-    context,
-    ADD_SUBD_MOD=True,
-    LOAD_HIDDEN=False,
-    SKEL_TO_ARM=True,
-):
-    """Read the LWO file, hand off to version specific function."""
-    lwo = lwoObject(filename)
-    
-    lwo.search_paths.extend([
-        "dirpath",
-        "dirpath/images",
-        "dirpath/..",
-        "dirpath/../images",
-#        "dirpath/../../../Textures",
-    ])
-    try:
-        lwo.read(ADD_SUBD_MOD, LOAD_HIDDEN, SKEL_TO_ARM)
-    except lwoNoImageFoundException:
-        print("Not Found!")
-        bpy.ops.open.browser('EXEC_DEFAULT')
-        print("bpy.context.scene.lwo_directory", bpy.context.scene.lwo_directory)
-        #raise Exception("Didn't Happen")
-        lwo.search_paths.extend([
-            "C:\\storage\\blender\\blender-import-lwo\\tests\\lwo_interceptor\\src\\LWO2\\Federation - Interceptor\\images",
-        ])
-        lwo.resolve_clips()
-
-    return lwo
-    
-
-
+class _choices:
+    __slots__ = (
+        "add_subd_mod",
+        "load_hidden",
+        "skel_to_arm",
+        "use_existing_materials",
+    )
+     
+    def __init__(self, ADD_SUBD_MOD=True, LOAD_HIDDEN=False, SKEL_TO_ARM=True, USE_EXISTING_MATERIALS=False):
+        self.add_subd_mod = ADD_SUBD_MOD
+        self.load_hidden = LOAD_HIDDEN
+        self.skel_to_arm = SKEL_TO_ARM
+        self.use_existing_materials = USE_EXISTING_MATERIALS
+        
 def create_mappack(data, map_name, map_type):
     """Match the map data to faces."""
     pack = {}
@@ -177,12 +158,12 @@ def build_armature(layer_data, bones):
         nb.use_connect = True
         prev_bone = nb
 
-def build_materials(lwo, use_existing_materials):
+def build_materials(lwo, ch):
     print(f"Adding {len(lwo.surfs)} Materials")
 
     renderer = bpy.context.scene.render.engine
     for key, surf in lwo.surfs.items():
-        m = get_existing(surf, use_existing_materials)
+        m = get_existing(surf, ch.use_existing_materials)
         if None == m:
             if 'CYCLES' == renderer or 'BLENDER_EEVEE' == renderer or 'BLENDER_WORKBENCH' == renderer:
                 m = lwo2cycles(surf)
@@ -190,11 +171,11 @@ def build_materials(lwo, use_existing_materials):
                 m = lwo2BI(surf)
         lwo.materials[key] = m
 
-def build_objects(lwo, use_existing_materials):
+def build_objects(lwo, ch):
     """Using the gathered data, create the objects."""
     ob_dict = {}  # Used for the parenting setup.
     
-    build_materials(lwo, use_existing_materials)
+    build_materials(lwo, ch)
 
     # Single layer objects use the object file's name instead.
     if len(lwo.layers) and lwo.layers[-1].name == "Layer 1":
@@ -391,7 +372,7 @@ def build_objects(lwo, use_existing_materials):
                     edge.crease = layer_data.edge_weights[edge_sb]
 
         # Unfortunately we can't exlude certain faces from the subdivision.
-        if layer_data.has_subds and lwo.add_subd_mod:
+        if layer_data.has_subds and ch.add_subd_mod:
             ob.modifiers.new(name="Subsurf", type="SUBSURF")
 
         # Should we build an armature from the embedded rig?
@@ -486,18 +467,13 @@ def build_objects(lwo, use_existing_materials):
 
 from bpy.props import StringProperty, BoolProperty
 
-# from bpy_extras.io_utils import ImportHelper
-# 
-# class IdentifierFileSelector(bpy.types.Operator, ImportHelper):
-#     bl_idname = "open.file_selector"
-#     bl_label = "Select Path"
-#     bl_options = {"REGISTER", "UNDO"}
-# 
-#     def execute(self, context):
-#         fdir = self.properties.filepath
-#         
-#         return{'FINISHED'}
-        
+def ShowMessageBox(message = "", title = "Message Box", icon = 'INFO'):
+
+    def draw(self, context):
+        self.layout.label(message)
+
+    bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
+
 class OpenBrowser(bpy.types.Operator):
     bl_idname = "open.browser"
     bl_label = "Select Path"
@@ -511,15 +487,22 @@ class OpenBrowser(bpy.types.Operator):
     )
 
     def execute(self, context):
-        #print(self.directory)  
-        context.scene.lwo_directory = self.directory
-        #print("lwo_directory", context.scene.lwo_directory)
+        lwo = bpy.types.Scene.lwo
+        ch = bpy.types.Scene.ch
+        
+        #context.scene.lwo_directory = self.directory
+        lwo.search_paths.append(self.directory)
+        lwo.resolve_clips()
+        
+        build_objects(lwo, ch)
+
+        del lwo
         return {'FINISHED'}
 
     def invoke(self, context, event): 
         wm = context.window_manager
         wm.fileselect_add(self)
-        return {'RUNNING_MODAL'}  
+        return {'RUNNING_MODAL'} 
 
 
 class IMPORT_OT_lwo(bpy.types.Operator):
@@ -530,7 +513,9 @@ class IMPORT_OT_lwo(bpy.types.Operator):
     bl_description = "Import a LightWave Object file"
     bl_options = {"REGISTER", "UNDO"}
     
-    bpy.types.Scene.lwo_directory = StringProperty()
+    #bpy.types.Scene.lwo_directory = StringProperty()
+    bpy.types.Scene.ch = None
+    bpy.types.Scene.lwo = None
 
 
     if (2, 80, 0) < bpy.app.version:
@@ -592,16 +577,29 @@ class IMPORT_OT_lwo(bpy.types.Operator):
     # endif
     
     def execute(self, context):
-        lwo = load_lwo(
-            self.filepath,
-            context,
-            self.ADD_SUBD_MOD,
-            self.LOAD_HIDDEN,
-            self.SKEL_TO_ARM,
-        )
-    
+        
+        ch = _choices(self.ADD_SUBD_MOD, self.LOAD_HIDDEN, self.SKEL_TO_ARM, self.USE_EXISTING_MATERIALS)
+        lwo = lwoObject(self.filepath)
+        bpy.types.Scene.ch = ch
+        bpy.types.Scene.lwo = lwo
+        
+        lwo.search_paths.extend([
+            "dirpath",
+            "dirpath/images",
+            "dirpath/..",
+            "dirpath/../images",
+#            "dirpath/../../../Textures",
+        ])
+        try:
+            lwo.read(ch)
+            build_objects(lwo, ch)
+        except lwoUnsupportedFileException:
+            ShowMessageBox(self.filepath, "Invalid LWO File Type:", 'ERROR')
+        except lwoNoImageFoundException:
+            bpy.ops.open.browser('INVOKE_DEFAULT')
+
+        del lwo
         # With the data gathered, build the object(s).
-        build_objects(lwo,  self.USE_EXISTING_MATERIALS)
         return {"FINISHED"}
     
     def invoke(self, context, event):

@@ -11,6 +11,10 @@ class lwoNoImageFoundException(Exception):
     pass
 
 
+class lwoUnsupportedFileException(Exception):
+    pass
+
+
 class _lwo_base:
     def __eq__(self, x):
         if not isinstance(x, self.__class__):
@@ -124,7 +128,7 @@ class _obj_surf(_lwo_base):
         self.textures = {}  # Textures list
         self.textures_5 = []  # Textures list for LWOB
 
-    def lwoprint(self):
+    def lwoprint(self): #debug: no cover
         print(f"SURFACE")
         print(f"Surface Name:       {self.name}")
         print(f"Color:              {int(self.colr[0]*256)} {int(self.colr[1]*256)} {int(self.colr[2]*256)}")
@@ -178,7 +182,7 @@ class _surf_texture(_lwo_base):
         self.clip = None
         self.nega = None
 
-    def lwoprint(self, indent=0):
+    def lwoprint(self, indent=0): # debug: no cover
         print(f"TEXTURE")
         print(f"ClipID:         {self.clipid}")
         print(f"Opacity:        {self.opac*100:.1f}%")
@@ -1014,7 +1018,8 @@ class lwoObject:
         self.images = []
 
         self.search_paths = []
-        self.allow_missing_images = False
+        self.allow_images_missing = False
+        self.images_missing = True
         self.absfilepath = True
 
         # self.read()
@@ -1036,12 +1041,8 @@ class lwoObject:
                 return False
         return True
 
-    def read(
-        self, ADD_SUBD_MOD=True, LOAD_HIDDEN=False, SKEL_TO_ARM=True,
-    ):
-        self.add_subd_mod = ADD_SUBD_MOD
-        self.load_hidden = LOAD_HIDDEN
-        self.skel_to_arm = SKEL_TO_ARM
+    def read(self, ch):
+        self.ch = ch
 
         self.f = open(self.filename, "rb")
         try:
@@ -1057,9 +1058,10 @@ class lwoObject:
             # LWOB and LWLO are the old format, LWLO is a layered object.
             self.read_lwob()
         else:
-            print("Not a supported file type!")
+            #print("Not a supported file type!")
             self.f.close()
-            return
+            raise lwoUnsupportedFileException
+            #return
         self.f.close()
         del self.f
 
@@ -1090,8 +1092,9 @@ class lwoObject:
 
             search_paths = []
             for spath in self.search_paths:
-                spath = re.sub("dirpath", "", spath)
-                spath = dirpath + spath
+                if re.search("dirpath", spath):
+                    spath = re.sub("dirpath", "", spath)
+                    spath = dirpath + spath
                 search_paths.append(spath)
 
             files = [orig_path]
@@ -1110,7 +1113,8 @@ class lwoObject:
                     if ifile not in self.images:
                         self.images.append(ifile)
                     continue
-            if None is ifile and not self.allow_missing_images:
+            if None is ifile and not self.allow_images_missing:
+                self.images_missing = True
                 raise lwoNoImageFoundException(
                     "No valid image found for path: {} {}".format(
                         orig_path, search_paths
@@ -1119,6 +1123,8 @@ class lwoObject:
 
             os.chdir(cwd)
             self.clips[c_id]["new_path"] = ifile
+            #print(c_id, self.clips[c_id]["new_path"])
+        self.images_missing = False
 
     def validate_lwo(self):
         self.resolve_clips()
@@ -1151,7 +1157,7 @@ class lwoObject:
                 read_tags(rootchunk.read(), self)
             elif rootchunk.chunkname == b"LAYR":
                 self.handle_layer = read_layr(
-                    rootchunk.read(), self.layers, self.load_hidden
+                    rootchunk.read(), self.layers, self.ch.load_hidden
                 )
             elif rootchunk.chunkname == b"PNTS" and self.handle_layer:
                 read_pnts(rootchunk.read(), self.layers)
@@ -1215,7 +1221,7 @@ class lwoObject:
                     # Ignore the surface data if we just read a bones chunk.
                     read_surf_tags(rootchunk.read(), self.layers, self.last_pols_count)
 
-                elif self.skel_to_arm:
+                elif self.ch.skel_to_arm:
                     if tag_type == b"BNUP":
                         read_bone_tags(rootchunk.read(), self, "BNUP")
                     elif tag_type == b"BONE":
