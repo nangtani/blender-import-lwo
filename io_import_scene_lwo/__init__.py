@@ -479,6 +479,37 @@ def ShowMessageBox(message="", title="Message Box", icon='INFO', exception=None)
 #         print("Hello")
 #         bpy.ops.open.browser('INVOKE_DEFAULT')
 
+class MessageBox(bpy.types.Operator):
+    bl_idname = "message.messagebox"
+    bl_label = ""
+ 
+    message = bpy.props.StringProperty(
+        name = "message",
+        description = "message",
+        default = '',
+    )
+    ob = bpy.props.BoolProperty(
+        name = "ob",
+        description = "ob",
+        default = False,
+    )
+ 
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self, width=400)
+ 
+    def execute(self, context):
+        #self.report({'ERROR'}, self.message)
+        self.report({'INFO'}, self.message)
+        print(self.message)
+        if self.ob:
+            bpy.ops.open.browser('INVOKE_DEFAULT')
+        return {'FINISHED'}
+ 
+    def draw(self, context):
+        self.layout.label(self.message)
+        self.layout.label("")
+
+
 class OpenBrowser(bpy.types.Operator):
     bl_idname = "open.browser"
     bl_label = "Select Path"
@@ -606,10 +637,13 @@ class IMPORT_OT_lwo(bpy.types.Operator):
             lwo.validate_lwo()
             build_objects(lwo, ch)
         except lwoUnsupportedFileException:
-            ShowMessageBox(self.filepath, "Invalid LWO File Type:", 'ERROR')
+            #ShowMessageBox(self.filepath, "Invalid LWO File Type:", 'ERROR')
+            message = "Invalid LWO File Type: {}".format(self.filepath)
+            bpy.ops.message.messagebox('INVOKE_DEFAULT', message=message)
         except lwoNoImageFoundException:
-            #ShowMessageBox("png", "Unable to find image:", 'ERROR', lwoNoImageFoundException)
-            bpy.ops.open.browser('INVOKE_DEFAULT')
+            message = "Unable to find image:"
+            bpy.ops.message.messagebox('INVOKE_DEFAULT', message=message, ob=True)
+            #bpy.ops.open.browser('INVOKE_DEFAULT')
 
         del lwo
         # With the data gathered, build the object(s).
@@ -641,7 +675,7 @@ class ImportPanel(bpy.types.Panel):
         col.operator("open.browser", text="File Browser")
 
 
-classes = (IMPORT_OT_lwo, OpenBrowser,)
+classes = (IMPORT_OT_lwo, OpenBrowser, MessageBox,)
 
 def register():
     if (2, 80, 0) < bpy.app.version:
