@@ -56,7 +56,7 @@ def lwo2BI(surf_data):
             if not textures_type == "COLR":
                 continue
             tex_slot = m.mat.texture_slots.add()
-            image_path = texture.clip['new_path']
+            image_path = texture.clip
             if None == image_path:
                 continue
             
@@ -133,8 +133,7 @@ def lwo2cycles(surf_data):
             if not textures_type == "COLR":
                 continue
 
-            #print(texture.clip, texture.lwoprint())
-            image_path = texture.clip['new_path']
+            image_path = texture.clip
             if None == image_path:
                 continue
     

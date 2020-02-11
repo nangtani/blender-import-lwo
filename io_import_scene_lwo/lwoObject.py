@@ -688,7 +688,7 @@ def read_clip(clip_bytes, lwo):
     """Read texture clip path"""
     c_id = struct.unpack(">L", clip_bytes[0:4])[0]
     orig_path, path_len = read_lwostring(clip_bytes[10:])
-    lwo.clips[c_id] = {"orig_path": orig_path, "new_path": None}
+    lwo.clips[c_id] = orig_path
 
 
 def read_texture(surf_bytes, offset, subchunk_len, debug=False):
@@ -1061,7 +1061,6 @@ class lwoObject:
             #print("Not a supported file type!")
             self.f.close()
             raise lwoUnsupportedFileException
-            #return
         self.f.close()
         del self.f
 
@@ -1085,7 +1084,7 @@ class lwoObject:
         for c_id in self.clips:
             cwd = os.getcwd()
 
-            orig_path = self.clips[c_id]["orig_path"]
+            orig_path = self.clips[c_id]
             imagefile = os.path.basename(orig_path)
             dirpath = os.path.dirname(self.filename)
             os.chdir(dirpath)
@@ -1121,8 +1120,8 @@ class lwoObject:
                 )
 
             os.chdir(cwd)
-            self.clips[c_id]["new_path"] = ifile
-            #print(c_id, self.clips[c_id]["new_path"])
+            self.ch.images[c_id] = ifile
+            #print(c_id, self.clips[c_id])
         self.images_missing = False
 
     def validate_lwo(self):
@@ -1136,8 +1135,8 @@ class lwoObject:
                         print(f"WARNING in material {surf_data.name}")
                         print(f"\tci={ci}, not present in self.clips.keys():")
                         # pprint(self.clips)
-                        self.clips[ci] = {"new_path": None}
-                    texture.clip = self.clips[ci]
+                        self.ch.images[ci] = None
+                    texture.clip = self.ch.images[ci]
 
     def read_lwo2(self):
         """Read version 2 file, LW 6+."""

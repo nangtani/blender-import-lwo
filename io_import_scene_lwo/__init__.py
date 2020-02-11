@@ -78,6 +78,7 @@ class _choices:
         "skel_to_arm",
         "use_existing_materials",
         "search_paths",
+        "images",
     )
      
     def __init__(self, ADD_SUBD_MOD=True, LOAD_HIDDEN=False, SKEL_TO_ARM=True, USE_EXISTING_MATERIALS=False):
@@ -86,6 +87,7 @@ class _choices:
         self.skel_to_arm = SKEL_TO_ARM
         self.use_existing_materials = USE_EXISTING_MATERIALS
         self.search_paths = []
+        self.images = {}
         
 def create_mappack(data, map_name, map_type):
     """Match the map data to faces."""
