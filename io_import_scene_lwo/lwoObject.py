@@ -1058,9 +1058,9 @@ class lwoObject:
             # LWOB and LWLO are the old format, LWLO is a layered object.
             self.read_lwob()
         else:
-            #print("Not a supported file type!")
             self.f.close()
-            raise lwoUnsupportedFileException
+            msg = "Invalid LWO File Type: {}".format(self.filename)
+            raise lwoUnsupportedFileException(msg)
         self.f.close()
         del self.f
 
@@ -1111,6 +1111,7 @@ class lwoObject:
                     if ifile not in self.images:
                         self.images.append(ifile)
                     continue
+            
             if None is ifile and not self.allow_images_missing:
                 self.images_missing = True
                 raise lwoNoImageFoundException(

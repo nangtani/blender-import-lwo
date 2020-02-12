@@ -471,15 +471,15 @@ def build_objects(lwo, ch):
 
 from bpy.props import StringProperty, BoolProperty
 
-def ShowMessageBox(message="", title="Message Box", icon='INFO', exception=None): # gui: no cover
-
-    def draw(self, context):
-        self.layout.label(text=message)
-
-    bpy.context.window_manager.popup_menu(draw, title=title, icon=icon)
-#     if lwoNoImageFoundException == exception:
-#         print("Hello")
-#         bpy.ops.open.browser('INVOKE_DEFAULT')
+# def ShowMessageBox(message="", title="Message Box", icon='INFO', exception=None): # gui: no cover
+# 
+#     def draw(self, context):
+#         self.layout.label(text=message)
+# 
+#     bpy.context.window_manager.popup_menu(draw, title=title, icon=icon)
+# #     if lwoNoImageFoundException == exception:
+# #         print("Hello")
+# #         bpy.ops.open.browser('INVOKE_DEFAULT')
 
 class MessageBox(bpy.types.Operator):
     bl_idname = "message.messagebox"
@@ -534,10 +534,12 @@ class OpenBrowser(bpy.types.Operator):
         ch = bpy.types.Scene.ch
         
         ch.search_paths.append(self.directory)
-        lwo.resolve_clips()
-        lwo.validate_lwo()
-        
-        build_objects(lwo, ch)
+        try:
+            lwo.resolve_clips()
+            lwo.validate_lwo()
+            build_objects(lwo, ch)
+        except lwoNoImageFoundException as msg:
+            bpy.ops.message.messagebox('INVOKE_DEFAULT', message=str(msg), ob=True)
 
         del lwo
         return {'FINISHED'}
@@ -635,17 +637,15 @@ class IMPORT_OT_lwo(bpy.types.Operator):
 
         try:
             lwo.read(ch)
+        except lwoUnsupportedFileException as msg:
+             bpy.ops.message.messagebox('INVOKE_DEFAULT', message=str(msg))
+
+        try:
             lwo.resolve_clips()
             lwo.validate_lwo()
             build_objects(lwo, ch)
-        except lwoUnsupportedFileException:
-            #ShowMessageBox(self.filepath, "Invalid LWO File Type:", 'ERROR')
-            message = "Invalid LWO File Type: {}".format(self.filepath)
-            bpy.ops.message.messagebox('INVOKE_DEFAULT', message=message)
-        except lwoNoImageFoundException:
-            message = "Unable to find image:"
-            bpy.ops.message.messagebox('INVOKE_DEFAULT', message=message, ob=True)
-            #bpy.ops.open.browser('INVOKE_DEFAULT')
+        except lwoNoImageFoundException as msg:
+            bpy.ops.message.messagebox('INVOKE_DEFAULT', message=str(msg), ob=True)
 
         del lwo
         # With the data gathered, build the object(s).
