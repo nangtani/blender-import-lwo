@@ -628,18 +628,17 @@ class IMPORT_OT_lwo(bpy.types.Operator):
         bpy.types.Scene.ch = ch
         bpy.types.Scene.lwo = lwo
         
+        try:
+            lwo.read(ch)
+        except lwoUnsupportedFileException as msg:
+            bpy.ops.message.messagebox('INVOKE_DEFAULT', message=str(msg))
+
         ch.search_paths.extend([
             "images",
             "..",
             "../images",
 #            "../../../Textures",
         ])
-
-        try:
-            lwo.read(ch)
-        except lwoUnsupportedFileException as msg:
-             bpy.ops.message.messagebox('INVOKE_DEFAULT', message=str(msg))
-
         try:
             lwo.resolve_clips()
             lwo.validate_lwo()
