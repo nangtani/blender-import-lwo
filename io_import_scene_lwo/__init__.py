@@ -103,10 +103,10 @@ class MessageBox(bpy.types.Operator):
         default = False,
     )
  
-    def invoke(self, context, event):
+    def invoke(self, context, event): # gui: no cover
         return context.window_manager.invoke_props_dialog(self, width=400)
  
-    def execute(self, context):
+    def execute(self, context): # gui: no cover
         #self.report({'ERROR'}, self.message)
         self.report({'INFO'}, self.message)
         print(self.message)
@@ -114,7 +114,7 @@ class MessageBox(bpy.types.Operator):
             bpy.ops.open.browser('INVOKE_DEFAULT')
         return {'FINISHED'}
  
-    def draw(self, context):
+    def draw(self, context): # gui: no cover
         self.layout.label(self.message)
         self.layout.label("")
 
@@ -246,7 +246,7 @@ class IMPORT_OT_lwo(bpy.types.Operator):
             if bpy.app.background:
                 raise err
             else:
-                bpy.ops.message.messagebox('INVOKE_DEFAULT', message=str(err))
+                bpy.ops.message.messagebox('INVOKE_DEFAULT', message=str(err)) # gui: no cover
 
         try:
             lwo.resolve_clips()
@@ -256,7 +256,7 @@ class IMPORT_OT_lwo(bpy.types.Operator):
             if bpy.app.background:
                 raise err
             else:
-                bpy.ops.message.messagebox('INVOKE_DEFAULT', message=str(err), ob=True)
+                bpy.ops.message.messagebox('INVOKE_DEFAULT', message=str(err), ob=True) # gui: no cover
 
         del lwo
         # With the data gathered, build the object(s).
