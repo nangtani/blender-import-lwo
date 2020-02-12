@@ -1131,19 +1131,15 @@ class lwoObject:
             
             os.chdir(cwd)
             self.ch.images[c_id] = ifile
-            print(c_id, self.ch.images[c_id])
             
-        #for c_id in self.ch.images:
+        #for c_id in self.ch.images.keys():
         for c_id in self.clips:
-            print("cancel_search", self.ch.cancel_search)
             if None is self.ch.images[c_id] and not self.ch.cancel_search:
                 raise lwoNoImageFoundException(
                     "No valid image found for path: {}".format(
                         self.clips[c_id]
                     )
                 )
-
-            #print(c_id, self.clips[c_id])
 
     def validate_lwo(self):
         print(f"Validating LWO: {self.filename}")
