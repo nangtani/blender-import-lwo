@@ -1019,7 +1019,6 @@ class lwoObject:
 
         #self.search_paths = []
         self.allow_images_missing = False
-        self.images_missing = True
         self.absfilepath = True
 
         # self.read()
@@ -1112,18 +1111,21 @@ class lwoObject:
                         self.images.append(ifile)
                     continue
             
-            if None is ifile and not self.allow_images_missing:
+            os.chdir(cwd)
+            self.ch.images[c_id] = ifile
+            print(c_id, self.ch.images[c_id])
+            
+        #for c_id in self.ch.images:
+        for c_id in self.clips:
+            if None is self.ch.images[c_id] and not self.allow_images_missing:
                 self.images_missing = True
                 raise lwoNoImageFoundException(
-                    "No valid image found for path: {} {}".format(
-                        orig_path, search_paths
+                    "No valid image found for path: {}".format(
+                        self.clips[c_id]
                     )
                 )
 
-            os.chdir(cwd)
-            self.ch.images[c_id] = ifile
             #print(c_id, self.clips[c_id])
-        self.images_missing = False
 
     def validate_lwo(self):
         print(f"Validating LWO: {self.filename}")

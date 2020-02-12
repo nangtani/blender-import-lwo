@@ -14,6 +14,7 @@ class ImportFile:
             self.infiles = infiles
         self.post_pend = post_pend
         self.zdel_dir = []
+        self.search_paths = []
         self.args = args
         self.kwargs = kwargs
         
@@ -29,6 +30,17 @@ class ImportFile:
         for k in self.kwlist:
             if k in self.kwargs.keys():
                 self.lw_kwargs[k] = self.kwargs[k]
+
+        if "search_paths" in self.kwargs.keys():
+            self.search_paths.extend(self.kwargs["search_paths"])
+        else:
+            pass
+#             self.search_paths.extend([
+#                 "images",
+#                 "..",
+#                 "../images",
+# #                "../../../Textures",
+#             ])
 
         self.infile = self.infiles[0]
         if re.search(delimit, self.infile):
@@ -94,11 +106,14 @@ class ImportFile:
     
     def import_objects(self):
         for infile in self.infiles:
+            ch = bpy.types.Scene.ch
+            ch.search_paths.extend(self.search_paths)
             bpy.ops.import_scene.lwo(
                 filepath=infile, 
                 *self.lw_args,
                 **self.lw_kwargs,
             )
+
 
     def save_blend(self):
         bpy.ops.wm.save_mainfile(filepath=self.outfile)
@@ -124,4 +139,7 @@ def load_lwo(infiles, post_pend="", *args, **kwargs):
         importfile.copt_dst2ref()
         importfile.diff_result()
         importfile.clean_up()
+        
+        del importfile
+        bpy.types.Scene.ch.search_paths = []
 

@@ -10,7 +10,9 @@ def convert_file(infiles, addon):
     x = SetupAddon(addon)
     x.configure()
     
-    importfile = ImportFile(infiles, USE_EXISTING_MATERIALS=False)
+    importfile = ImportFile(
+        infiles, 
+    )
     importfile.check_file()
     importfile.import_objects()
     
@@ -21,8 +23,6 @@ def convert_file(infiles, addon):
 
 
 def main(infiles):
-    # addon = "io_import_scene_lwo.py"
-    # addon = "io_import_scene_lwo_1_3b.py"
     addon = "io_import_scene_lwo"
 
     if (2, 80, 0) < bpy.app.version:
@@ -45,10 +45,11 @@ if __name__ == "__main__":
     #infile = "src/Federation - Phobos/objects/USS-Phobos.11.5.lwo"
     infiles = [
         "tests/lwo_interceptor/src/LWO2/Federation - Interceptor/objects/interceptor_hull.lwo",
-        "tests/lwo_interceptor/src/LWO2/Federation - Interceptor/objects/interceptor_nacell_L.lwo",
+        #"tests/lwo_interceptor/src/LWO2/Federation - Interceptor/objects/interceptor_nacell_L.lwo",
     ]
-    #infile = "tests/basic/src/LWO2/box/box3-uv-layers.lwo"
+    #infiles = "tests/lwo_interceptor/src/LWO2/Federation - Interceptor/objects/interceptor_nacell_L.lwo"    #infile = "tests/basic/src/LWO2/box/box3-uv-layers.lwo"
     #infile = "tests/basic/src/LWO3/box/box3-uv-layers.lwo"
     #infile = "tests/basic/src/LWO2/ISS models 2011/Objects/Modules/columbus/columbus.lwo"
     #infile = "tests/lwo_phobos/src/LWO2/Federation - Phobos/objects/USS-Phobos.lwo"
+    #infiles = "tests/basic/src/box/box1-uv.lwo"
     main(infiles)

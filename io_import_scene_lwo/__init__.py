@@ -623,28 +623,32 @@ class IMPORT_OT_lwo(bpy.types.Operator):
     
     def execute(self, context):
         
-        ch = _choices(self.ADD_SUBD_MOD, self.LOAD_HIDDEN, self.SKEL_TO_ARM, self.USE_EXISTING_MATERIALS)
+        ch = bpy.types.Scene.ch
+        ch.add_subd_mod           = self.ADD_SUBD_MOD
+        ch.load_hidden            = self.LOAD_HIDDEN
+        ch.skel_to_arm            = self.SKEL_TO_ARM
+        ch.use_existing_materials = self.USE_EXISTING_MATERIALS
+
         lwo = lwoObject(self.filepath)
-        bpy.types.Scene.ch = ch
         bpy.types.Scene.lwo = lwo
         
         try:
             lwo.read(ch)
-        except lwoUnsupportedFileException as msg:
-            bpy.ops.message.messagebox('INVOKE_DEFAULT', message=str(msg))
+        except lwoUnsupportedFileException as err:
+            if bpy.app.background:
+                raise err
+            else:
+                bpy.ops.message.messagebox('INVOKE_DEFAULT', message=str(err))
 
-        ch.search_paths.extend([
-            "images",
-            "..",
-            "../images",
-#            "../../../Textures",
-        ])
         try:
             lwo.resolve_clips()
             lwo.validate_lwo()
             build_objects(lwo, ch)
-        except lwoNoImageFoundException as msg:
-            bpy.ops.message.messagebox('INVOKE_DEFAULT', message=str(msg), ob=True)
+        except lwoNoImageFoundException as err:
+            if bpy.app.background:
+                raise err
+            else:
+                bpy.ops.message.messagebox('INVOKE_DEFAULT', message=str(err), ob=True)
 
         del lwo
         # With the data gathered, build the object(s).
@@ -688,6 +692,8 @@ def register():
         bpy.utils.register_module(__name__)
         bpy.types.INFO_MT_file_import.append(menu_func)
     # endif
+    ch = _choices()
+    bpy.types.Scene.ch = ch
 
 def unregister(): # pragma: no cover
     if (2, 80, 0) < bpy.app.version:
@@ -699,6 +705,7 @@ def unregister(): # pragma: no cover
         bpy.utils.unregister_module(__name__)
         bpy.types.INFO_MT_file_import.remove(menu_func)
     # endif
+    del bpy.types.Scene.ch 
 
 if __name__ == "__main__": # pragma: no cover
     register()

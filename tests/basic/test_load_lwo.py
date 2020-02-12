@@ -1,3 +1,4 @@
+import pytest
 from lwo_helper import load_lwo
 
 def test_load_lwo_box1():
@@ -27,4 +28,14 @@ def test_load_lwo_box5_ngon():
 def test_load_lwo_ngon0():
     infile = 'tests/basic/src/LWO2/ngon/ngon0.lwo'
     load_lwo(infile)
+
+def test_load_lwo_raise0():
+    infile = "tests/basic/src/LWO2/box/cc0.png"
+    with pytest.raises(Exception):
+        load_lwo(infile)
+
+def test_load_lwo_raise1():
+    infile = "tests/basic/src/LWO2/box/cc0.pdf"
+    with pytest.raises(Exception):
+        load_lwo(infile)
 
