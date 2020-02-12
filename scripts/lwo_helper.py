@@ -41,6 +41,10 @@ class ImportFile:
 #                 "../images",
 # #                "../../../Textures",
 #             ])
+        if "cancel_search" in self.kwargs.keys():
+            self.cancel_search = kwargs["cancel_search"]
+        else:
+            self.cancel_search = False
 
         self.infile = self.infiles[0]
         if re.search(delimit, self.infile):
@@ -108,6 +112,7 @@ class ImportFile:
         for infile in self.infiles:
             ch = bpy.types.Scene.ch
             ch.search_paths.extend(self.search_paths)
+            ch.cancel_search = self.cancel_search
             bpy.ops.import_scene.lwo(
                 filepath=infile, 
                 *self.lw_args,
@@ -142,4 +147,5 @@ def load_lwo(infiles, post_pend="", *args, **kwargs):
         
         del importfile
         bpy.types.Scene.ch.search_paths = []
+        bpy.types.Scene.ch.cancel_search = False
 

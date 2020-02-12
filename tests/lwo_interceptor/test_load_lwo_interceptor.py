@@ -40,3 +40,7 @@ def test_load_lwo5():
     with pytest.raises(Exception):
         load_lwo(infile, search_paths=[])
 
+def test_load_lwo6():
+    infile = "tests/lwo_interceptor/src/LWO2/Federation - Interceptor/objects/interceptor_nacell_L.lwo"
+    load_lwo(infile, cancel_search=True)
+
