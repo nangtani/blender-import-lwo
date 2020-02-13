@@ -66,6 +66,7 @@ import bpy
 from .lwoObject import lwoObject, lwoNoImageFoundException, lwoUnsupportedFileException
 from .construct_mesh import build_objects
 
+
 class _choices:
     __slots__ = (
         "add_subd_mod",
@@ -76,8 +77,14 @@ class _choices:
         "cancel_search",
         "images",
     )
-     
-    def __init__(self, ADD_SUBD_MOD=True, LOAD_HIDDEN=False, SKEL_TO_ARM=True, USE_EXISTING_MATERIALS=False):
+
+    def __init__(
+        self,
+        ADD_SUBD_MOD=True,
+        LOAD_HIDDEN=False,
+        SKEL_TO_ARM=True,
+        USE_EXISTING_MATERIALS=False,
+    ):
         self.add_subd_mod = ADD_SUBD_MOD
         self.load_hidden = LOAD_HIDDEN
         self.skel_to_arm = SKEL_TO_ARM
@@ -85,36 +92,32 @@ class _choices:
         self.search_paths = []
         self.cancel_search = False
         self.images = {}
-        
+
+
 from bpy.props import StringProperty, BoolProperty
+
 
 class MESSAGE_OT_Box(bpy.types.Operator):
     bl_idname = "message.messagebox"
     bl_label = ""
- 
+
     message = bpy.props.StringProperty(
-        name = "message",
-        description = "message",
-        default = '',
+        name="message", description="message", default="",
     )
-    ob = bpy.props.BoolProperty(
-        name = "ob",
-        description = "ob",
-        default = False,
-    )
- 
-    def invoke(self, context, event): # gui: no cover
+    ob = bpy.props.BoolProperty(name="ob", description="ob", default=False,)
+
+    def invoke(self, context, event):  # gui: no cover
         return context.window_manager.invoke_props_dialog(self, width=400)
- 
-    def execute(self, context): # gui: no cover
-        #self.report({'ERROR'}, self.message)
-        self.report({'INFO'}, self.message)
+
+    def execute(self, context):  # gui: no cover
+        # self.report({'ERROR'}, self.message)
+        self.report({"INFO"}, self.message)
         print(self.message)
         if self.ob:
-            bpy.ops.open.browser('INVOKE_DEFAULT')
-        return {'FINISHED'}
- 
-    def draw(self, context): # gui: no cover
+            bpy.ops.open.browser("INVOKE_DEFAULT")
+        return {"FINISHED"}
+
+    def draw(self, context):  # gui: no cover
         self.layout.label(text=self.message)
         self.layout.label(text="")
 
@@ -124,22 +127,22 @@ class OPEN_OT_browser(bpy.types.Operator):
     bl_label = "Select Image Search Path"
     bl_options = {"REGISTER", "UNDO"}
 
-    directory = StringProperty(subtype="DIR_PATH") 
+    directory = StringProperty(subtype="DIR_PATH")
     cancel_search = BoolProperty(
         name="Cancel Search",
         description="If no further images are to be found",
         default=False,
     )
 
-    def invoke(self, context, event): # gui: no cover
+    def invoke(self, context, event):  # gui: no cover
         wm = context.window_manager
         wm.fileselect_add(self)
-        return {'RUNNING_MODAL'} 
+        return {"RUNNING_MODAL"}
 
-    def execute(self, context): # gui: no cover
+    def execute(self, context):  # gui: no cover
         lwo = bpy.types.Scene.lwo
         ch = bpy.types.Scene.ch
-        
+
         ch.search_paths.append(self.directory)
         ch.cancel_search = self.cancel_search
         try:
@@ -147,10 +150,10 @@ class OPEN_OT_browser(bpy.types.Operator):
             lwo.validate_lwo()
             build_objects(lwo, ch)
         except lwoNoImageFoundException as msg:
-            bpy.ops.message.messagebox('INVOKE_DEFAULT', message=str(msg), ob=True)
+            bpy.ops.message.messagebox("INVOKE_DEFAULT", message=str(msg), ob=True)
 
         del lwo
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class IMPORT_OT_lwo(bpy.types.Operator):
@@ -160,10 +163,9 @@ class IMPORT_OT_lwo(bpy.types.Operator):
     bl_label = "Import LWO"
     bl_description = "Import a LightWave Object file"
     bl_options = {"REGISTER", "UNDO"}
-    
+
     bpy.types.Scene.ch = None
     bpy.types.Scene.lwo = None
-
 
     if (2, 80, 0) < bpy.app.version:
         filepath: StringProperty(
@@ -172,7 +174,7 @@ class IMPORT_OT_lwo(bpy.types.Operator):
             maxlen=1024,
             default="",
         )
-    
+
         ADD_SUBD_MOD: BoolProperty(
             name="Apply SubD Modifier",
             description="Apply the Subdivision Surface modifier to layers with Subpatches",
@@ -200,7 +202,7 @@ class IMPORT_OT_lwo(bpy.types.Operator):
             maxlen=1024,
             default="",
         )
-    
+
         ADD_SUBD_MOD = BoolProperty(
             name="Apply SubD Modifier",
             description="Apply the Subdivision Surface modifier to layers with Subpatches",
@@ -222,31 +224,33 @@ class IMPORT_OT_lwo(bpy.types.Operator):
             default=False,
         )
     # endif
-    
-    def invoke(self, context, event): # gui: no cover
+
+    def invoke(self, context, event):  # gui: no cover
         wm = context.window_manager
         wm.fileselect_add(self)
         return {"RUNNING_MODAL"}
-    
+
     def execute(self, context):
-        
+
         ch = bpy.types.Scene.ch
-        ch.add_subd_mod           = self.ADD_SUBD_MOD
-        ch.load_hidden            = self.LOAD_HIDDEN
-        ch.skel_to_arm            = self.SKEL_TO_ARM
+        ch.add_subd_mod = self.ADD_SUBD_MOD
+        ch.load_hidden = self.LOAD_HIDDEN
+        ch.skel_to_arm = self.SKEL_TO_ARM
         ch.use_existing_materials = self.USE_EXISTING_MATERIALS
-        #ch.cancel_search          = False
+        # ch.cancel_search          = False
 
         lwo = lwoObject(self.filepath)
         bpy.types.Scene.lwo = lwo
-        
+
         try:
             lwo.read(ch)
         except lwoUnsupportedFileException as err:
             if bpy.app.background:
                 raise err
             else:
-                bpy.ops.message.messagebox('INVOKE_DEFAULT', message=str(err)) # gui: no cover
+                bpy.ops.message.messagebox(
+                    "INVOKE_DEFAULT", message=str(err)
+                )  # gui: no cover
 
         try:
             lwo.resolve_clips()
@@ -256,34 +260,37 @@ class IMPORT_OT_lwo(bpy.types.Operator):
             if bpy.app.background:
                 raise err
             else:
-                bpy.ops.message.messagebox('INVOKE_DEFAULT', message=str(err), ob=True) # gui: no cover
+                bpy.ops.message.messagebox(
+                    "INVOKE_DEFAULT", message=str(err), ob=True
+                )  # gui: no cover
 
         del lwo
         # With the data gathered, build the object(s).
         return {"FINISHED"}
 
 
-def menu_func(self, context): # gui: no cover
+def menu_func(self, context):  # gui: no cover
     self.layout.operator(IMPORT_OT_lwo.bl_idname, text="LightWave Object (.lwo)")
+
 
 # Panel
 class IMPORT_PT_Debug(bpy.types.Panel):
     bl_idname = "IMPORT_PT_Debug"
     if (2, 80, 0) < bpy.app.version:
-        #region = "UI"
+        # region = "UI"
         region = "WINDOW"
-        #region = "TOOLS"
-        space = 'PROPERTIES'
-    else: # else bpy.app.version
+        # region = "TOOLS"
+        space = "PROPERTIES"
+    else:  # else bpy.app.version
         region = "TOOLS"
-        space = 'VIEW_3D'
+        space = "VIEW_3D"
     # endif
     bl_label = "DEBUG"
     bl_space_type = space
     bl_region_type = region
     bl_category = "Tools"
 
-    def draw(self, context): # gui: no cover
+    def draw(self, context):  # gui: no cover
         layout = self.layout
 
         col = layout.column(align=True)
@@ -291,7 +298,12 @@ class IMPORT_PT_Debug(bpy.types.Panel):
         col.operator("open.browser", text="File Browser")
 
 
-classes = (IMPORT_OT_lwo, OPEN_OT_browser, MESSAGE_OT_Box,)
+classes = (
+    IMPORT_OT_lwo,
+    OPEN_OT_browser,
+    MESSAGE_OT_Box,
+)
+
 
 def register():
     if (2, 80, 0) < bpy.app.version:
@@ -306,7 +318,8 @@ def register():
     ch = _choices()
     bpy.types.Scene.ch = ch
 
-def unregister(): # pragma: no cover
+
+def unregister():  # pragma: no cover
     if (2, 80, 0) < bpy.app.version:
         for cls in classes:
             bpy.utils.unregister_class(cls)
@@ -316,7 +329,8 @@ def unregister(): # pragma: no cover
         bpy.utils.unregister_module(__name__)
         bpy.types.INFO_MT_file_import.remove(menu_func)
     # endif
-    del bpy.types.Scene.ch 
+    del bpy.types.Scene.ch
 
-if __name__ == "__main__": # pragma: no cover
+
+if __name__ == "__main__":  # pragma: no cover
     register()

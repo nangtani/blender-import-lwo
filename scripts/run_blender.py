@@ -1,7 +1,6 @@
 import os
 import sys
 import subprocess
-import re
 from glob import glob
 
 
@@ -44,7 +43,7 @@ if __name__ == "__main__":
     files = glob(f"../blender-{blender_rev}*/blender{ext}")
     if not 1 == len(files):
         raise Exception(f"Too many blenders returned: {files}")
-    
+
     blender = os.path.realpath(files[0])
     os.environ["LOCAL_BLENDER"] = blender
 

@@ -1,13 +1,12 @@
 import os
 import sys
 import subprocess
-import re
 
 
 def checkPath(path):
     if "cygwin" == sys.platform:
         cmd = "cygpath -wa {0}".format(path)
-        path = subprocess.check_output(cmd.split()).decode('ascii').rstrip()
+        path = subprocess.check_output(cmd.split()).decode("ascii").rstrip()
     return path
 
 
@@ -16,9 +15,9 @@ def main(blender, test_file, background="--background"):
     os.environ["PYTHONPATH"] = os.getcwd() + "/scripts"
     os.environ["PYTHONPATH"] = checkPath(os.environ["PYTHONPATH"])
 
-    cmd = 'rm -rf ../blender-*/*/scripts/addons/io_import_scene_lwo.py'
+    cmd = "rm -rf ../blender-*/*/scripts/addons/io_import_scene_lwo.py"
     os.system(cmd)
-    
+
     cmd = f'{blender} {background} --python "{test_file}"'
     result = int(os.system(cmd))
     if 0 == result:

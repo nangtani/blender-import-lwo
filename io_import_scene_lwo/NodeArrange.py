@@ -164,8 +164,8 @@ class ArrangeNodesOp(bpy.types.Operator):
         else:
             values.mat_name = self.mat_name
             scn = context.scene
-#             scn.nodemargin_x = self.margin_x
-#             scn.nodemargin_y = self.margin_y
+            #             scn.nodemargin_x = self.margin_x
+            #             scn.nodemargin_y = self.margin_y
             nodes_iterate(mat)
             if scn.node_center:
                 nodes_center(mat)
@@ -178,7 +178,7 @@ class ArrangeNodesOp(bpy.types.Operator):
 def outputnode_search(mat):  # return node/None
 
     outputnodes = []
-    #for node in bpy.context.space_data.node_tree.nodes:
+    # for node in bpy.context.space_data.node_tree.nodes:
     for node in nodetree_get(mat):
         if not node.outputs:
             for input in node.inputs:
@@ -186,12 +186,11 @@ def outputnode_search(mat):  # return node/None
                     outputnodes.append(node)
                     break
 
-
     if not outputnodes:
         print("No output node found")
         return None
-    
-    #print("outputnodes:",outputnodes)
+
+    # print("outputnodes:",outputnodes)
     return outputnodes
 
 
@@ -301,7 +300,7 @@ def nodes_iterate(mat, arrange=True):
     ########################################
 
     if not arrange:
-        nodes_odd(mat2, newnodes)
+        # nodes_odd(mat2, newnodes)
         return None
 
         ########################################
@@ -314,7 +313,7 @@ def nodes_iterate(mat, arrange=True):
 
         values.average_y = 0
         nodes = [x for x in a[level]]
-        #print ("level, nodes:", level, nodes)
+        # print ("level, nodes:", level, nodes)
         nodes_arrange(mat, nodes, level)
 
         level += 1
@@ -339,7 +338,7 @@ def nodes_arrange(mat, nodelist, level):
 
     parents = []
     for node in nodelist:
-        #print(node, node.parent)
+        # print(node, node.parent)
         parents.append(node.parent)
         node.parent = None
         nodetree_get(mat).update()
@@ -376,7 +375,7 @@ def nodes_arrange(mat, nodelist, level):
         node.location.y -= values.average_y
 
     for i, node in enumerate(nodelist):
-        #print(i, node, node.parent, parents[i])
+        # print(i, node, node.parent, parents[i])
         node.parent = parents[i]
 
 
@@ -396,7 +395,7 @@ def nodes_center(mat):
     bboxminy = []
 
     for node in nodetree_get(mat):
-        #print(node, node.parent)
+        # print(node, node.parent)
         if not node.parent:
             bboxminx.append(node.location.x)
             bboxmaxx.append(node.location.x + node.dimensions.x)
@@ -410,15 +409,15 @@ def nodes_center(mat):
     bboxmaxy = max(bboxmaxy)
     center_x = (bboxminx + bboxmaxx) / 2
     center_y = (bboxminy + bboxmaxy) / 2
-    
-#     print("minx:",bboxminx)
-#     print("maxx:",bboxmaxx)
-#     print("miny:",bboxminy)
-#     print("maxy:",bboxmaxy)
-# 
-#     print("bboxes:", bboxminx, bboxmaxx, bboxmaxy, bboxminy)
-#     print("center x:",center_x)
-#     print("center y:",center_y)
+
+    #     print("minx:",bboxminx)
+    #     print("maxx:",bboxmaxx)
+    #     print("miny:",bboxminy)
+    #     print("maxy:",bboxmaxy)
+    #
+    #     print("bboxes:", bboxminx, bboxmaxx, bboxmaxy, bboxminy)
+    #     print("center x:",center_x)
+    #     print("center y:",center_y)
 
     x = 0
     y = 0

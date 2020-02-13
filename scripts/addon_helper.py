@@ -14,60 +14,66 @@ import bpy
 #         if not os.path.isdir(new_path):
 #             os.mkdir(new_path)
 
+
 def clean_file(filename):
-    f = open(filename, 'r')
+    f = open(filename, "r")
     lines = f.readlines()
     f.close()
-    
+
     unique_blender = True
     fix_fstrings = False
     if bpy.app.version <= (2, 79, 0):
         fix_fstrings = True
-    
+
     trim_code = False
     active_print0 = None
-    f = open(filename, 'w')
+    f = open(filename, "w")
     for line in lines:
         if unique_blender:
             line2 = line
             if re.search("^\s+else", line) and re.search("else bpy.app.version", line):
-                active_print0 = not(active_print0)
+                active_print0 = not (active_print0)
                 line2 = "\n"
-        
+
             if re.search("endif", line):
                 active_print0 = None
                 trim_code = False
                 line2 = "\n"
-        
+
             h = re.search("^\s+[el]?if \((\d+), (\d+), (\d+)\) < bpy.app.version", line)
             if h:
-                current_blender_rev = (int(h.group(1)), int(h.group(2)), int(h.group(3)))
+                current_blender_rev = (
+                    int(h.group(1)),
+                    int(h.group(2)),
+                    int(h.group(3)),
+                )
                 trim_code = True
-                active_print0 = (current_blender_rev <= bpy.app.version)
+                active_print0 = current_blender_rev <= bpy.app.version
                 line2 = "\n"
-                #line = re.sub("elif", "if", line)
-        
+                # line = re.sub("elif", "if", line)
+
             if trim_code:
                 line2 = re.sub("^    ", "", line2)
             if not active_print0 and not active_print0 == None:
                 line2 = "\n"
             line = line2
-        
-        k = re.search("\"blender\":\s\(\d+, \d+, \d+\)", line)
+
+        k = re.search('"blender":\s\(\d+, \d+, \d+\)', line)
         if k:
-            line = "    \"blender\": {0},\n".format(bpy.app.version)
-        
-        if re.search("print\(f\"", line) and fix_fstrings:
+            line = '    "blender": {0},\n'.format(bpy.app.version)
+
+        if re.search('print\(f"', line) and fix_fstrings:
             line = re.sub("print", "pass ; # print", line)
         f.write(line)
     f.close()
+
 
 def zip_addon(addon):
     bpy_module = re.sub(".py", "", os.path.basename(os.path.realpath(addon)))
     zfile = os.path.realpath(bpy_module + ".zip")
 
     print("Zipping addon - {0}".format(bpy_module))
-    
+
     cwd = os.getcwd()
     temp_dir = "tmp"
     if os.path.isdir(temp_dir):
@@ -89,14 +95,14 @@ def zip_addon(addon):
         clean_file(addon)
         zf.write(addon)
     zf.close()
-        
+
     os.chdir(cwd)
     shutil.rmtree(temp_dir)
     return (bpy_module, zfile)
 
+
 def change_addon_dir(bpy_module, zfile, addon_dir):
     print("Change addon dir - {0}".format(addon_dir))
-
 
     if (2, 80, 0) < bpy.app.version:
         bpy.context.preferences.filepaths.script_directory = addon_dir
@@ -137,7 +143,7 @@ def cleanup(addon, bpy_module):
             os.remove(addon)
     else:
         bpy.ops.wm.addon_disable(module=bpy_module)
-    
+
         # addon_remove does not work correctly in CLI
         # bpy.ops.wm.addon_remove(bpy_module=bpy_module)
         addon_dirs = bpy.utils.script_paths(subdir="addons")
@@ -148,30 +154,31 @@ def cleanup(addon, bpy_module):
         else:
             os.remove(addon)
 
+
 class SetupAddon:
     def __init__(self, addon):
         self.addon = addon
         self.addon_dir = "local_addon"
         self.zdel_dir = []
         self.infile = None
-        
+
         self.lwozfile = None
         self.lwozpath = None
         self.lwozfiles = None
 
     def configure(self, config=None):
         (self.bpy_module, self.zfile) = zip_addon(self.addon)
-        #copy_addon(self.bpy_module, self.zfile)
+        # copy_addon(self.bpy_module, self.zfile)
         change_addon_dir(self.bpy_module, self.zfile, self.addon_dir)
 
     def unconfigure(self):
         cleanup(self.addon, self.bpy_module)
-        for z in self.zdel_dir: 
+        for z in self.zdel_dir:
             print("Clean up zip file for {}".format(z))
             shutil.rmtree(z)
 
     def set_cycles(self):
-        bpy.context.scene.render.engine = 'CYCLES'
+        bpy.context.scene.render.engine = "CYCLES"
 
 
 def get_version(bpy_module):

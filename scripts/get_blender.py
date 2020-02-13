@@ -30,7 +30,7 @@ def getSuffix(blender_version):
         rev = g.group(0)
     else:
         raise
-        
+
     urls = [
         f"https://ftp.nluug.nl/pub/graphics/blender/release/Blender{rev}",
         "https://builder.blender.org/download",
@@ -41,12 +41,12 @@ def getSuffix(blender_version):
         page = requests.get(url)
         data = page.text
         soup = BeautifulSoup(data, features="html.parser")
-        
+
         blender_version_suffix = ""
         versions_found = []
         for link in soup.find_all("a"):
             x = str(link.get("href"))
-            #print(x)
+            # print(x)
             g = re.search(f"blender-(.+)-{machine}.+{ext}", x)
             if g:
                 version_found = g.group(1).split("-")[0]
@@ -55,13 +55,15 @@ def getSuffix(blender_version):
                     blender_zippath = f"{url}/{g.group(0)}"
                     if url == urls[1]:
                         nightly = True
-     
+
     if None == blender_zippath:
         print(soup)
-        raise Exception(f"Unable to find {blender_version} in nightlies, here is what is available {versions_found}")
-    
-    #print(blender_zippath, nightly)
-    #exit()
+        raise Exception(
+            f"Unable to find {blender_version} in nightlies, here is what is available {versions_found}"
+        )
+
+    # print(blender_zippath, nightly)
+    # exit()
     return blender_zippath, nightly
 
 
@@ -133,7 +135,9 @@ def main(blender_version):
 
 if __name__ == "__main__":
     if "cygwin" == sys.platform:
-        print("ERROR, do not run this under cygwin, run it under Linux and Windows cmd!!")
+        print(
+            "ERROR, do not run this under cygwin, run it under Linux and Windows cmd!!"
+        )
         exit()
 
     if len(sys.argv) >= 2:

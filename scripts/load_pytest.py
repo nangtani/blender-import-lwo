@@ -3,6 +3,7 @@ ADDON = "io_import_scene_lwo"
 import os
 import sys
 import pytest
+
 try:
     sys.path.append(os.environ["LOCAL_PYTHONPATH"])
     from addon_helper import SetupAddon
@@ -10,8 +11,8 @@ except Exception as e:
     print(e)
     sys.exit(1)
 
-class SetupPlugin(SetupAddon):
 
+class SetupPlugin(SetupAddon):
     def pytest_configure(self, config):
         super().configure()
         config.cache.set("bpy_module", self.bpy_module)
@@ -22,9 +23,14 @@ class SetupPlugin(SetupAddon):
 
 
 try:
-    #exit_val = pytest.main(["tests/basic/test_load_lwo.py::test_load_lwo_box1", "-v", "-x", "--cov", "--cov-report", "term-missing", "--cov-report", "xml",], plugins=[SetupPlugin(ADDON)])
-    #exit_val = pytest.main(["tests/lwo_nasa/test_load_lwo_nasa.py", "-v", "-x", "--cov", "--cov-report", "term", "--cov-report", "xml",], plugins=[SetupPlugin(ADDON)])
-    exit_val = pytest.main(["tests", "-v", "-x", "--cov", "--cov-report", "term", "--cov-report", "xml",], plugins=[SetupPlugin(ADDON)])
+    # exit_val = pytest.main(["tests/basic/test_load_lwo.py::test_load_lwo_box1", "-v", "-x", "--cov", "--cov-report", "term-missing", "--cov-report", "xml",], plugins=[SetupPlugin(ADDON)])
+    # exit_val = pytest.main(["tests/lwo_nasa/test_load_lwo_nasa.py", "-v", "-x", "--cov", "--cov-report", "term", "--cov-report", "xml",], plugins=[SetupPlugin(ADDON)])
+    extra_cmd = ""
+    extra_cmd = "--ignore=tests/lwo_nasa"
+    exit_val = pytest.main(
+        ["tests", "-v", "-x", extra_cmd, "--cov", "--cov-report", "term", "--cov-report", "xml",],
+        plugins=[SetupPlugin(ADDON)],
+    )
 except Exception as e:
     print(e)
     exit_val = 1

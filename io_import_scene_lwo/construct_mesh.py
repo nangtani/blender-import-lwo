@@ -18,7 +18,9 @@
 
 import bpy
 import bmesh
+import mathutils
 from .gen_material import lwo2BI, lwo2cycles, get_existing
+
 
 def create_mappack(data, map_name, map_type):
     """Match the map data to faces."""
@@ -93,6 +95,7 @@ def build_armature(layer_data, bones):
         nb.use_connect = True
         prev_bone = nb
 
+
 def build_materials(lwo, ch):
     print(f"Adding {len(lwo.surfs)} Materials")
 
@@ -100,16 +103,21 @@ def build_materials(lwo, ch):
     for key, surf in lwo.surfs.items():
         m = get_existing(surf, ch.use_existing_materials)
         if None == m:
-            if 'CYCLES' == renderer or 'BLENDER_EEVEE' == renderer or 'BLENDER_WORKBENCH' == renderer:
+            if (
+                "CYCLES" == renderer
+                or "BLENDER_EEVEE" == renderer
+                or "BLENDER_WORKBENCH" == renderer
+            ):
                 m = lwo2cycles(surf)
             else:
                 m = lwo2BI(surf)
         lwo.materials[key] = m
 
+
 def build_objects(lwo, ch):
     """Using the gathered data, create the objects."""
     ob_dict = {}  # Used for the parenting setup.
-    
+
     build_materials(lwo, ch)
 
     # Single layer objects use the object file's name instead.
@@ -140,7 +148,7 @@ def build_objects(lwo, ch):
             scn.objects.active = ob
             ob.select = True
         # endif
-        
+
         ob_dict[layer_data.index] = [ob, layer_data.parent_index]
 
         # Move the object so the pivot is in the right place.
@@ -154,13 +162,15 @@ def build_objects(lwo, ch):
 
                 for fi in layer_data.surf_tags[surf_key]:
                     me.polygons[fi].material_index = mat_slot
-                    me.polygons[fi].use_smooth = lwo.materials[lwo.tags[surf_key]].smooth
+                    me.polygons[fi].use_smooth = lwo.materials[
+                        lwo.tags[surf_key]
+                    ].smooth
 
                 mat_slot += 1
 
-        #bpy.context.object.data.use_auto_smooth = True
-        bpy.ops.object.modifier_add(type='EDGE_SPLIT')
-        
+        # bpy.context.object.data.use_auto_smooth = True
+        bpy.ops.object.modifier_add(type="EDGE_SPLIT")
+
         # Create the Vertex Normals.
         if len(layer_data.vnorms) > 0:
             print("Adding Vertex Normals")
@@ -245,10 +255,10 @@ def build_objects(lwo, ch):
                 bm = bmesh.new()
                 bm.from_mesh(me)
                 for i, uvmap_key in enumerate(allmaps):
-                    #print("allmaps", len(allmaps))
-                    #raise
+                    # print("allmaps", len(allmaps))
+                    # raise
                     print(i, uvmap_key)
-                    #raise
+                    # raise
                     bm.loops.layers.uv.new(uvmap_key)
                 print("exit loop")
                 bm.to_mesh(me)
@@ -284,16 +294,16 @@ def build_objects(lwo, ch):
                         uvm.data[li].uv = [u, v]
 
         # Now triangulate the NGons.
-        #if not 0 == len(ngons):
+        # if not 0 == len(ngons):
         if True:
             bm = bmesh.new()
             bm.from_mesh(me)
-            if hasattr(bm.faces, "ensure_lookup_table"): 
+            if hasattr(bm.faces, "ensure_lookup_table"):
                 bm.faces.ensure_lookup_table()
 
             faces = []
             for face in bm.faces:
-                if len(face.verts) > 4: # review this number
+                if len(face.verts) > 4:  # review this number
                     faces.append(face)
             print(f"{len(faces)} NGONs")
             bmesh.ops.triangulate(bm, faces=faces)
@@ -301,7 +311,7 @@ def build_objects(lwo, ch):
             # Finish up, write the bmesh back to the mesh
             bm.to_mesh(me)
             bm.free()
-            
+
         # Apply the Edge Weighting.
         if len(layer_data.edge_weights) > 0:
             for edge in me.edges:
@@ -337,7 +347,6 @@ def build_objects(lwo, ch):
         layer_data.morphs.clear()
         layer_data.surf_tags.clear()
 
-        
         # We may have some invalid mesh data, See: [#27916]
         # keep this last!
         if (2, 80, 0) < bpy.app.version:
@@ -349,22 +358,25 @@ def build_objects(lwo, ch):
                 raise Exception("me.calc_tessface tripped")
             me.update(calc_tessface=True)
         # endif
-        
-#         if (2, 80, 0) < bpy.app.version:
-#             pass
-#             #me.update(calc_loop_triangles=True)
-#             #me.update(calc_edges=True)
-#             #me.update(calc_edges_loose=True)
-#         else:  # else bpy.app.version
-#             me.update(calc_tessface=True)
-#         # endif
+
+        #         if (2, 80, 0) < bpy.app.version:
+        #             pass
+        #             #me.update(calc_loop_triangles=True)
+        #             #me.update(calc_edges=True)
+        #             #me.update(calc_edges_loose=True)
+        #         else:  # else bpy.app.version
+        #             me.update(calc_tessface=True)
+        #         # endif
 
         print(f"Validating mesh: {me.name}...")
         me.validate()
-        
+
         # Texture slots have been removed from 2.80, is there a corresponding any thing?
         # Create the 3D View visualisation textures.
-        if 'CYCLES' == bpy.context.scene.render.engine or 'BLENDER_EEVEE' == bpy.context.scene.render.engine:
+        if (
+            "CYCLES" == bpy.context.scene.render.engine
+            or "BLENDER_EEVEE" == bpy.context.scene.render.engine
+        ):
             pass
         else:
             for tf in me.polygons:
@@ -373,7 +385,7 @@ def build_objects(lwo, ch):
                     if ts:
                         if None == tex_slots[0].texture:
                             continue
-                        
+
                         image = tex_slots[0].texture.image
                         for lay in me.tessface_uv_textures:
                             lay.data[tf.index].image = image

@@ -18,7 +18,9 @@
 
 import os
 import bpy
-#from .NodeArrange import nodemargin, ArrangeNodesOp, values
+
+# from .NodeArrange import nodemargin, ArrangeNodesOp, values
+
 
 class _material:
     __slots__ = (
@@ -26,10 +28,12 @@ class _material:
         "mat",
         "smooth",
     )
+
     def __init__(self, name=None):
         self.name = name
         self.mat = None
         self.smooth = False
+
 
 def get_existing(surf, use_existing_materials):
     m = None
@@ -41,10 +45,11 @@ def get_existing(surf, use_existing_materials):
         m.mat = x
         m.smooth = surf.smooth
     return m
-    
+
+
 def lwo2BI(surf_data):
     if (2, 80, 0) < bpy.app.version:
-        #return # FIXME
+        # return # FIXME
         raise Exception("Blender Internal has been removed")
     # endif
     m = _material(surf_data.name)
@@ -68,7 +73,7 @@ def lwo2BI(surf_data):
     m.mat.specular_hardness = (
         int(4 * ((10 * surf_data.glos) * (10 * surf_data.glos))) + 4
     )
-    
+
     for textures_type, textures in surf_data.textures.items():
         for texture in textures:
             if not textures_type == "COLR":
@@ -77,8 +82,8 @@ def lwo2BI(surf_data):
             image_path = texture.clip
             if None == image_path:
                 continue
-            
-            #print(image_path)
+
+            # print(image_path)
             basename = os.path.basename(image_path)
             image = bpy.data.images.get(basename)
             if None == image:
@@ -91,9 +96,9 @@ def lwo2BI(surf_data):
                 tex_slot.texture_coords = "UV"
                 tex_slot.uv_layer = texture.uvname
             tex_slot.diffuse_color_factor = texture.opac
-            if not (texture.enab):
-                tex_slot.use_textures[ci - 1] = False
-    
+            # if not (texture.enab):
+            #    tex_slot.use_textures[ci - 1] = False
+
     for texture in surf_data.textures_5:
         tex_slot = m.mat.texture_slots.add()
         tex = bpy.data.textures.new(os.path.basename(texture.path), "IMAGE")
@@ -109,42 +114,42 @@ def lwo2BI(surf_data):
             tex_slot.mapping_y = "Y"
         if texture.Z:
             tex_slot.mapping_z = "Z"
-    
+
     return m
 
 
 def lwo2cycles(surf_data):
     m = _material(surf_data.name)
     mat_name = surf_data.name
-    
+
     m.smooth = surf_data.smooth
     m.mat = bpy.data.materials.new(mat_name)
     m.mat.use_nodes = True
     nodes = m.mat.node_tree.nodes
-    n = nodes['Material Output']
+    n = nodes["Material Output"]
     if (2, 80, 0) < bpy.app.version:
         pass
-    else: # else bpy.app.version
+    else:  # else bpy.app.version
         m.mat.diffuse_color = surf_data.colr[:]
-        d = nodes.new('ShaderNodeBsdfPrincipled')
-        m.mat.node_tree.links.new(d.outputs['BSDF'], n.inputs['Surface']) 
-        nodes.remove(nodes['Diffuse BSDF'])
+        d = nodes.new("ShaderNodeBsdfPrincipled")
+        m.mat.node_tree.links.new(d.outputs["BSDF"], n.inputs["Surface"])
+        nodes.remove(nodes["Diffuse BSDF"])
     # endif
-               
+
     color = (surf_data.colr[0], surf_data.colr[1], surf_data.colr[2], surf_data.diff)
-    #surf_data.diff = 0 == black
-    #print(color)
-    #print(surf_data.diff, surf_data.tran)
-    d = nodes['Principled BSDF']
+    # surf_data.diff = 0 == black
+    # print(color)
+    # print(surf_data.diff, surf_data.tran)
+    d = nodes["Principled BSDF"]
     d.inputs[0].default_value = color
-    
-#     print(d.parent)
-#     print(m.parent)
-#     d.parent = m
-#     #d.set_parent(m)
-#     #print(dir(d))
-#     print(d.parent)
-#     print(m.parent)
+
+    #     print(d.parent)
+    #     print(m.parent)
+    #     d.parent = m
+    #     #d.set_parent(m)
+    #     #print(dir(d))
+    #     print(d.parent)
+    #     print(m.parent)
 
     for textures_type, textures in surf_data.textures.items():
         for texture in textures:
@@ -154,24 +159,24 @@ def lwo2cycles(surf_data):
             image_path = texture.clip
             if None == image_path:
                 continue
-    
+
             basename = os.path.basename(image_path)
             image = bpy.data.images.get(basename)
             if None == image:
                 image = bpy.data.images.load(image_path)
-            i = nodes.new('ShaderNodeTexImage')
+            i = nodes.new("ShaderNodeTexImage")
             i.image = image
-            #print(ci, image)
+            # print(ci, image)
 
-#     #nodes.update()    
-#     v = values
-#     v.mat_name = mat_name
-# 
-#     bpy.types.Scene.nodemargin_x = v.margin_x
-#     bpy.types.Scene.nodemargin_y = v.margin_y
-#     bpy.types.Scene.node_center  = True
-# 
-#     N = ArrangeNodesOp
-#     N.nodemargin2(v, bpy.context)
-    
+    #     #nodes.update()
+    #     v = values
+    #     v.mat_name = mat_name
+    #
+    #     bpy.types.Scene.nodemargin_x = v.margin_x
+    #     bpy.types.Scene.nodemargin_y = v.margin_y
+    #     bpy.types.Scene.node_center  = True
+    #
+    #     N = ArrangeNodesOp
+    #     N.nodemargin2(v, bpy.context)
+
     return m
