@@ -25,8 +25,11 @@ class SetupPlugin(SetupAddon):
 try:
     # exit_val = pytest.main(["tests/basic/test_load_lwo.py::test_load_lwo_box1", "-v", "-x", "--cov", "--cov-report", "term-missing", "--cov-report", "xml",], plugins=[SetupPlugin(ADDON)])
     # exit_val = pytest.main(["tests/lwo_nasa/test_load_lwo_nasa.py", "-v", "-x", "--cov", "--cov-report", "term", "--cov-report", "xml",], plugins=[SetupPlugin(ADDON)])
-    extra_cmd = ""
     extra_cmd = "--ignore=tests/lwo_nasa"
+    if 'TRAVIS_BRANCH' in os.environ.keys():
+        if "master" == os.environ["TRAVIS_BRANCH"]:
+            extra_cmd = ""
+
     exit_val = pytest.main(
         ["tests", "-v", "-x", extra_cmd, "--cov", "--cov-report", "term", "--cov-report", "xml",],
         plugins=[SetupPlugin(ADDON)],

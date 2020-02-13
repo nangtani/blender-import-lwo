@@ -2,3 +2,4 @@ pip
 yolk3k
 pytest
 pytest-cov
+flake8
