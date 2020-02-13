@@ -244,10 +244,16 @@ def build_objects(lwo, ch):
             if len(allmaps) > 8:
                 bm = bmesh.new()
                 bm.from_mesh(me)
-                for uvmap_key in allmaps:
+                for i, uvmap_key in enumerate(allmaps):
+                    #print("allmaps", len(allmaps))
+                    #raise
+                    print(i, uvmap_key)
+                    #raise
                     bm.loops.layers.uv.new(uvmap_key)
+                print("exit loop")
                 bm.to_mesh(me)
                 bm.free()
+                print("bm free")
             else:
                 for uvmap_key in allmaps:
                     if (2, 80, 0) < bpy.app.version:

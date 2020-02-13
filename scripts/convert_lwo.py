@@ -12,6 +12,7 @@ def convert_file(infiles, addon):
     
     importfile = ImportFile(
         infiles, 
+        cancel_search=True,
     )
     importfile.check_file()
     importfile.import_objects()
@@ -51,5 +52,6 @@ if __name__ == "__main__":
     #infile = "tests/basic/src/LWO3/box/box3-uv-layers.lwo"
     #infile = "tests/basic/src/LWO2/ISS models 2011/Objects/Modules/columbus/columbus.lwo"
     #infile = "tests/lwo_phobos/src/LWO2/Federation - Phobos/objects/USS-Phobos.lwo"
-    #infiles = "tests/basic/src/box/box1-uv.lwo"
+    infiles = "tests/lwo_nasa/src/ATLAST/ATLAST-2014.lwo"
+    #infiles = "tests/lwo_nasa/src/Gamma Ray Observatory - Composite/GRO-Composite.lwo"
     main(infiles)

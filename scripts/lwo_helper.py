@@ -50,7 +50,7 @@ class ImportFile:
         if re.search(delimit, self.infile):
             head, name = self.infile.split(delimit)
         else:
-            name = os.path.basename(infile)
+            name = os.path.basename(self.infile)
     
         render = bpy.context.scene.render.engine.lower()
         dst_path = "{0}/dst_blend/{1}.{2}".format(head, bpy.app.version[0],bpy.app.version[1])

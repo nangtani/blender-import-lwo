@@ -985,9 +985,14 @@ def read_surf_5(surf_bytes, lwo, dirpath=None):
             path, path_len = read_lwostring(surf_bytes[offset:])
             if path == "(none)":
                 continue
+            if lwo.ch.cancel_search:
+                continue
+            
+            print(path, path_len)
             texture = _surf_texture_5()
             path = dirpath + os.sep + path.replace("//", "")
             texture.path = path
+            #texture.path = None
             surf.textures_5.append(texture)
 
         elif subchunk_name == b"TFLG":
