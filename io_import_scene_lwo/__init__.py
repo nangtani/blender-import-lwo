@@ -115,8 +115,8 @@ class MESSAGE_OT_Box(bpy.types.Operator):
         return {'FINISHED'}
  
     def draw(self, context): # gui: no cover
-        self.layout.label(self.message)
-        self.layout.label("")
+        self.layout.label(text=self.message)
+        self.layout.label(text="")
 
 
 class OPEN_OT_browser(bpy.types.Operator):
@@ -267,16 +267,19 @@ def menu_func(self, context): # gui: no cover
     self.layout.operator(IMPORT_OT_lwo.bl_idname, text="LightWave Object (.lwo)")
 
 # Panel
-class ImportPanel(bpy.types.Panel):
-    bl_idname = "OBJECT_PT_debug"
+class IMPORT_PT_Debug(bpy.types.Panel):
+    bl_idname = "IMPORT_PT_Debug"
     if (2, 80, 0) < bpy.app.version:
         #region = "UI"
         region = "WINDOW"
+        #region = "TOOLS"
+        space = 'PROPERTIES'
     else: # else bpy.app.version
         region = "TOOLS"
+        space = 'VIEW_3D'
     # endif
     bl_label = "DEBUG"
-    bl_space_type = 'VIEW_3D'
+    bl_space_type = space
     bl_region_type = region
     bl_category = "Tools"
 
