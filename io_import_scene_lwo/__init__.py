@@ -88,7 +88,7 @@ class _choices:
         
 from bpy.props import StringProperty, BoolProperty
 
-class MessageBox(bpy.types.Operator):
+class MESSAGE_OT_Box(bpy.types.Operator):
     bl_idname = "message.messagebox"
     bl_label = ""
  
@@ -119,7 +119,7 @@ class MessageBox(bpy.types.Operator):
         self.layout.label("")
 
 
-class OpenBrowser(bpy.types.Operator):
+class OPEN_OT_browser(bpy.types.Operator):
     bl_idname = "open.browser"
     bl_label = "Select Image Search Path"
     bl_options = {"REGISTER", "UNDO"}
@@ -288,7 +288,7 @@ class ImportPanel(bpy.types.Panel):
         col.operator("open.browser", text="File Browser")
 
 
-classes = (IMPORT_OT_lwo, OpenBrowser, MessageBox,)
+classes = (IMPORT_OT_lwo, OPEN_OT_browser, MESSAGE_OT_Box,)
 
 def register():
     if (2, 80, 0) < bpy.app.version:
