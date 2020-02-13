@@ -2,3 +2,4 @@ pip
 yolk3k
 bs4
 requests
+flake8
