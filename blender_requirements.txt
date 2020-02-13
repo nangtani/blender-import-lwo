@@ -2,4 +2,4 @@ pip
 yolk3k
 pytest
 pytest-cov
-zipp
+zipp==2.1.0
