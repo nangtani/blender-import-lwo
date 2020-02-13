@@ -1,3 +1,6 @@
 [submodule "tests/lwo_phobos"]
 	path = tests/lwo_phobos
 	url = https://github.com/douglaskastle/lwo_phobos.git
+[submodule "tests/lwo_nasa"]
+	path = tests/lwo_nasa
+	url = https://douglaskastle:^c0rNagh29@github.com/douglaskastle/lwo_nasa.git
