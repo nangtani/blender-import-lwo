@@ -45,6 +45,7 @@ before_install:
     - ls ${BLENDER_CACHE}
     - pip3 install -r scripts/requirements.txt --upgrade
     - yolk -l
+    - pip list
 
 install:
     - cd $TRAVIS_BUILD_DIR
