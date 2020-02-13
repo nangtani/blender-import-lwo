@@ -2,3 +2,4 @@ pip
 yolk3k
 pytest
 pytest-cov
+zipp # consider removing after 2.78
