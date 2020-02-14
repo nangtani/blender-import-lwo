@@ -104,9 +104,15 @@ def getBlender(blender_version, blender_zippath, nightly):
         if re.search("bin/python.exe", zfile) or re.search("bin/python\d.\d", zfile):
             python = os.path.realpath(zfile)
 
+    if os.path.isfile(f"{cwd}/blender_requirements_{blender_version}.txt"):
+        bl_requirements = f"{cwd}/blender_requirements_{blender_version}.txt"
+    else:
+        bl_requirements = f"{cwd}/blender_requirements.txt"
     cmd = f"{python} -m ensurepip"
     os.system(cmd)
-    cmd = f"{python} -m pip install --upgrade -r {cwd}/blender_requirements.txt -r {cwd}/scripts/requirements.txt"
+    cmd = f"{python} -m pip install --upgrade -r {bl_requirements} -r {cwd}/scripts/requirements.txt"
+    os.system(cmd)
+    cmd = f"{python} -m pip list"
     os.system(cmd)
 
     os.chdir(cwd)
