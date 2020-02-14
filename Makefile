@@ -7,15 +7,15 @@ default:
 	python3 scripts/run_blender.py $(BLENDER_VERSION)
 
 all:
-#	python3 scripts/run_blender.py 2.78c
-# 	python3 scripts/run_blender.py 2.79b
-# 	python3 scripts/run_blender.py 2.80
-# 	python3 scripts/run_blender.py 2.81a
-# 	python3 scripts/run_blender.py 2.82
+	#python3 scripts/run_blender.py 2.78c
+	python3 scripts/run_blender.py 2.79b
+	python3 scripts/run_blender.py 2.80
+	python3 scripts/run_blender.py 2.81a
+	python3 scripts/run_blender.py 2.82
 	python3 scripts/run_blender.py 2.83
 
 get:
-	python3 scripts/get_blender.py 2.78c
+	#python3 scripts/get_blender.py 2.78c
 	python3 scripts/get_blender.py 2.79b
 	python3 scripts/get_blender.py 2.80
 	python3 scripts/get_blender.py 2.81a
