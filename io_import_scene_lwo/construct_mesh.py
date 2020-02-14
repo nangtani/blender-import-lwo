@@ -249,29 +249,35 @@ def build_objects(lwo, ch):
         # Create the UV Maps.
         if len(layer_data.uvmaps_vmad) > 0 or len(layer_data.uvmaps_vmap) > 0:
             allmaps = set(list(layer_data.uvmaps_vmad.keys()))
-            allmaps = allmaps.union(set(list(layer_data.uvmaps_vmap.keys())))
+            allmaps = sorted(allmaps.union(set(list(layer_data.uvmaps_vmap.keys()))))
             print(f"Adding {len(allmaps)} UV Textures")
-            if len(allmaps) > 8:
+            #if len(allmaps) > 8:
+            if False:
+            #if True:
                 bm = bmesh.new()
                 bm.from_mesh(me)
                 for i, uvmap_key in enumerate(allmaps):
                     # print("allmaps", len(allmaps))
-                    # raise
-                    print(i, uvmap_key)
-                    # raise
+                    #print(i, uvmap_key)
                     bm.loops.layers.uv.new(uvmap_key)
-                print("exit loop")
+                    if i == 15: # Only required for extra debug
+                        pass
+                        break
                 bm.to_mesh(me)
                 bm.free()
-                print("bm free")
             else:
-                for uvmap_key in allmaps:
+                for i, uvmap_key in enumerate(allmaps):
+                    #print(i, uvmap_key)
                     if (2, 80, 0) < bpy.app.version:
                         uvm = me.uv_layers.new()
                     else:  # else bpy.app.version
                         uvm = me.uv_textures.new()
                     # endif
                     uvm.name = uvmap_key
+                    if i == 7: # Only required for extra debug
+                        pass
+                        break
+
             vertloops = {}
             for v in me.vertices:
                 vertloops[v.index] = []
@@ -280,6 +286,10 @@ def build_objects(lwo, ch):
             for uvmap_key in layer_data.uvmaps_vmad.keys():
                 uvcoords = layer_data.uvmaps_vmad[uvmap_key]["FaceMap"]
                 uvm = me.uv_layers.get(uvmap_key)
+                if None == uvm:
+                    continue
+                #else:
+                #    print(uvm)
                 for pol_id in uvcoords.keys():
                     for pnt_id, (u, v) in uvcoords[pol_id].items():
                         for li in me.polygons[pol_id].loop_indices:
@@ -289,6 +299,10 @@ def build_objects(lwo, ch):
             for uvmap_key in layer_data.uvmaps_vmap.keys():
                 uvcoords = layer_data.uvmaps_vmap[uvmap_key]["PointMap"]
                 uvm = me.uv_layers.get(uvmap_key)
+                if None == uvm:
+                    continue
+                #else:
+                #    print(uvm)
                 for pnt_id, (u, v) in uvcoords.items():
                     for li in vertloops[pnt_id]:
                         uvm.data[li].uv = [u, v]
