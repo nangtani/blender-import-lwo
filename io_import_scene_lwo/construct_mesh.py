@@ -367,27 +367,22 @@ def build_objects(lwo, ch):
         layer_data.morphs.clear()
         layer_data.surf_tags.clear()
 
-        # We may have some invalid mesh data, See: [#27916]
-        # keep this last!
-        if (2, 80, 0) < bpy.app.version:
-            print("loop_triangles", me.calc_loop_triangles())
-            if not None == me.calc_loop_triangles():
-                raise Exception("me.calc_loop_triangles tripped")
-        else:  # else bpy.app.version
-            if not None == me.calc_tessface():
-                raise Exception("me.calc_tessface tripped")
-            me.update(calc_tessface=True)
-        # endif
+#         #  This seems to be a function that calculates and stores the locations
+#         # of all the triangles in the mesh.  This needs to be used elsewhere.
+#         # i this code it does not appear to be being used
+#         if (2, 80, 0) < bpy.app.version:
+#             x = None
+#             #me.calc_loop_triangles()
+#             me.update()
+#             #print(me.loop_triangles)
+#         else:  # else bpy.app.version
+#             me.calc_tessface()
+#             #me.update(calc_tessface=True)
+#             print(me.tessfaces)
+#         # endif
 
-        #         if (2, 80, 0) < bpy.app.version:
-        #             pass
-        #             #me.update(calc_loop_triangles=True)
-        #             #me.update(calc_edges=True)
-        #             #me.update(calc_edges_loose=True)
-        #         else:  # else bpy.app.version
-        #             me.update(calc_tessface=True)
-        #         # endif
-
+#         # We may have some invalid mesh data, See: [#27916]
+#         # keep this last!
         print(f"Validating mesh: {me.name}...")
         me.validate()
 
