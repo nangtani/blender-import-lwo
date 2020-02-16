@@ -184,7 +184,7 @@ class _surf_texture(_lwo_base):
         "channel",
         "type",
         "func",
-        "clip",
+        "image",
         "nega",
     )
 
@@ -198,7 +198,7 @@ class _surf_texture(_lwo_base):
         self.channel = "COLR"
         self.type = "IMAP"
         self.func = None
-        self.clip = None
+        self.image = None
         self.nega = None
 
     def lwoprint(self, indent=0):  # debug: no cover
@@ -212,15 +212,16 @@ class _surf_texture(_lwo_base):
         print(f"Channel:        {self.channel}")
         print(f"Type:           {self.type}")
         print(f"Function:       {self.func}")
-        print(f"Clip:           {self.clip}")
+        print(f"Image:          {self.image}")
         print()
 
 
 class _surf_texture_5(_lwo_base):
-    __slots__ = ("path", "X", "Y", "Z")
+    __slots__ = ("id", "image", "X", "Y", "Z")
 
     def __init__(self):
-        self.path = ""
+        self.id = id(self)
+        self.image = None
         self.X = False
         self.Y = False
         self.Z = False
@@ -1012,14 +1013,9 @@ def read_surf_5(surf_bytes, lwo, dirpath=None):
             path, path_len = read_lwostring(surf_bytes[offset:])
             if path == "(none)":
                 continue
-            if lwo.ch.cancel_search:
-                continue
 
-            print(path, path_len)
             texture = _surf_texture_5()
-            path = dirpath + os.sep + path.replace("//", "")
-            texture.path = path
-            # texture.path = None
+            lwo.clips[texture.id] = path
             surf.textures_5.append(texture)
 
         elif subchunk_name == b"TFLG":
@@ -1179,11 +1175,14 @@ class lwoObject:
                 for texture in surf_data.textures[textures_type]:
                     ci = texture.clipid
                     if ci not in self.clips.keys():
+                    #if ci not in self.ch.images.keys():
                         print(f"WARNING in material {surf_data.name}")
                         print(f"\tci={ci}, not present in self.clips.keys():")
-                        # pprint(self.clips)
                         self.ch.images[ci] = None
-                    texture.clip = self.ch.images[ci]
+                    texture.image = self.ch.images[ci]
+            for texture in surf_data.textures_5:
+                ci = texture.id
+                texture.image = self.ch.images[ci]
 
     def read_lwo2(self):
         """Read version 2 file, LW 6+."""
