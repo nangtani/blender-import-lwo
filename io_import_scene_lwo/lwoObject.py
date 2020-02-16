@@ -24,6 +24,7 @@ from glob import glob
 from pprint import pprint
 from collections import OrderedDict
 
+DEBUG = False
 
 class lwoNoImageFoundException(Exception):
     pass
@@ -757,7 +758,7 @@ def read_texture(surf_bytes, offset, subchunk_len, debug=False):
                 ">H", surf_bytes[offset + suboffset : offset + suboffset + 2],
             )
         elif subsubchunk_name == b"TMAP":
-            if debug:
+            if DEBUG:
                 print(f"SubSubBlock: {subsubchunk_name} {subchunk_len}")
         #                 xx, = struct.unpack(
         #                     ">H",
@@ -765,7 +766,7 @@ def read_texture(surf_bytes, offset, subchunk_len, debug=False):
         #                 )
         #                 print(xx)
         elif subsubchunk_name == b"AXIS":
-            if debug:
+            if DEBUG:
                 print(f"SubSubBlock: {subsubchunk_name} {subchunk_len}")
         #                 xx,= struct.unpack(
         #                     ">H",
@@ -773,31 +774,57 @@ def read_texture(surf_bytes, offset, subchunk_len, debug=False):
         #                 )
         #                 print(xx)
         elif subsubchunk_name == b"WRAP":
-            if debug:
+            if DEBUG:
                 print(f"SubSubBlock: {subsubchunk_name}")
         elif subsubchunk_name == b"WRPW":
-            if debug:
+            if DEBUG:
                 print(f"SubSubBlock: {subsubchunk_name}")
         elif subsubchunk_name == b"WRPH":
-            if debug:
+            if DEBUG:
                 print(f"SubSubBlock: {subsubchunk_name}")
         elif subsubchunk_name == b"AAST":
-            if debug:
+            if DEBUG:
                 print(f"SubSubBlock: {subsubchunk_name}")
         elif subsubchunk_name == b"PIXB":
-            if debug:
+            if DEBUG:
                 print(f"SubSubBlock: {subsubchunk_name}")
         elif subsubchunk_name == b"VALU":
-            if debug:
+            if DEBUG:
                 print(f"SubSubBlock: {subsubchunk_name}")
         elif subsubchunk_name == b"TAMP":
-            if debug:
+            if DEBUG:
                 print(f"SubSubBlock: {subsubchunk_name}")
         elif subsubchunk_name == b"STCK":
-            if debug:
+            if DEBUG:
+                print(f"SubSubBlock: {subsubchunk_name}")
+        elif subsubchunk_name == b"PNAM":
+            if DEBUG:
+                print(f"SubSubBlock: {subsubchunk_name}")
+        elif subsubchunk_name == b"INAM":
+            if DEBUG:
+                print(f"SubSubBlock: {subsubchunk_name}")
+        elif subsubchunk_name == b"GRST":
+            if DEBUG:
+                print(f"SubSubBlock: {subsubchunk_name}")
+        elif subsubchunk_name == b"GREN":
+            if DEBUG:
+                print(f"SubSubBlock: {subsubchunk_name}")
+        elif subsubchunk_name == b"GRPT":
+            if DEBUG:
+                print(f"SubSubBlock: {subsubchunk_name}")
+        elif subsubchunk_name == b"":
+            if DEBUG:
+                print(f"SubSubBlock: {subsubchunk_name}")
+        elif subsubchunk_name == b"IKEY":
+            if DEBUG:
+                print(f"SubSubBlock: {subsubchunk_name}")
+        elif subsubchunk_name == b"FKEY":
+            if DEBUG:
                 print(f"SubSubBlock: {subsubchunk_name}")
         else:
             print(f"Unimplemented SubSubBlock: {subsubchunk_name}")
+            if DEBUG:
+                raise Exception("Unimplemented SubSubBlock: {}".format(subsubchunk_name))
         suboffset += subsubchunk_len
     return texture
 
@@ -871,14 +898,14 @@ def read_surf(surf_bytes, lwo):
         elif subchunk_name == b"BLOK":
             (block_type,) = struct.unpack("4s", surf_bytes[offset : offset + 4])
             texture = None
-            debug = False
-            #             if surf.name == "inc_hull_dark":
-            #                 debug = True
-            if block_type == b"IMAP" or block_type == b"PROC" or block_type == b"SHDR":
+            if block_type == b"IMAP" or block_type == b"PROC" \
+            or block_type == b"SHDR" or block_type == b"GRAD":
                 # print(surf.name, block_type)
-                texture = read_texture(surf_bytes, offset, subchunk_len, debug=debug)
+                texture = read_texture(surf_bytes, offset, subchunk_len)
             else:
                 print(f"Unimplemented texture type: {block_type}")
+                if DEBUG:
+                    raise Exception ("Unimplemented texture type: {}".format(block_type))
             if None is not texture:
                 texture.type = block_type.decode("ascii")
                 if texture.channel not in surf.textures.keys():

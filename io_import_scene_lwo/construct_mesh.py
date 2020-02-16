@@ -177,28 +177,33 @@ def build_objects(lwo, ch):
             for vi in layer_data.vnorms.keys():
                 me.vertices[vi].normal = layer_data.vnorms[vi]
 
-        # Create the Split Vertex Normals.
-        if len(layer_data.lnorms) > 0:
-            print("Adding Smoothing from Split Vertex Normals")
-            for pi in layer_data.lnorms.keys():
-                p = me.polygons[pi]
-                p.use_smooth = False
-                keepflat = True
-                for no in layer_data.lnorms[pi]:
-                    vn = layer_data.vnorms[no[0]]
-                    if (
-                        round(no[1], 4) == round(vn[0], 4)
-                        or round(no[2], 4) == round(vn[1], 4)
-                        or round(no[3], 4) == round(vn[2], 4)
-                    ):
-                        keepflat = False
-                        break
-                if not (keepflat):
-                    p.use_smooth = True
-                # for li in me.polygons[vn[1]].loop_indices:
-                #    l = me.loops[li]
-                #    if l.vertex_index == vn[0]:
-                #        l.normal = [vn[2], vn[3], vn[4]]
+#         # Create the Split Vertex Normals.
+#         print(len(layer_data.lnorms))
+#         print(len(layer_data.vnorms))
+        #"tests/lwo_nasa/src/Wide Field Infrared Survey Telescope (WFIRST)/WFirst-2015-composite.lwo"
+        if len(layer_data.lnorms) > 0 and len(layer_data.vnorms) > 0:
+            raise Exception
+#         if len(layer_data.lnorms) > 0:
+#             print("Adding Smoothing from Split Vertex Normals")
+#             for pi in layer_data.lnorms.keys():
+#                 p = me.polygons[pi]
+#                 p.use_smooth = False
+#                 keepflat = True
+#                 for no in layer_data.lnorms[pi]:
+#                     vn = layer_data.vnorms[no[0]]
+#                     if (
+#                            round(no[1], 4) == round(vn[0], 4)
+#                         or round(no[2], 4) == round(vn[1], 4)
+#                         or round(no[3], 4) == round(vn[2], 4)
+#                     ):
+#                         keepflat = False
+#                         break
+#                 if not (keepflat):
+#                     p.use_smooth = True
+#                 # for li in me.polygons[vn[1]].loop_indices:
+#                 #    l = me.loops[li]
+#                 #    if l.vertex_index == vn[0]:
+#                 #        l.normal = [vn[2], vn[3], vn[4]]
 
         # Create the Vertex Groups (LW's Weight Maps).
         if len(layer_data.wmaps) > 0:
@@ -213,9 +218,9 @@ def build_objects(lwo, ch):
         # Create the Shape Keys (LW's Endomorphs).
         if len(layer_data.morphs) > 0:
             print(f"Adding {len(layer_data.morphs)} Shapes Keys")
-            ob.shape_key_add("Basis")  # Got to have a Base Shape.
+            ob.shape_key_add(name="Basis")  # Got to have a Base Shape.
             for morph_key in layer_data.morphs:
-                skey = ob.shape_key_add(morph_key)
+                skey = ob.shape_key_add(name=morph_key)
                 dlist = layer_data.morphs[morph_key]
                 for pdp in dlist:
                     me.shape_keys.key_blocks[skey.name].data[pdp[0]].co = [

@@ -25,7 +25,6 @@ class SetupPlugin(SetupAddon):
         super().unconfigure()
         print("*** test run reporting finished")
 
-
 try:
     # exit_val = pytest.main(["tests/basic/test_load_lwo.py::test_load_lwo_box1", "-v", "-x", "--cov", "--cov-report", "term-missing", "--cov-report", "xml",], plugins=[SetupPlugin(ADDON)])
     extra_cmd = "--ignore=tests/lwo_nasa"
@@ -37,7 +36,8 @@ try:
         ["tests", "-v", "-x", extra_cmd, "--cov", "--cov-report", "term", "--cov-report", "xml",],
         plugins=[SetupPlugin(ADDON)],
     )
-    # exit_val = pytest.main(["tests/lwo_nasa/test_load_lwo_nasa.py", "-v", "-x", "--cov", "--cov-report", "term", "--cov-report", "xml",], plugins=[SetupPlugin(ADDON)])
+    #exit_val = pytest.main(["tests/lwo_nasa/test_load_lwo_nasa.py", "-v", "-x", "--cov", "--cov-report", "term", "--cov-report", "xml",], plugins=[SetupPlugin(ADDON)])
+    #exit_val = pytest.main(["tests/lwo_bulk/test_load_bulk.py", "-v", "-x", "--cov", "--cov-report", "term", "--cov-report", "xml",], plugins=[SetupPlugin(ADDON)])
 except Exception as e:
     print(e)
     exit_val = 1

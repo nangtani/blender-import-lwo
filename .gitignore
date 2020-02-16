@@ -8,6 +8,7 @@ tests/*/dst_blend
 tests/*/src
 *.blend1
 *.bak
+*.bck
 ~*
 .coverage
 coverage.xml
