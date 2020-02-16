@@ -79,7 +79,7 @@ def lwo2BI(surf_data):
             if not textures_type == "COLR":
                 continue
             tex_slot = m.mat.texture_slots.add()
-            image_path = texture.clip
+            image_path = texture.image
             if None == image_path:
                 continue
 
@@ -101,9 +101,9 @@ def lwo2BI(surf_data):
 
     for texture in surf_data.textures_5:
         tex_slot = m.mat.texture_slots.add()
-        tex = bpy.data.textures.new(os.path.basename(texture.path), "IMAGE")
-        if not (bpy.data.images.get(texture.path)):
-            image = bpy.data.images.load(texture.path)
+        tex = bpy.data.textures.new(os.path.basename(texture.image), "IMAGE")
+        if not (bpy.data.images.get(texture.image)):
+            image = bpy.data.images.load(texture.image)
         tex.image = image
         tex_slot.texture = tex
         tex_slot.texture_coords = "GLOBAL"
@@ -156,7 +156,7 @@ def lwo2cycles(surf_data):
             if not textures_type == "COLR":
                 continue
 
-            image_path = texture.clip
+            image_path = texture.image
             if None == image_path:
                 continue
 
