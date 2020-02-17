@@ -1,8 +1,9 @@
 import os
 import re
-import zipfile
 import shutil
 import bpy
+import zipfile
+#from zipfile import ZipFile
 from blend_helper import delete_everything, diff_files
 
 
@@ -17,6 +18,7 @@ class ImportFile:
         self.search_paths = []
         self.args = args
         self.kwargs = kwargs
+
 
         self.lw_args = ()
         self.lw_kwargs = {}
@@ -56,7 +58,10 @@ class ImportFile:
         dst_path = "{0}/dst_blend/{1}.{2}".format(
             head, bpy.app.version[0], bpy.app.version[1]
         )
-        self.outfile = "{0}/{1}/{2}{3}.blend".format(dst_path, render, name, post_pend)
+        self.cwd = os.getcwd()
+        self.outfile = "{}/{}/{}{}.blend".format(dst_path,render,name,post_pend)
+        self.zipdir, self.blendfile = os.path.split(self.reffile)
+        self.zipblend = "{}.zip".format(self.blendfile)       
 
     @property
     def reffile(self):
@@ -98,11 +103,36 @@ class ImportFile:
             os.makedirs(os.path.split(self.reffile)[0])
 
     def diff_result(self):
+        os.chdir(self.zipdir)
+        zfiles = []
+        if os.path.isfile(self.zipblend):
+            zf = zipfile.ZipFile(self.zipblend, "r")
+            zf.extractall()
+            zfiles = zf.namelist()
+            zf.close()
+        os.chdir(self.cwd)
+        
         diff_files(self.reffile, self.outfile)
+        
+        for z in zfiles:
+            zfile = os.path.join(self.zipdir, z)
+            os.unlink(zfile)
 
-    def copt_dst2ref(self, force=False):
+    def copt_dst2ref(self, force=False, zip=True):
         if not os.path.exists(self.reffile) or force:
             shutil.copyfile(self.outfile, self.reffile)
+
+        if zip and (not os.path.exists(self.zipblend) or force):
+            os.chdir(self.zipdir)
+        
+            with zipfile.ZipFile(self.zipblend, 'w', zipfile.ZIP_DEFLATED) as z:
+                z.write(self.blendfile)
+            z.close()
+            if os.path.getsize(self.zipblend) >= 50*1024*1024:
+                raise Exception("Zipfile too big: {}".format(os.path.getsize(self.zipblend)))
+            os.chdir(self.cwd)
+            #os.unlink(self.reffile)
+        
 
     def clean_up(self):
         delete_everything()
