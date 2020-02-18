@@ -3,7 +3,7 @@
 	url = https://github.com/douglaskastle/lwo_phobos.git
 [submodule "tests/lwo_nasa"]
 	path = tests/lwo_nasa
-	url = https://douglaskastle:^c0rNagh29@github.com/douglaskastle/lwo_nasa.git
+	url = https://github.com/douglaskastle/lwo_nasa.git
 [submodule "tests/lwo_bulk"]
 	path = tests/lwo_bulk
-	url = https://douglaskastle:^c0rNagh29@github.com/douglaskastle/lwo_bulk.git
+	url = https://github.com/douglaskastle/lwo_bulk.git
