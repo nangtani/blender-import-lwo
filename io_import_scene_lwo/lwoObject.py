@@ -17,6 +17,7 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import os
+import sys
 import struct
 import chunk
 import re
@@ -1141,7 +1142,10 @@ class lwoObject:
             files.extend(glob("{0}/*.*".format(search_path)))
         
         for c_id in self.clips:
-            imagefile = os.path.basename(self.clips[c_id])
+            clip = self.clips[c_id]
+            if not sys.platform.startswith("win"):
+                clip = re.sub("\\", "/", self.clips[c_id])
+            imagefile = os.path.basename(clip)
             ifile = None
             for f in files:
                 if re.search(imagefile, f, re.I):
