@@ -1054,8 +1054,8 @@ def read_surf_5(surf_bytes, lwo, dirpath=None):
 class lwoObject:
     def __init__(self, filename):
         self.name, self.ext = os.path.splitext(os.path.basename(filename))
-        # self.f = None
         self.filename = os.path.abspath(filename)
+        self.dirpath = os.path.dirname(self.filename)
         self.layers = []
         self.surfs = {}
         self.materials = {}
@@ -1063,9 +1063,9 @@ class lwoObject:
         self.clips = {}
         self.images = []
 
-        # self.search_paths = []
         self.allow_images_missing = False
         self.absfilepath = True
+        self.cwd = os.getcwd()
 
         # self.read()
 
@@ -1125,42 +1125,45 @@ class lwoObject:
         d["images"] = (self.images,)
         pprint(d)
 
+    @property
+    def search_paths(self):
+        paths = [self.dirpath]
+        for s in self.ch.search_paths:
+            if not re.search("^/", s) and not re.search("^.:", s):
+                x = os.path.join(self.dirpath, s)
+                y = os.path.abspath(x)
+            paths.append(y)
+        return paths
+    
     def resolve_clips(self):
+#         search_paths = [self.dirpath]
+#         for spath in self.ch.search_paths:
+#             if not re.search("^/", spath) and not re.search("^.:", spath):
+#                 spath = os.path.join(self.dirpath, spath)
+#             search_paths.append(spath)
+        
+        #os.chdir(self.dirpath)
+        files = []
+        for search_path in self.search_paths:
+            files.extend(glob("{0}/*.*".format(search_path)))
+        
         for c_id in self.clips:
-            cwd = os.getcwd()
-
-            orig_path = self.clips[c_id]
-            imagefile = os.path.basename(orig_path)
-            dirpath = os.path.dirname(self.filename)
-            os.chdir(dirpath)
-
-            search_paths = [dirpath]
-            for spath in self.ch.search_paths:
-                if not re.search("^/", spath) and not re.search("^.:", spath):
-                    spath = os.path.join(dirpath, spath)
-                search_paths.append(spath)
-
-            files = [orig_path]
-            for search_path in search_paths:
-                files.extend(glob("{0}/{1}".format(search_path, imagefile)))
-
+            imagefile = os.path.basename(self.clips[c_id])
             ifile = None
             for f in files:
-                if self.absfilepath:
-                    y = os.path.abspath(f)
-                else:
-                    y = os.path.relpath(f)
+                if re.search(imagefile, f, re.I):
+                    if self.absfilepath:
+                        ifile = os.path.abspath(f)
+                    else:
+                        ifile = os.path.relpath(f)
 
-                if os.path.isfile(y):
-                    ifile = y
                     if ifile not in self.images:
                         self.images.append(ifile)
                     continue
-
-            os.chdir(cwd)
             self.ch.images[c_id] = ifile
 
-        # for c_id in self.ch.images.keys():
+        #os.chdir(self.cwd)
+
         for c_id in self.clips:
             if None is self.ch.images[c_id] and not self.ch.cancel_search:
                 raise lwoNoImageFoundException(
