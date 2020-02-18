@@ -1158,7 +1158,7 @@ class lwoObject:
         for c_id in self.clips:
             if None is self.ch.images[c_id] and not self.ch.cancel_search:
                 raise lwoNoImageFoundException(
-                    "No valid image found for path: {} {} {}".format(self.clips[c_id], files, self.search_paths)
+                    "No valid image found for path: {} {} {} {}".format(self.clips[c_id], files, self.search_paths, self.ch.images)
                 )
 
     def validate_lwo(self):
