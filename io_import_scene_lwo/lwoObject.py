@@ -1142,10 +1142,10 @@ class lwoObject:
             files.extend(glob("{0}/*.*".format(search_path)))
         
         for c_id in self.clips:
-            clip = self.clips[c_id]
-            if not sys.platform.startswith("win"):
-                clip = re.sub("\\", "/", self.clips[c_id])
-            imagefile = os.path.basename(clip)
+            #clip = self.clips[c_id]
+            #if not sys.platform.startswith("win"):
+            clip = re.sub("\\", "/", self.clips[c_id])
+            imagefile = clip.split("/")[-1]
             ifile = None
             for f in files:
                 if re.search(imagefile, f, re.I):
@@ -1162,7 +1162,7 @@ class lwoObject:
         for c_id in self.clips:
             if None is self.ch.images[c_id] and not self.ch.cancel_search:
                 raise lwoNoImageFoundException(
-                    "No valid image found for path: {} {} {} {}".format(self.clips[c_id], files, self.search_paths, self.ch.images)
+                    "No valid image found for path: {}".format(self.clips[c_id])
                 )
 
     def validate_lwo(self):
