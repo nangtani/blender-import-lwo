@@ -1136,13 +1136,6 @@ class lwoObject:
         return paths
     
     def resolve_clips(self):
-#         search_paths = [self.dirpath]
-#         for spath in self.ch.search_paths:
-#             if not re.search("^/", spath) and not re.search("^.:", spath):
-#                 spath = os.path.join(self.dirpath, spath)
-#             search_paths.append(spath)
-        
-        #os.chdir(self.dirpath)
         files = []
         for search_path in self.search_paths:
             files.extend(glob("{0}/*.*".format(search_path)))
@@ -1161,8 +1154,6 @@ class lwoObject:
                         self.images.append(ifile)
                     continue
             self.ch.images[c_id] = ifile
-
-        #os.chdir(self.cwd)
 
         for c_id in self.clips:
             if None is self.ch.images[c_id] and not self.ch.cancel_search:
