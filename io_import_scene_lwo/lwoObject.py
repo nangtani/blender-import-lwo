@@ -1142,6 +1142,8 @@ class lwoObject:
         
         for c_id in self.clips:
             clip = self.clips[c_id]
+            # LW is windows tools, so windows path need to be replaced
+            # under linux, and treated the sameunder windows
             imagefile = os.path.basename(clip.replace('\\', os.sep))
             ifile = None
             for f in files:
