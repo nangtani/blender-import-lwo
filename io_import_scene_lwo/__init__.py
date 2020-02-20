@@ -239,6 +239,12 @@ class IMPORT_OT_lwo(bpy.types.Operator):
         ch.use_existing_materials = self.USE_EXISTING_MATERIALS
         # ch.cancel_search          = False
 
+
+#         import cProfile
+#         import pstats
+#         profiler = cProfile.Profile()
+#         profiler.enable()
+
         lwo = lwoObject(self.filepath)
         bpy.types.Scene.lwo = lwo
 
@@ -263,6 +269,10 @@ class IMPORT_OT_lwo(bpy.types.Operator):
                 bpy.ops.message.messagebox(
                     "INVOKE_DEFAULT", message=str(err), ob=True
                 )  # gui: no cover
+#         profiler.disable()
+#         #profiler.print_stats()
+#         p = pstats.Stats(profiler)
+#         p.sort_stats('time').print_stats()
 
         del lwo
         # With the data gathered, build the object(s).
@@ -304,7 +314,6 @@ classes = (
     MESSAGE_OT_Box,
 )
 
-
 def register():
     if (2, 80, 0) < bpy.app.version:
         for cls in classes:
@@ -330,7 +339,6 @@ def unregister():  # pragma: no cover
         bpy.types.INFO_MT_file_import.remove(menu_func)
     # endif
     del bpy.types.Scene.ch
-
 
 if __name__ == "__main__":  # pragma: no cover
     register()

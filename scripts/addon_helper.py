@@ -98,7 +98,11 @@ def zip_addon(addon):
 
     os.chdir(cwd)
     shutil.rmtree(temp_dir)
-    return (bpy_module, zfile)
+    brev = "{0}.{1}".format(bpy.app.version[0], bpy.app.version[1])
+    bfile = re.sub(".zip", "_{}.zip".format(brev), zfile)
+    shutil.copy(zfile, bfile)
+    #return (bpy_module, zfile)
+    return (bpy_module, bfile)
 
 
 def change_addon_dir(bpy_module, zfile, addon_dir):

@@ -955,7 +955,7 @@ def read_surf(surf_bytes, lwo):
 def read_surf_5(surf_bytes, lwo, dirpath=None):
     """Read the object's surface data."""
     if len(lwo.surfs) == 0:
-        print("Reading Object Surfaces")
+        print("Reading Object Surfaces 5")
 
     surf = _obj_surf()
     name, name_len = read_lwostring(surf_bytes)

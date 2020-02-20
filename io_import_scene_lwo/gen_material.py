@@ -101,11 +101,12 @@ def lwo2BI(surf_data):
 
     for texture in surf_data.textures_5:
         tex_slot = m.mat.texture_slots.add()
-        tex = bpy.data.textures.new(os.path.basename(texture.image), "IMAGE")
-        if not (bpy.data.images.get(texture.image)):
-            image = bpy.data.images.load(texture.image)
-        tex.image = image
-        tex_slot.texture = tex
+        if not None == texture.image:
+            tex = bpy.data.textures.new(os.path.basename(texture.image), "IMAGE")
+            if not (bpy.data.images.get(texture.image)):
+                image = bpy.data.images.load(texture.image)
+            tex.image = image
+            tex_slot.texture = tex
         tex_slot.texture_coords = "GLOBAL"
         tex_slot.mapping = "FLAT"
         if texture.X:
