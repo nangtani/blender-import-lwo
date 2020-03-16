@@ -1,7 +1,6 @@
 import pytest
 from lwo_helper import load_lwo
 
-
 def test_load_lwo_box1():
     infile = "tests/basic/src/LWO2/box/box1.lwo"
     load_lwo(infile)
@@ -47,3 +46,12 @@ def test_load_lwo_raise1():
     infile = "tests/basic/src/LWO2/box/cc0.pdf"
     with pytest.raises(Exception):
         load_lwo(infile)
+
+def test_load_lwo_basic_name():
+    infile = "tests/basic/src/LWO2/naming/box0.lwo"
+    load_lwo(infile, search_paths=["../images"],)
+
+def test_load_lwo_advance_name():
+    infile = "tests/basic/src/LWO2/naming/box1.lwo"
+    load_lwo(infile, search_paths=["../images"],)
+
