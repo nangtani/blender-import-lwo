@@ -1147,7 +1147,6 @@ class lwoObject:
             imagefile = os.path.basename(clip.replace('\\', os.sep))
             ifile = None
             for f in files:
-                #if re.search(imagefile, f, re.I):
                 if re.search(re.escape(imagefile), f, re.I):
                     if self.absfilepath:
                         ifile = os.path.abspath(f)
