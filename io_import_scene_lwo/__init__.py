@@ -18,8 +18,8 @@
 
 bl_info = {
     "name": "Import LightWave Objects",
-    "author": "Ken Nign (Ken9), Gert De Roost and Dave Keeshan",
-    "version": (1, 4, 0),
+    "author": "Dave Keeshan, Ken Nign (Ken9) and Gert De Roost",
+    "version": (1, 4, 1),
     "blender": (2, 80, 0),
     "location": "File > Import > LightWave Object (.lwo)",
     "description": "Imports a LWO file including any UV, Morph and Color maps. "
