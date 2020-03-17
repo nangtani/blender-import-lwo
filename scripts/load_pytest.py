@@ -29,7 +29,8 @@ try:
     # exit_val = pytest.main(["tests/basic/test_load_lwo.py::test_load_lwo_box1", "-v", "-x", "--cov", "--cov-report", "term-missing", "--cov-report", "xml",], plugins=[SetupPlugin(ADDON)])
     extra_cmd = "--ignore=tests/lwo_nasa"
     if 'TRAVIS_BRANCH' in os.environ.keys():
-        if "master" == os.environ["TRAVIS_BRANCH"] or  "develop" == os.environ["TRAVIS_BRANCH"]:
+        #if "master" == os.environ["TRAVIS_BRANCH"] or  "develop" == os.environ["TRAVIS_BRANCH"]:
+        if "master" == os.environ["TRAVIS_BRANCH"]:
             extra_cmd = ""
 
     exit_val = pytest.main(
