@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/douglaskastle/blender-import-lwo.svg?branch=master)](https://travis-ci.org/douglaskastle/blender-import-lwo)
-[![codecov](https://codecov.io/gh/douglaskastle/blender-import-lwo/branch/master/graph/badge.svg)](https://codecov.io/gh/douglaskastle/blender-import-lwo)
+[![Build Status](https://travis-ci.org/nangtani/blender-import-lwo.svg?branch=master)](https://travis-ci.org/nangtani/blender-import-lwo)
+[![codecov](https://codecov.io/gh/nangtani/blender-import-lwo/branch/master/graph/badge.svg)](https://codecov.io/gh/nangtani/blender-import-lwo)
 
 # Blender - import_lwo
 
