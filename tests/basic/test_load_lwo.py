@@ -1,4 +1,7 @@
 import pytest
+import os
+import sys
+sys.path.append(os.path.join(os.getcwd(), "scripts"))
 from lwo_helper import load_lwo
 
 def test_load_lwo_box1():
