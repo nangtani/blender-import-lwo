@@ -8,6 +8,7 @@ os:
 env:
     global:
         - BLENDER_CACHE=$HOME/.cache/blender
+        - BL_ADDON=io_import_scene_lwo
     matrix:
         - BLENDER_VERSION="2.78c"
         - BLENDER_VERSION="2.79b"
@@ -49,19 +50,16 @@ before_install:
 
 install:
     - cd $TRAVIS_BUILD_DIR
-    - python3 --version
-    - python3 scripts/get_blender.py ${BLENDER_VERSION}
+    - pip install -r blender_requirements.txt
+    - pip list
 
 script:
     - cd ${TRAVIS_BUILD_DIR}
-    #- ../blender-${BLENDER_VERSION}/blender --version
-    #- make BLENDER_VERSION=${BLENDER_VERSION}
-    - make flake8
-    - python3 scripts/run_blender.py ${BLENDER_VERSION}
+    #- make flake8
+    - python ${TRAVIS_BUILD_DIR}/scripts/test_addon.py ${BL_ADDON} ${BLENDER_VERSION}
+    
+after_success:
     - bash <(curl -s https://codecov.io/bash)
-
-#after_success:
-#    - codecov -f tests_output/coverage.xml
 
 notifications:
     email:
