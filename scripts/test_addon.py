@@ -6,6 +6,7 @@ except Exception as e:
     print(e)
     sys.exit(1)
 
+os.environ["ADDON_TEST_HELPER"] = os.path.join(os.getcwd(), "scripts")
 
 def main():    
     if len(sys.argv) > 1:
@@ -17,17 +18,28 @@ def main():
     else:
         blender_rev = "2.82a"
     
-      
-    local_python = os.path.join(os.getcwd(), "scripts")
-    os.environ["LOCAL_PYTHONPATH"] = local_python
-    #sys.path.append(os.environ["LOCAL_PYTHONPATH"])
     
-    config = {"coverage": True, "tests": "tests_lite/"}
+    extra_cmd = "--ignore=tests/lwo_nasa"
+    if 'TRAVIS_BRANCH' in os.environ.keys():
+        #if "master" == os.environ["TRAVIS_BRANCH"] or  "develop" == os.environ["TRAVIS_BRANCH"]:
+        if "master" == os.environ["TRAVIS_BRANCH"]:
+            extra_cmd = ""
+
+    config = {"coverage": True, "pytest_args": extra_cmd}
+#     config = {
+#         "coverage": True, 
+#         "tests": "tests/basic/test_load_lwo.py", 
+#     }
+#     config = {
+#         "coverage": True, 
+#         "pytest_args": "--ignore=tests/lwo_nasa",
+#     }
     try:
-        exit_val = BAT.test_blender_addon(addon_path=addon, blender_revision=blender_rev)
+        exit_val = BAT.test_blender_addon(addon_path=addon, blender_revision=blender_rev, config=config)
     except Exception as e:
         print(e)
         exit_val = 1
     sys.exit(exit_val)
 
-main()
+if __name__ == "__main__":
+    main()
