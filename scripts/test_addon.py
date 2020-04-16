@@ -7,6 +7,8 @@ except Exception as e:
     sys.exit(1)
 
 os.environ["ADDON_TEST_HELPER"] = os.path.join(os.getcwd(), "scripts")
+# This needs to be removed when bug in run_blender is identified
+sys.path.append(os.environ["ADDON_TEST_HELPER"])
 
 def main():    
     if len(sys.argv) > 1:
