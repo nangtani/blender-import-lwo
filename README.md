@@ -23,7 +23,7 @@ Tests exist for this addon. Tests are written in `pytest` and are enabled using 
 
 This allows testing to be completed on multiple versions of blender, including the nightly builds.  This flags any changes to the Blender Addon API that breaks the addon closer to when it happens.
 
-Current testing support blender 2.78 through 2.90.
+Current testing supports blender 2.78 through 2.90.
 
 To run tests locally:
 
@@ -42,3 +42,7 @@ Please raise any issues or requests via the [github issues page](https://github.
 ## LWO Specification
 
 You can find the LWO2 format specification found [here](../../wiki/LWO2-file-format-(2001)).
+
+# Old Addon
+
+The original addon can be found in the official addon repos [here](https://github.com/nangtani/blender-addons-contrib/blob/b1a19799d2ec0dc320b8064d281ee81a1f018b9a/io_import_scene_lwo.py).
