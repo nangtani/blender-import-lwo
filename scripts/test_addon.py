@@ -26,7 +26,7 @@ def main():
             extra_cmd = ""
 
 #     config = {"coverage": True}
-   config = {"coverage": True, "pytest_args": extra_cmd}
+    config = {"coverage": True, "pytest_args": extra_cmd}
 #     config = {
 #         "coverage": True, 
 #         "tests": "tests/basic/test_load_lwo.py", 
