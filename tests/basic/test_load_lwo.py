@@ -1,8 +1,8 @@
 import pytest
 import os
 import sys
-raise Exception(sys.path, os.environ["ADDON_TEST_HELPER"])
 sys.path.append(os.environ["ADDON_TEST_HELPER"])
+raise Exception(sys.path, os.environ["ADDON_TEST_HELPER"])
 from lwo_helper import load_lwo
 
 def test_load_lwo_box1():
