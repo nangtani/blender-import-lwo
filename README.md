@@ -19,7 +19,7 @@ This design was forked from the blender-addons repo before it was removed from t
 
 ## blender-addon-tester 
 
-Tests exist for this addon. Tests are written in `pytest` and are enabled using the `[blender-addon-tester](https://pypi.org/project/blender-addon-tester)`.  
+Tests exist for this addon. Tests are written in `pytest` and are enabled using the [`blender-addon-tester`](https://pypi.org/project/blender-addon-tester).  
 
 This allows testing to be completed on multiple versions of blender, including the nightly builds.  This flags any changes to the Blender Addon API that breaks the addon closer to when it happens.
 
@@ -41,4 +41,4 @@ Please raise any issues or requests via the [github issues page](https://github.
 
 ## LWO Specification
 
-You can find the LWO2 format specification found [here](./wiki/LWO2-file-format-(2001)).
+You can find the LWO2 format specification found [here](../../wiki/LWO2-file-format-(2001)).
