@@ -21,11 +21,12 @@ def main():
     
     extra_cmd = "--ignore=tests/lwo_nasa"
     if 'TRAVIS_BRANCH' in os.environ.keys():
-        #if "master" == os.environ["TRAVIS_BRANCH"] or  "develop" == os.environ["TRAVIS_BRANCH"]:
-        if "master" == os.environ["TRAVIS_BRANCH"]:
+        if "master" == os.environ["TRAVIS_BRANCH"] or  "develop" == os.environ["TRAVIS_BRANCH"]:
+        #if "master" == os.environ["TRAVIS_BRANCH"]:
             extra_cmd = ""
 
-    config = {"coverage": True, "pytest_args": extra_cmd}
+#     config = {"coverage": True}
+   config = {"coverage": True, "pytest_args": extra_cmd}
 #     config = {
 #         "coverage": True, 
 #         "tests": "tests/basic/test_load_lwo.py", 
