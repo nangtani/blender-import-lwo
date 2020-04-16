@@ -259,30 +259,6 @@ def build_objects(lwo, ch):
             if len(allmaps) > 8:
                 print(f"This mesh contains more than 8 UVMaps: {len(allmaps)}")
             
-#             if False:
-#             #if True:
-#                 bm = bmesh.new()
-#                 bm.from_mesh(me)
-#                 for i, uvmap_key in enumerate(allmaps):
-#                     # print("allmaps", len(allmaps))
-#                     #print(i, uvmap_key)
-#                     bm.loops.layers.uv.new(uvmap_key)
-#                     if i == 15: # Only required for extra debug
-#                         pass
-#                         break
-#                 bm.to_mesh(me)
-#                 bm.free()
-#             else:
-#                 for uvmap_key in allmaps:
-#                     if (2, 80, 0) < bpy.app.version:
-#                         uvm = me.uv_layers.new()
-#                     else:  # else bpy.app.version
-#                         uvm = me.uv_textures.new()
-#                     # endif
-#                     if None == uvm:
-#                         break
-#                     uvm.name = uvmap_key
-            
             for uvmap_key in allmaps:
                 if (2, 80, 0) < bpy.app.version:
                     uvm = me.uv_layers.new()
@@ -371,20 +347,6 @@ def build_objects(lwo, ch):
         layer_data.uvmaps_vmap.clear()
         layer_data.morphs.clear()
         layer_data.surf_tags.clear()
-
-#         #  This seems to be a function that calculates and stores the locations
-#         # of all the triangles in the mesh.  This needs to be used elsewhere.
-#         # i this code it does not appear to be being used
-#         if (2, 80, 0) < bpy.app.version:
-#             x = None
-#             #me.calc_loop_triangles()
-#             me.update()
-#             #print(me.loop_triangles)
-#         else:  # else bpy.app.version
-#             me.calc_tessface()
-#             #me.update(calc_tessface=True)
-#             print(me.tessfaces)
-#         # endif
 
 #         # We may have some invalid mesh data, See: [#27916]
 #         # keep this last!
