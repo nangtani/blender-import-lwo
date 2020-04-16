@@ -101,10 +101,17 @@ class MESSAGE_OT_Box(bpy.types.Operator):
     bl_idname = "message.messagebox"
     bl_label = ""
 
-    message = bpy.props.StringProperty(
-        name="message", description="message", default="",
-    )
-    ob = bpy.props.BoolProperty(name="ob", description="ob", default=False,)
+    if (2, 80, 0) < bpy.app.version:
+        message: bpy.props.StringProperty(
+            name="message", description="message", default="",
+        )
+        ob: bpy.props.BoolProperty(name="ob", description="ob", default=False,)
+    else:  # else bpy.app.version
+        message = bpy.props.StringProperty(
+            name="message", description="message", default="",
+        )
+        ob = bpy.props.BoolProperty(name="ob", description="ob", default=False,)
+    # endif
 
     def invoke(self, context, event):  # gui: no cover
         return context.window_manager.invoke_props_dialog(self, width=400)
@@ -127,12 +134,21 @@ class OPEN_OT_browser(bpy.types.Operator):
     bl_label = "Select Image Search Path"
     bl_options = {"REGISTER", "UNDO"}
 
-    directory = StringProperty(subtype="DIR_PATH")
-    cancel_search = BoolProperty(
-        name="Cancel Search",
-        description="If no further images are to be found",
-        default=False,
-    )
+    if (2, 80, 0) < bpy.app.version:
+        directory: StringProperty(subtype="DIR_PATH")
+        cancel_search: BoolProperty(
+            name="Cancel Search",
+            description="If no further images are to be found",
+            default=False,
+        )
+    else:  # else bpy.app.version
+        directory = StringProperty(subtype="DIR_PATH")
+        cancel_search = BoolProperty(
+            name="Cancel Search",
+            description="If no further images are to be found",
+            default=False,
+        )
+    # endif
 
     def invoke(self, context, event):  # gui: no cover
         wm = context.window_manager
