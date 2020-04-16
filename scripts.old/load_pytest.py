@@ -1,4 +1,4 @@
-ADDON = "io_import_scene_lwo"
+ADDON = "io_scene_lwo"
 
 import os
 import sys

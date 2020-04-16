@@ -25,7 +25,7 @@ def convert_file(infiles, addon):
 
 
 def main(infiles):
-    addon = "io_import_scene_lwo"
+    addon = "io_scene_lwo"
 
     if (2, 80, 0) < bpy.app.version:
         bpy.context.scene.render.engine = "CYCLES"

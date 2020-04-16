@@ -10,7 +10,7 @@ def main():
     if len(sys.argv) > 1:
         addon = sys.argv[1]
     else:
-        addon = "io_import_scene_lwo"
+        addon = "io_scene_lwo"
     if len(sys.argv) > 2:
         blender_rev = sys.argv[2]
     else:

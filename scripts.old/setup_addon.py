@@ -17,7 +17,7 @@ def convert_file(infile, addon):
 
 
 def main(infile):
-    addon = "io_import_scene_lwo"
+    addon = "io_scene_lwo"
 
     # delete_everything()
     if (2, 80, 0) < bpy.app.version:

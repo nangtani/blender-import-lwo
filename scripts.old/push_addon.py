@@ -15,7 +15,7 @@ def main(blender, test_file, background="--background"):
     os.environ["PYTHONPATH"] = os.getcwd() + "/scripts"
     os.environ["PYTHONPATH"] = checkPath(os.environ["PYTHONPATH"])
 
-    cmd = "rm -rf ../blender-*/*/scripts/addons/io_import_scene_lwo.py"
+    cmd = "rm -rf ../blender-*/*/scripts/addons/io_scene_lwo.py"
     os.system(cmd)
 
     cmd = f'{blender} {background} --python "{test_file}"'
