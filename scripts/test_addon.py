@@ -6,10 +6,6 @@ except Exception as e:
     print(e)
     sys.exit(1)
 
-os.environ["ADDON_TEST_HELPER"] = os.path.join(os.getcwd(), "scripts")
-# This needs to be removed when bug in run_blender is identified
-sys.path.append(os.environ["ADDON_TEST_HELPER"])
-
 def main():    
     if len(sys.argv) > 1:
         addon = sys.argv[1]
@@ -20,7 +16,12 @@ def main():
     else:
         blender_rev = "2.82a"
     
-    
+    if os.path.isdir("scripts"):
+        os.environ["ADDON_TEST_HELPER"] = os.path.join(os.getcwd(), "scripts")
+        # This needs to be removed when bug in run_blender is identified
+        # This is needed for linux, doesn't seem to work for windows
+        sys.path.append(os.environ["ADDON_TEST_HELPER"])
+
     extra_cmd = "--ignore=tests/lwo_nasa"
     if 'TRAVIS_BRANCH' in os.environ.keys():
         if "master" == os.environ["TRAVIS_BRANCH"] or  "develop" == os.environ["TRAVIS_BRANCH"]:
