@@ -1132,7 +1132,9 @@ class lwoObject:
             if not re.search("^/", s) and not re.search("^.:", s):
                 x = os.path.join(self.dirpath, s)
                 y = os.path.abspath(x)
-            paths.append(y)
+                paths.append(y)
+            else:
+                paths.append(s)
         return paths
     
     def resolve_clips(self):
