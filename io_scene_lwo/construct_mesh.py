@@ -182,7 +182,9 @@ def build_objects(lwo, ch):
 #         print(len(layer_data.vnorms))
         #"tests/lwo_nasa/src/Wide Field Infrared Survey Telescope (WFIRST)/WFirst-2015-composite.lwo"
         if len(layer_data.lnorms) > 0 and len(layer_data.vnorms) > 0:
-            raise Exception
+            pass
+            
+            #raise Exception
 #         if len(layer_data.lnorms) > 0:
 #             print("Adding Smoothing from Split Vertex Normals")
 #             for pi in layer_data.lnorms.keys():
@@ -234,22 +236,31 @@ def build_objects(lwo, ch):
             print(f"Adding {len(layer_data.colmaps)} Vertex Color Maps")
             for cmap_key in layer_data.colmaps:
                 map_pack = create_mappack(layer_data, cmap_key, "COLOR")
-                me.vertex_colors.new(cmap_key)
-                vcol = me.tessface_vertex_colors[-1]
-                if not vcol or not vcol.data:
-                    break
-                for fi in map_pack:
-                    if fi > len(vcol.data):
-                        continue
-                    face = map_pack[fi]
-                    colf = vcol.data[fi]
+                me.vertex_colors.new(name=cmap_key)
 
-                    if len(face) > 2:
-                        colf.color1 = face[0]
-                        colf.color2 = face[1]
-                        colf.color3 = face[2]
-                    if len(face) == 4:
-                        colf.color4 = face[3]
+# All code below here is redundant
+
+#                 if (2, 80, 0) < bpy.app.version:
+#                     break
+#                     vcol = me.vertex_colors[-1] # Not right
+#                 else:  # else bpy.app.version
+#                     vcol = me.tessface_vertex_colors[-1]
+#                 # endif
+#                 
+#                 if not vcol or not vcol.data:
+#                     break
+#                 for fi in map_pack:
+#                     if fi > len(vcol.data):
+#                         continue
+# #                    face = map_pack[fi]
+# #                     colf = vcol.data[fi]
+# # 
+# #                     if len(face) > 2:
+# #                         colf.color1 = face[0]
+# #                         colf.color2 = face[1]
+# #                         colf.color3 = face[2]
+# #                     if len(face) == 4:
+# #                         colf.color4 = face[3]
 
         # Create the UV Maps.
         if len(layer_data.uvmaps_vmad) > 0 or len(layer_data.uvmaps_vmap) > 0:
