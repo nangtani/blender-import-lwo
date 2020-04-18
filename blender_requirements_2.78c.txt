@@ -1,5 +1,0 @@
-pip
-yolk3k
-pytest
-pytest-cov
-zipp==2.1.0
