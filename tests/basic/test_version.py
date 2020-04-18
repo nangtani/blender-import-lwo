@@ -8,7 +8,7 @@ def bpy_module(cache):
 
 
 def test_versionID_pass(bpy_module):
-    expect_version = (1, 4, 2)
+    expect_version = (1, 4, 3)
     return_version = get_version(bpy_module)
     assert expect_version == return_version
 
