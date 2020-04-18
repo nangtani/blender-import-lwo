@@ -1,1 +1,2 @@
 blender-addon-tester
+flake8
