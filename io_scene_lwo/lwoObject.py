@@ -694,6 +694,10 @@ def read_surf_tags(tag_bytes, object_layers, last_pols_count):
 
     # Read in the PolyID/Surface Index pairs.
     abs_pid = len(object_layers[-1].pols) - last_pols_count
+    if 0 == len(object_layers[-1].pols):
+        return
+    if abs_pid < 0:
+        raise Exception(len(object_layers[-1].pols), last_pols_count, object_layers[-1].pols)
     while offset < chunk_len:
         pid, pid_len = read_vx(tag_bytes[offset : offset + 4])
         offset += pid_len
