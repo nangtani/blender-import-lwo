@@ -1010,7 +1010,7 @@ def read_surf_5(surf_bytes, lwo, dirpath=None):
             if s_angle > 0.0:
                 surf.smooth = True
 
-        elif subchunk_name in [b"CTEX", b"DTEX", b"STEX", b"RTEX", b"TTEX", b"BTEX"]:
+        elif subchunk_name in [b"CTEX", b"DTEX", b"STEX", b"RTEX", b"TTEX", b"BTEX", b"LTEX"]:
             texture = None
 
         elif subchunk_name == b"TIMG":
