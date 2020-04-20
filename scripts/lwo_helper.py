@@ -49,19 +49,22 @@ class ImportFile:
             self.cancel_search = False
 
         self.infile = self.infiles[0]
+        self.check_blend = False
         if re.search(delimit, self.infile):
             head, name = self.infile.split(delimit)
+            dst_path = "{0}/dst_blend/{1}.{2}".format(
+                head, bpy.app.version[0], bpy.app.version[1]
+            )
+            self.check_blend = True
+            render = bpy.context.scene.render.engine.lower()
+            self.cwd = os.getcwd()
+            self.outfile = "{}/{}/{}{}.blend".format(dst_path,render,name,post_pend)
+            self.zipdir, self.blendfile = os.path.split(self.reffile)
+            self.zipblend = "{}.zip".format(self.blendfile)       
+            self.zippath = os.path.join(self.zipdir, self.zipblend)
         else:
             name = os.path.basename(self.infile)
 
-        render = bpy.context.scene.render.engine.lower()
-        dst_path = "{0}/dst_blend/{1}.{2}".format(
-            head, bpy.app.version[0], bpy.app.version[1]
-        )
-        self.cwd = os.getcwd()
-        self.outfile = "{}/{}/{}{}.blend".format(dst_path,render,name,post_pend)
-        self.zipdir, self.blendfile = os.path.split(self.reffile)
-        self.zipblend = "{}.zip".format(self.blendfile)       
 
     @property
     def reffile(self):
@@ -94,31 +97,39 @@ class ImportFile:
             if not os.path.exists(infile):
                 raise Exception("Infile or zip file not found {} {}".format(infile, x))
 
-        if os.path.isfile(self.outfile):
-            os.remove(self.outfile)
-
-        if not os.path.exists(os.path.split(self.outfile)[0]):
-            os.makedirs(os.path.split(self.outfile)[0])
-        if not os.path.exists(os.path.split(self.reffile)[0]):
-            os.makedirs(os.path.split(self.reffile)[0])
+        if self.check_blend:
+            if os.path.isfile(self.outfile):
+                os.remove(self.outfile)
+    
+            if not os.path.exists(os.path.split(self.outfile)[0]):
+                os.makedirs(os.path.split(self.outfile)[0])
+            if not os.path.exists(os.path.split(self.reffile)[0]):
+                os.makedirs(os.path.split(self.reffile)[0])
 
     def diff_result(self):
+        #self.zippath = os.path.join(self.zipdir, self.zipblend)
         os.chdir(self.zipdir)
         zfiles = []
         if os.path.isfile(self.zipblend):
-            zf = zipfile.ZipFile(self.zipblend, "r")
+            zf = zipfile.ZipFile( self.zipblend, "r")
             zf.extractall()
             zfiles = zf.namelist()
             zf.close()
+        
         os.chdir(self.cwd)
         
-        diff_files(self.reffile, self.outfile)
-        
-        for z in zfiles:
-            zfile = os.path.join(self.zipdir, z)
-            os.unlink(zfile)
+        try:
+           diff_files(self.reffile, self.outfile)
+        finally:
+            for z in zfiles:
+                zfile = os.path.join(self.zipdir, z)
+                os.unlink(zfile)
 
     def copt_dst2ref(self, force=False, zip=True):
+        #self.zippath = os.path.join(self.zipdir, self.zipblend)
+        if os.path.exists(self.zippath) and not force:
+            return
+                 
         if not os.path.exists(self.reffile) or force:
             shutil.copyfile(self.outfile, self.reffile)
 
@@ -169,9 +180,10 @@ def load_lwo(infiles, post_pend="", *args, **kwargs):
         importfile = ImportFile(infiles, post_pend, *args, **kwargs)
         importfile.check_file()
         importfile.import_objects()
-        importfile.save_blend()
-        importfile.copt_dst2ref()
-        importfile.diff_result()
+        if importfile.check_blend:
+            importfile.save_blend()
+            importfile.copt_dst2ref()
+            importfile.diff_result()
         importfile.clean_up()
 
         del importfile
