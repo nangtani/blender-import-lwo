@@ -135,13 +135,14 @@ def build_objects(lwo, ch):
         face_edges = []
         me = bpy.data.meshes.new(layer_data.name)
         me.from_pydata(layer_data.pnts, face_edges, layer_data.pols)
+        #me.validate()
         
         # https://developer.blender.org/T75884 
         check_ngons = True
-        for i, pol in enumerate(layer_data.pols):
-            if 1 == len(layer_data.pols[i]):
-                #raise Exception(i, layer_data.pols[i])
-                check_ngons = False
+#         for i, pol in enumerate(layer_data.pols):
+#             if 1 == len(layer_data.pols[i]):
+#                 raise Exception(i, layer_data.pols[i])
+#                 check_ngons = False
         
         ob = bpy.data.objects.new(layer_data.name, me)
         if (2, 80, 0) < bpy.app.version:
@@ -309,6 +310,17 @@ def build_objects(lwo, ch):
                     for li in vertloops[pnt_id]:
                         uvm.data[li].uv = [u, v]
 
+
+        # Apply the Edge Weighting.
+        if len(layer_data.edge_weights) > 0:
+            for edge in me.edges:
+                edge_sa = "{0} {1}".format(edge.vertices[0], edge.vertices[1])
+                edge_sb = "{0} {1}".format(edge.vertices[1], edge.vertices[0])
+                if edge_sa in layer_data.edge_weights:
+                    edge.crease = layer_data.edge_weights[edge_sa]
+                elif edge_sb in layer_data.edge_weights:
+                    edge.crease = layer_data.edge_weights[edge_sb]
+
         # Now triangulate the NGons.
         # if not 0 == len(ngons):
         #if True:
@@ -329,15 +341,10 @@ def build_objects(lwo, ch):
             bm.to_mesh(me)
             bm.free()
 
-        # Apply the Edge Weighting.
-        if len(layer_data.edge_weights) > 0:
-            for edge in me.edges:
-                edge_sa = "{0} {1}".format(edge.vertices[0], edge.vertices[1])
-                edge_sb = "{0} {1}".format(edge.vertices[1], edge.vertices[0])
-                if edge_sa in layer_data.edge_weights:
-                    edge.crease = layer_data.edge_weights[edge_sa]
-                elif edge_sb in layer_data.edge_weights:
-                    edge.crease = layer_data.edge_weights[edge_sb]
+        # We may have some invalid mesh data, See: [#27916]
+        # keep this last!
+        print(f"Validating mesh: {me.name}...")
+        me.validate()
 
         # Unfortunately we can't exlude certain faces from the subdivision.
         if layer_data.has_subds and ch.add_subd_mod:
@@ -366,10 +373,6 @@ def build_objects(lwo, ch):
         layer_data.morphs.clear()
         layer_data.surf_tags.clear()
 
-#         # We may have some invalid mesh data, See: [#27916]
-#         # keep this last!
-#         print(f"Validating mesh: {me.name}...")
-#         me.validate()
 
         # Texture slots have been removed from 2.80, is there a corresponding any thing?
         # Create the 3D View visualisation textures.

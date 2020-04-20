@@ -26,6 +26,9 @@ class blCopy:
 
 def delete_everything():
 
+    if (2, 79, 0) < bpy.app.version:
+        bpy.ops.wm.read_homefile()
+    
     for k in bpy.data.objects.keys():
         try:
             o = bpy.data.objects[k]
@@ -64,7 +67,7 @@ def delete_everything():
 def objToDict(m):
     n = {}
     for k in dir(m):
-        if k.startswith("__"):
+        if k.startswith("__") or "group" == k:
             continue
         # print(m, dir(m))
         x = getattr(m, k)
