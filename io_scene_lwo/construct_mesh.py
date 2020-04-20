@@ -135,7 +135,14 @@ def build_objects(lwo, ch):
         face_edges = []
         me = bpy.data.meshes.new(layer_data.name)
         me.from_pydata(layer_data.pnts, face_edges, layer_data.pols)
-
+        
+        # https://developer.blender.org/T75884 
+        check_ngons = True
+        for i, pol in enumerate(layer_data.pols):
+            if 1 == len(layer_data.pols[i]):
+                #raise Exception(i, layer_data.pols[i])
+                check_ngons = False
+        
         ob = bpy.data.objects.new(layer_data.name, me)
         if (2, 80, 0) < bpy.app.version:
             scn = bpy.context.collection
@@ -168,9 +175,6 @@ def build_objects(lwo, ch):
 
                 mat_slot += 1
 
-        # bpy.context.object.data.use_auto_smooth = True
-        bpy.ops.object.modifier_add(type="EDGE_SPLIT")
-
         # Create the Vertex Normals.
         if len(layer_data.vnorms) > 0:
             print("Adding Vertex Normals")
@@ -183,8 +187,8 @@ def build_objects(lwo, ch):
         #"tests/lwo_nasa/src/Wide Field Infrared Survey Telescope (WFIRST)/WFirst-2015-composite.lwo"
         if len(layer_data.lnorms) > 0 and len(layer_data.vnorms) > 0:
             pass
-            
             #raise Exception
+            
 #         if len(layer_data.lnorms) > 0:
 #             print("Adding Smoothing from Split Vertex Normals")
 #             for pi in layer_data.lnorms.keys():
@@ -307,9 +311,10 @@ def build_objects(lwo, ch):
 
         # Now triangulate the NGons.
         # if not 0 == len(ngons):
-        if True:
+        #if True:
+        if check_ngons:
             bm = bmesh.new()
-            bm.from_mesh(me)
+            bm.from_mesh(me) # Causes crashed in star field
             if hasattr(bm.faces, "ensure_lookup_table"):
                 bm.faces.ensure_lookup_table()
 
@@ -337,9 +342,11 @@ def build_objects(lwo, ch):
         # Unfortunately we can't exlude certain faces from the subdivision.
         if layer_data.has_subds and ch.add_subd_mod:
             ob.modifiers.new(name="Subsurf", type="SUBSURF")
+        
+        ob.modifiers.new(name= "Edge Split", type="EDGE_SPLIT")
 
         # Should we build an armature from the embedded rig?
-        if len(layer_data.bones) > 0 and lwo.skel_to_arm:
+        if len(layer_data.bones) > 0 and ch.skel_to_arm:
             bpy.ops.object.armature_add()
             arm_object = bpy.context.active_object
             arm_object.name = "ARM_" + layer_data.name
@@ -361,8 +368,8 @@ def build_objects(lwo, ch):
 
 #         # We may have some invalid mesh data, See: [#27916]
 #         # keep this last!
-        print(f"Validating mesh: {me.name}...")
-        me.validate()
+#         print(f"Validating mesh: {me.name}...")
+#         me.validate()
 
         # Texture slots have been removed from 2.80, is there a corresponding any thing?
         # Create the 3D View visualisation textures.
