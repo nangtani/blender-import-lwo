@@ -1145,7 +1145,9 @@ class lwoObject:
         files = []
         for search_path in self.search_paths:
             files.extend(glob("{0}/*.*".format(search_path)))
-        
+            if self.ch.recursive:
+                files.extend(glob("{0}/**/*.*".format(search_path)))
+            
         for c_id in self.clips:
             clip = self.clips[c_id]
             # LW is windows tools, so windows path need to be replaced
@@ -1167,7 +1169,7 @@ class lwoObject:
         for c_id in self.clips:
             if None is self.ch.images[c_id] and not self.ch.cancel_search:
                 raise lwoNoImageFoundException(
-                    "No valid image found for path: {} {} {} {}".format(self.clips[c_id], files, self.search_paths, self.ch.images)
+                    "No valid image found for path: {} {} {} {} {}".format(self.clips[c_id], self.ch.recursive, files, self.search_paths, self.ch.images)
                 )
 
     def validate_lwo(self):

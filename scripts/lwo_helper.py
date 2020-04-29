@@ -47,6 +47,10 @@ class ImportFile:
             self.cancel_search = kwargs["cancel_search"]
         else:
             self.cancel_search = False
+        if "recursive" in self.kwargs.keys():
+            self.recursive = kwargs["recursive"]
+        else:
+            self.recursive = True
 
         self.infile = self.infiles[0]
         self.check_blend = False
@@ -156,6 +160,7 @@ class ImportFile:
             ch = bpy.types.Scene.ch
             ch.search_paths.extend(self.search_paths)
             ch.cancel_search = self.cancel_search
+            ch.recursive = self.recursive
             bpy.ops.import_scene.lwo(
                 filepath=infile, *self.lw_args, **self.lw_kwargs,
             )
@@ -189,3 +194,4 @@ def load_lwo(infiles, post_pend="", *args, **kwargs):
         del importfile
         bpy.types.Scene.ch.search_paths = []
         bpy.types.Scene.ch.cancel_search = False
+        bpy.types.Scene.ch.recursive = True

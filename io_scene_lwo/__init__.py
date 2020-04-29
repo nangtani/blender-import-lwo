@@ -19,7 +19,7 @@
 bl_info = {
     "name": "Import LightWave Objects",
     "author": "Dave Keeshan, Ken Nign (Ken9) and Gert De Roost",
-    "version": (1, 4, 4),
+    "version": (1, 4, 5),
     "blender": (2, 80, 0),
     "location": "File > Import > LightWave Object (.lwo)",
     "description": "Imports a LWO file including any UV, Morph and Color maps. "
@@ -76,6 +76,7 @@ class _choices:
         "search_paths",
         "cancel_search",
         "images",
+        "recursive",
     )
 
     def __init__(
@@ -92,6 +93,7 @@ class _choices:
         self.search_paths = []
         self.cancel_search = False
         self.images = {}
+        self.recursive = True
 
 
 from bpy.props import StringProperty, BoolProperty
@@ -136,6 +138,11 @@ class OPEN_OT_browser(bpy.types.Operator):
 
     if (2, 80, 0) < bpy.app.version:
         directory: StringProperty(subtype="DIR_PATH")
+        recursive: BoolProperty(
+            name="Recursive Search",
+            description="Uncheck to disable recursive search",
+            default=True,
+        )
         cancel_search: BoolProperty(
             name="Cancel Search",
             description="If no further images are to be found",
@@ -143,6 +150,11 @@ class OPEN_OT_browser(bpy.types.Operator):
         )
     else:  # else bpy.app.version
         directory = StringProperty(subtype="DIR_PATH")
+        recursive = BoolProperty(
+            name="Recursive Search",
+            description="Uncheck to disable recursive search",
+            default=True,
+        )
         cancel_search = BoolProperty(
             name="Cancel Search",
             description="If no further images are to be found",
@@ -161,6 +173,7 @@ class OPEN_OT_browser(bpy.types.Operator):
 
         ch.search_paths.append(self.directory)
         ch.cancel_search = self.cancel_search
+        ch.recursive = self.recursive
         try:
             lwo.resolve_clips()
             lwo.validate_lwo()
@@ -253,6 +266,8 @@ class IMPORT_OT_lwo(bpy.types.Operator):
         ch.load_hidden = self.LOAD_HIDDEN
         ch.skel_to_arm = self.SKEL_TO_ARM
         ch.use_existing_materials = self.USE_EXISTING_MATERIALS
+        #ch.search_paths = []
+        ch.images = {}
         # ch.cancel_search          = False
 
 
