@@ -1151,6 +1151,7 @@ class lwoObject:
             # LW is windows tools, so windows path need to be replaced
             # under linux, and treated the sameunder windows
             imagefile = os.path.basename(clip.replace('\\', os.sep))
+            imagefile = imagefile.split(os.sep)[-1]
             ifile = None
             for f in files:
                 if re.search(re.escape(imagefile), f, re.I):
