@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/nangtani/blender-import-lwo.svg?branch=master)](https://travis-ci.org/nangtani/blender-import-lwo)
 [![codecov](https://codecov.io/gh/nangtani/blender-import-lwo/branch/master/graph/badge.svg)](https://codecov.io/gh/nangtani/blender-import-lwo)
+[![Gitter](https://badges.gitter.im/nangtani/blender-import-lwo.svg)](https://gitter.im/nangtani/blender-import-lwo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 # Download ADDON here:
 What you see here is a project wrapped around an addon to enable testing, the addon itself is the subdirectory, `io_scene_lwo`.  If you just want the addon it is maintained in the release area:
 [releases](https://github.com/nangtani/blender-import-lwo/releases)
