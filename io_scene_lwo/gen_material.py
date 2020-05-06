@@ -19,6 +19,8 @@
 import os
 import bpy
 import mathutils
+from collections import OrderedDict
+from pprint import pprint
 from .bpy_debug import DebugException
 
 # from .NodeArrange import nodemargin, ArrangeNodesOp, values
@@ -144,26 +146,92 @@ def lwo2cycles(surf_data):
 
     d = nodes["Principled BSDF"]
     d.inputs[0].default_value = color
+    
+    dx, dy = (-300.0, 300.0)
+    
+    n.location = (dx+300, dy)
+    d.location = (dx, dy)
+            
 
-    #     print(d.parent)
-    #     print(m.parent)
-    #     d.parent = m
-    #     #d.set_parent(m)
-    #     #print(dir(d))
-    #     print(d.parent)
-    #     print(m.parent)
+    color_num = 0
+    v_offset = 0
 
+    texture_list = OrderedDict({
+        "COLR": [],
+        "SPEC": [],
+        "DIFF": [],
+        "REFL": [],
+        "TRAN": [],
+        "TRNL": [],
+        "RIND": [],
+        "BUMP": [],
+        "GLOS": [],
+        "LUMI": [],
+    })
+    
     for textures_type, textures in surf_data.textures.items():
+        if not textures_type in texture_list.keys():
+            raise DebugException(f"Unknown Texture Type {textures_type}")
+        texture_list[textures_type].extend(textures)
+    
+    for textures_type, textures in texture_list.items():
+        if 0 == len(textures):
+            continue
+        
+        opac = 0
         for texture in textures:
-            if not textures_type == "COLR":
-                continue
+            opac += texture.opac
+        if opac > 1.0:
+            raise DebugException(f"Opac too big {opac}")
+        print(opac, len(textures))
+#         for texture in textures:
+#             pass
+#     
+#     for textures_type, textures in surf_data.textures.items():
+        
+        fx = dx-920.0
+        fy = dy+v_offset
+        f = nodes.new("NodeFrame")
+        
+        f.name = f.label = textures_type
+        f.location = (fx, fy)
+        #f.location = (-1220.0, 300.0+v_offset)
+        f.height = 580
+        f.width = 780
+        f.use_custom_color = True
+        f.color = 0.25, 0.25, 0.25
 
+        t_offset = 600
+        for texture in textures:
+            if textures_type == "COLR":
+                bsdf_input = d.inputs["Base Color"]
+            elif textures_type == "SPEC":
+                bsdf_input = d.inputs["Specular"]
+            elif textures_type == "LUMI":
+                bsdf_input = d.inputs["Specular"]
+            elif textures_type == "DIFF":
+                bsdf_input = d.inputs["Specular"]
+            elif textures_type == "REFL":
+                bsdf_input = d.inputs["Specular"]
+            elif textures_type == "TRAN":
+                bsdf_input = d.inputs["Specular"]
+            elif textures_type == "TRNL":
+                bsdf_input = d.inputs["Specular"]
+            elif textures_type == "RIND":
+                bsdf_input = d.inputs["Specular"]
+            elif textures_type == "BUMP":
+                bsdf_input = d.inputs["Specular"]
+            elif textures_type == "GLOS":
+                bsdf_input = d.inputs["Specular"]
+            else:
+                continue
+            v_offset -= 600
+            t_offset -= 600
+            f.height = f.height - t_offset
+            
             image_path = texture.image
             if None == image_path:
                 continue
-
-            c = nodes.new("ShaderNodeRGB")
-            c.outputs[0].default_value = color
 
             i = nodes.new("ShaderNodeTexImage")
 
@@ -172,50 +240,47 @@ def lwo2cycles(surf_data):
             if None == image:
                 image = bpy.data.images.load(image_path)
             i.image = image
+            i.location = (fx+300, fy-300+t_offset)
             
-            #m.mat.node_tree.links.new(i.outputs["Color"], d.inputs["Base Color"])
+            # projection
+            # 0 == planar
+            # 1 == Cylindrical
+            # 2 == Spherical
+            # 3 == Cubic
+            # 4 == Front
+            # 5 == UV
+            if not 5 == texture.projection:
+                #raise DebugException(f"Unknown Projection {texture.projection}")
+                pass
             
-            uvname = texture.uvname
-            if not isinstance(uvname, str):
-                raise DebugException("Unknown UV")
-            else:
+            
+            node_output = i.outputs["Color"]
+            if 5 == texture.projection:
+                uvname = texture.uvname
+                if not isinstance(uvname, str):
+                    raise DebugException("Unknown UV")
+
                 u = nodes.new("ShaderNodeUVMap")
                 u.uv_map = uvname
+                u.location = (fx+20, fy-300+t_offset)
                 m.mat.node_tree.links.new(u.outputs["UV"], i.inputs["Vector"])
 
-            mix = nodes.new("ShaderNodeMixRGB")
-            #mix.Mix = 1.0
-            
-            mix.inputs[0].default_value = texture.opac
-            m.mat.node_tree.links.new(c.outputs["Color"], mix.inputs["Color1"])
-            m.mat.node_tree.links.new(i.outputs["Color"], mix.inputs["Color2"])
-            m.mat.node_tree.links.new(mix.outputs["Color"], d.inputs["Base Color"])
+                if not 1.0 == texture.opac:
+                    c = nodes.new("ShaderNodeRGB")
+                    c.outputs[0].default_value = color
 
-            n.location = (0.0, 300.0)
-            d.location = (-300.0, 300.0)
-            mix.location = (-600.0, 300.0)
-            c.location = (-900.0, 300.0)
+                    mix = nodes.new("ShaderNodeMixRGB")
+                    mix.inputs[0].default_value = texture.opac
+                    
+                    m.mat.node_tree.links.new(c.outputs["Color"], mix.inputs["Color1"])
+                    m.mat.node_tree.links.new(i.outputs["Color"], mix.inputs["Color2"])
+        
+                    mix.location = (fx+600, fy-40+t_offset)
+                    c.location = (fx+300, fy-40+t_offset)
+                    node_output = mix.outputs["Color"]
+
             
-            i.location = (-900.0, 000.0)
-            u.location = (-1200.0, 000.0)
-            
+            f.shrink = True
+            m.mat.node_tree.links.new(node_output, bsdf_input)
             #print(bpy.data.uv_layers)
-            
-#             print(n.location)
-#             print(d.location)
-#             print(i.location)
-
-    # ["Principled BSDF"] = 245
-    # ["ShaderNodeTexImage"] = 245
-    #     #nodes.update()
-    #     v = values
-    #     v.mat_name = mat_name
-    #
-    #     bpy.types.Scene.nodemargin_x = v.margin_x
-    #     bpy.types.Scene.nodemargin_y = v.margin_y
-    #     bpy.types.Scene.node_center  = True
-    #
-    #     N = ArrangeNodesOp
-    #     N.nodemargin2(v, bpy.context)
-
     return m
