@@ -18,6 +18,8 @@
 
 import os
 import bpy
+import mathutils
+from .bpy_debug import DebugException
 
 # from .NodeArrange import nodemargin, ArrangeNodesOp, values
 
@@ -127,6 +129,7 @@ def lwo2cycles(surf_data):
     m.mat = bpy.data.materials.new(mat_name)
     m.mat.use_nodes = True
     nodes = m.mat.node_tree.nodes
+    surf_data.lwoprint()
     n = nodes["Material Output"]
     if (2, 80, 0) < bpy.app.version:
         pass
@@ -138,9 +141,7 @@ def lwo2cycles(surf_data):
     # endif
 
     color = (surf_data.colr[0], surf_data.colr[1], surf_data.colr[2], surf_data.diff)
-    # surf_data.diff = 0 == black
-    # print(color)
-    # print(surf_data.diff, surf_data.tran)
+
     d = nodes["Principled BSDF"]
     d.inputs[0].default_value = color
 
@@ -161,14 +162,51 @@ def lwo2cycles(surf_data):
             if None == image_path:
                 continue
 
+            c = nodes.new("ShaderNodeRGB")
+            c.outputs[0].default_value = color
+
+            i = nodes.new("ShaderNodeTexImage")
+
             basename = os.path.basename(image_path)
             image = bpy.data.images.get(basename)
             if None == image:
                 image = bpy.data.images.load(image_path)
-            i = nodes.new("ShaderNodeTexImage")
             i.image = image
-            # print(ci, image)
+            
+            #m.mat.node_tree.links.new(i.outputs["Color"], d.inputs["Base Color"])
+            
+            uvname = texture.uvname
+            if not isinstance(uvname, str):
+                raise DebugException("Unknown UV")
+            else:
+                u = nodes.new("ShaderNodeUVMap")
+                u.uv_map = uvname
+                m.mat.node_tree.links.new(u.outputs["UV"], i.inputs["Vector"])
 
+            mix = nodes.new("ShaderNodeMixRGB")
+            #mix.Mix = 1.0
+            
+            mix.inputs[0].default_value = texture.opac
+            m.mat.node_tree.links.new(c.outputs["Color"], mix.inputs["Color1"])
+            m.mat.node_tree.links.new(i.outputs["Color"], mix.inputs["Color2"])
+            m.mat.node_tree.links.new(mix.outputs["Color"], d.inputs["Base Color"])
+
+            n.location = (0.0, 300.0)
+            d.location = (-300.0, 300.0)
+            mix.location = (-600.0, 300.0)
+            c.location = (-900.0, 300.0)
+            
+            i.location = (-900.0, 000.0)
+            u.location = (-1200.0, 000.0)
+            
+            #print(bpy.data.uv_layers)
+            
+#             print(n.location)
+#             print(d.location)
+#             print(i.location)
+
+    # ["Principled BSDF"] = 245
+    # ["ShaderNodeTexImage"] = 245
     #     #nodes.update()
     #     v = values
     #     v.mat_name = mat_name
