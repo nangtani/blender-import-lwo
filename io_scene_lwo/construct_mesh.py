@@ -19,7 +19,9 @@
 import bpy
 import bmesh
 import mathutils
+from pprint import pprint
 from .gen_material import lwo2BI, lwo2cycles, get_existing
+from .bpy_debug import DebugException
 
 
 def create_mappack(data, map_name, map_type):
@@ -188,6 +190,7 @@ def build_objects(lwo, ch):
         #"tests/lwo_nasa/src/Wide Field Infrared Survey Telescope (WFIRST)/WFirst-2015-composite.lwo"
         if len(layer_data.lnorms) > 0 and len(layer_data.vnorms) > 0:
             pass
+            #raise DebugException("Yo!")
             #raise Exception
             
 #         if len(layer_data.lnorms) > 0:
@@ -214,6 +217,7 @@ def build_objects(lwo, ch):
 
         # Create the Vertex Groups (LW's Weight Maps).
         if len(layer_data.wmaps) > 0:
+            #raise DebugException("Vertex Groups")
             print(f"Adding {len(layer_data.wmaps)} Vertex Groups")
             for wmap_key in layer_data.wmaps:
                 vgroup = ob.vertex_groups.new()
@@ -227,6 +231,7 @@ def build_objects(lwo, ch):
             print(f"Adding {len(layer_data.morphs)} Shapes Keys")
             ob.shape_key_add(name="Basis")  # Got to have a Base Shape.
             for morph_key in layer_data.morphs:
+                print(morph_key)
                 skey = ob.shape_key_add(name=morph_key)
                 dlist = layer_data.morphs[morph_key]
                 for pdp in dlist:
@@ -235,6 +240,8 @@ def build_objects(lwo, ch):
                         pdp[2],
                         pdp[3],
                     ]
+            print(me.shape_keys)
+            #raise DebugException("Morph")
 
         # Create the Vertex Color maps.
         if len(layer_data.colmaps) > 0:
@@ -272,6 +279,8 @@ def build_objects(lwo, ch):
             allmaps = set(list(layer_data.uvmaps_vmad.keys()))
             allmaps = sorted(allmaps.union(set(list(layer_data.uvmaps_vmap.keys()))))
             print(f"Adding {len(allmaps)} UV Textures")
+            #pprint(layer_data.uvmaps_vmap)
+            #print(layer_data.uvmaps_vmad)
             if len(allmaps) > 8:
                 print(f"This mesh contains more than 8 UVMaps: {len(allmaps)}")
             
@@ -290,6 +299,14 @@ def build_objects(lwo, ch):
                 vertloops[v.index] = []
             for l in me.loops:
                 vertloops[l.vertex_index].append(l.index)
+            for uvmap_key in layer_data.uvmaps_vmap.keys():
+                uvcoords = layer_data.uvmaps_vmap[uvmap_key]["PointMap"]
+                uvm = me.uv_layers.get(uvmap_key)
+                if None == uvm:
+                    continue
+                for pnt_id, (u, v) in uvcoords.items():
+                    for li in vertloops[pnt_id]:
+                        uvm.data[li].uv = [u, v]
             for uvmap_key in layer_data.uvmaps_vmad.keys():
                 uvcoords = layer_data.uvmaps_vmad[uvmap_key]["FaceMap"]
                 uvm = me.uv_layers.get(uvmap_key)
@@ -301,14 +318,6 @@ def build_objects(lwo, ch):
                             if pnt_id == me.loops[li].vertex_index:
                                 uvm.data[li].uv = [u, v]
                                 break
-            for uvmap_key in layer_data.uvmaps_vmap.keys():
-                uvcoords = layer_data.uvmaps_vmap[uvmap_key]["PointMap"]
-                uvm = me.uv_layers.get(uvmap_key)
-                if None == uvm:
-                    continue
-                for pnt_id, (u, v) in uvcoords.items():
-                    for li in vertloops[pnt_id]:
-                        uvm.data[li].uv = [u, v]
 
 
         # Apply the Edge Weighting.
