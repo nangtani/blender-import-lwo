@@ -182,7 +182,8 @@ def lwo2cycles(surf_data):
         for texture in textures:
             opac += texture.opac
         if opac > 1.0:
-            raise DebugException(f"Opac too big {opac}")
+            pass
+            #raise DebugException(f"Opac too big {opac}")
         print(opac, len(textures))
 #         for texture in textures:
 #             pass
