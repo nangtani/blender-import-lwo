@@ -179,6 +179,7 @@ class _surf_texture(_lwo_base):
         "enab",
         "clipid",
         "projection",
+        "axis",
         "enab",
         "uvname",
         "channel",
@@ -194,6 +195,7 @@ class _surf_texture(_lwo_base):
         self.opactype = 0
         self.enab = True
         self.projection = 5
+        self.axis = 0
         self.uvname = "UVMap"
         self.channel = "COLR"
         self.type = "IMAP"
@@ -208,6 +210,7 @@ class _surf_texture(_lwo_base):
         print(f"Opacity Type:   {self.opactype}")
         print(f"Enabled:        {self.enab}")
         print(f"Projection:     {self.projection}")
+        print(f"Axis:           {self.axis}")
         print(f"UVname:         {self.uvname}")
         print(f"Channel:        {self.channel}")
         print(f"Type:           {self.type}")
@@ -755,7 +758,6 @@ def read_texture(surf_bytes, offset, subchunk_len, debug=False):
             )
         elif subsubchunk_name == b"VMAP":
             texture.uvname, name_len = read_lwostring(surf_bytes[offset + suboffset :])
-            # print(f"VMAP {texture.uvname} {name_len}")
         elif subsubchunk_name == b"FUNC":  # This is the procedural
             texture.func, name_len = read_lwostring(surf_bytes[offset + suboffset :])
         elif subsubchunk_name == b"NEGA":
@@ -771,13 +773,9 @@ def read_texture(surf_bytes, offset, subchunk_len, debug=False):
         #                 )
         #                 print(xx)
         elif subsubchunk_name == b"AXIS":
-            if DEBUG:
-                print(f"SubSubBlock: {subsubchunk_name} {subchunk_len}")
-        #                 xx,= struct.unpack(
-        #                     ">H",
-        #                     surf_bytes[offset + suboffset:offset + suboffset + 2],
-        #                 )
-        #                 print(xx)
+            (texture.axis,) = struct.unpack(
+                ">H", surf_bytes[offset + suboffset : offset + suboffset + 2],
+            )
         elif subsubchunk_name == b"WRAP":
             if DEBUG:
                 print(f"SubSubBlock: {subsubchunk_name}")
