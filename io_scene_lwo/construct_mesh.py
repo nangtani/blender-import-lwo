@@ -145,17 +145,17 @@ def build_objects(lwo, ch):
 #                 check_ngons = False
         
         ob = bpy.data.objects.new(layer_data.name, me)
-        if (2, 80, 0) < bpy.app.version:
-            scn = bpy.context.collection
-            scn.objects.link(ob)
-            bpy.context.view_layer.objects.active = ob
-            ob.select_set(state=True)
-        else:  # else bpy.app.version
-            scn = bpy.context.scene
-            scn.objects.link(ob)
-            scn.objects.active = ob
-            ob.select = True
-        # endif
+
+        scn = bpy.context.collection
+        scn.objects.link(ob)
+        bpy.context.view_layer.objects.active = ob
+        ob.select_set(state=True)
+
+
+
+
+
+
 
         ob_dict[layer_data.index] = [ob, layer_data.parent_index]
 
@@ -250,7 +250,7 @@ def build_objects(lwo, ch):
 #                     vcol = me.vertex_colors[-1] # Not right
 #                 else:  # else bpy.app.version
 #                     vcol = me.tessface_vertex_colors[-1]
-#                 # endif
+
 #                 
 #                 if not vcol or not vcol.data:
 #                     break
@@ -276,11 +276,11 @@ def build_objects(lwo, ch):
                 print(f"This mesh contains more than 8 UVMaps: {len(allmaps)}")
             
             for uvmap_key in allmaps:
-                if (2, 80, 0) < bpy.app.version:
-                    uvm = me.uv_layers.new()
-                else:  # else bpy.app.version
-                    uvm = me.uv_textures.new()
-                # endif
+
+                uvm = me.uv_layers.new()
+
+
+
                 if None == uvm:
                     break
                 uvm.name = uvmap_key
@@ -399,11 +399,11 @@ def build_objects(lwo, ch):
     # With the objects made, setup the parents and re-adjust the locations.
     if len(ob_dict.keys()) > 1:
         empty = bpy.data.objects.new(name=lwo.name + "_empty", object_data=None)
-        if (2, 80, 0) < bpy.app.version:
-            bpy.context.collection.objects.link(empty)
-        else:  # else bpy.app.version
-            bpy.context.scene.objects.link(empty)
-        # endif
+
+        bpy.context.collection.objects.link(empty)
+
+
+
     for ob_key in ob_dict:
         if ob_dict[ob_key][1] != -1 and ob_dict[ob_key][1] in ob_dict:
             parent_ob = ob_dict[ob_dict[ob_key][1]]
@@ -412,10 +412,10 @@ def build_objects(lwo, ch):
         elif len(ob_dict.keys()) > 1:
             ob_dict[ob_key][0].parent = empty
 
-    if (2, 80, 0) < bpy.app.version:
-        bpy.context.view_layer.update()
-    else:  # else bpy.app.version
-        bpy.context.scene.update()
-    # endif
+
+    bpy.context.view_layer.update()
+
+
+
 
     print("Done Importing LWO File")

@@ -48,10 +48,10 @@ def get_existing(surf, use_existing_materials):
 
 
 def lwo2BI(surf_data):
-    if (2, 80, 0) < bpy.app.version:
-        # return # FIXME
-        raise Exception("Blender Internal has been removed")
-    # endif
+
+    # return # FIXME
+    raise Exception("Blender Internal has been removed")
+
     m = _material(surf_data.name)
     m.smooth = surf_data.smooth
     m.mat = bpy.data.materials.new(surf_data.name)
@@ -128,14 +128,6 @@ def lwo2cycles(surf_data):
     m.mat.use_nodes = True
     nodes = m.mat.node_tree.nodes
     n = nodes["Material Output"]
-    if (2, 80, 0) < bpy.app.version:
-        pass
-    else:  # else bpy.app.version
-        m.mat.diffuse_color = surf_data.colr[:]
-        d = nodes.new("ShaderNodeBsdfPrincipled")
-        m.mat.node_tree.links.new(d.outputs["BSDF"], n.inputs["Surface"])
-        nodes.remove(nodes["Diffuse BSDF"])
-    # endif
 
     color = (surf_data.colr[0], surf_data.colr[1], surf_data.colr[2], surf_data.diff)
     # surf_data.diff = 0 == black

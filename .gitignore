@@ -12,3 +12,4 @@ tests/*/src
 ~*
 .coverage
 coverage.xml
+local_addon/

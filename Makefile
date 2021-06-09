@@ -1,27 +1,26 @@
 
-BLENDER_VERSION ?= 2.82a
+BLENDER_VERSION ?= 3.0
 
 default:
 	@echo $(BLENDER_VERSION)
 	$(MAKE) flake8
-	python3 scripts/run_blender.py $(BLENDER_VERSION)
+	python scripts/test_addon.py io_scene_lwo $(BLENDER_VERSION)
 
 all:
-	python3 scripts/run_blender.py 2.78c
-	python3 scripts/run_blender.py 2.79b
-	python3 scripts/run_blender.py 2.80
-	python3 scripts/run_blender.py 2.81a
-	python3 scripts/run_blender.py 2.82a
-	python3 scripts/run_blender.py 2.83
+	python scripts/test_addon.py io_scene_lwo 3.0
+	python scripts/test_addon.py io_scene_lwo 2.93
+	python scripts/test_addon.py io_scene_lwo 2.92
+	python scripts/test_addon.py io_scene_lwo 2.83
+	python scripts/test_addon.py io_scene_lwo 2.82
+	python scripts/test_addon.py io_scene_lwo 2.81
 
 get:
-	python3 scripts/get_blender.py 2.78c
-	python3 scripts/get_blender.py 2.79b
-	python3 scripts/get_blender.py 2.80
-	python3 scripts/get_blender.py 2.81a
-	python3 scripts/get_blender.py 2.82a
+	python3 scripts/get_blender.py 2.81
+	python3 scripts/get_blender.py 2.82
 	python3 scripts/get_blender.py 2.83
+	python3 scripts/get_blender.py 2.92
+	python3 scripts/get_blender.py 2.93
+	python3 scripts/get_blender.py 3.0
 
 flake8:
-	@flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-	#@flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+	@flake8 . --count --show-source --statistics
