@@ -33,7 +33,8 @@ jobs:
         path: ${{ env.BLENDER_CACHE }}
         key: ${{ matrix.os }}-blender-${{ matrix.blender-version }}
     - name: Git Submodules
-       run: env
+       run: |
+         env
          if [[ ! -z "${SM_PWD}" ]]; then
              echo "True"
          fi
