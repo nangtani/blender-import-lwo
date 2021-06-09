@@ -23,15 +23,21 @@ jobs:
       BLENDER_VERSION: ${{ matrix.blender-version }}
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        token: ${{ secrets.SM_PWD }}
-        submodules: true
+    - uses: actions/checkout@v1
+    - name: Git Sumbodule Update
+      run: |
+        git pull --recurse-submodules
+        git submodule update --remote --recursive    
+
 #     - name: Set up Python
 #       uses: actions/setup-python@v1
 #       with:
 #         python-version: 3.8
+#     - name: Checkout
+#       uses: actions/checkout@v2
+#       with:
+#         token: ${{ secrets.SM_PWD }}
+#         submodules: true
 # 
 #     # Update references
 #     - name: Git Sumbodule Update
