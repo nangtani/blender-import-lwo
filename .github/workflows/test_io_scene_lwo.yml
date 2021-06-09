@@ -46,7 +46,7 @@ jobs:
         pip list
     - name: flake8
       run: |
-        flake8 . --count --show-source --statistics
+        flake8 io_scene_lwo scripts --count --show-source --statistics
     - name: Test Blender-${{ matrix.blender-version }} - ${{ matrix.os}}
       run: |
         python scripts/test_addon.py io_scene_lwo ${{ matrix.blender-version }}
