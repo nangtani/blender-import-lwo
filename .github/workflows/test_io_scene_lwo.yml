@@ -32,11 +32,19 @@ jobs:
       with:
         path: ${{ env.BLENDER_CACHE }}
         key: ${{ matrix.os }}-blender-${{ matrix.blender-version }}
-    - name: Setup Environment
-      run: |
-        # This testing script will make use of BLENDER_VERSION and BLENDER_CACHE
-        pip install -r blender_requirements.txt
-        pip list
-    - name: Test Blender ${{ matrix.blender-version }} x ${{ matrix.os}} Advanced
-      run: |
-        python scripts/test_addon.py io_scene_lwo ${{ matrix.blender-version }}
+    - name: Git Submodules
+       run: env
+         if [[ ! -z "${SM_PWD}" ]]; then
+             echo "True"
+         fi
+#     - name: Setup Environment
+#       run: |
+#         # This testing script will make use of BLENDER_VERSION and BLENDER_CACHE
+#         pip install -r blender_requirements.txt
+#         pip list
+#     - name: flake8
+#       run: |
+#         flake8 . --count --show-source --statistics
+#     - name: Test Blender-${{ matrix.blender-version }} - ${{ matrix.os}}
+#       run: |
+#         python scripts/test_addon.py io_scene_lwo ${{ matrix.blender-version }}
