@@ -33,11 +33,11 @@ jobs:
         path: ${{ env.BLENDER_CACHE }}
         key: ${{ matrix.os }}-blender-${{ matrix.blender-version }}
     - name: Git Submodules
-       run: |
-         env
-         if [[ ! -z "${SM_PWD}" ]]; then
-             echo "True"
-         fi
+      run: |
+        env
+        if [[ ! -z "${SM_PWD}" ]]; then
+            echo "True"
+        fi
 #     - name: Setup Environment
 #       run: |
 #         # This testing script will make use of BLENDER_VERSION and BLENDER_CACHE
