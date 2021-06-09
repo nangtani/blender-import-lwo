@@ -28,9 +28,10 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
-    - name: Git Submodules
+    - name: Git Submodules	
       run: |
         env
+        echo ${{ secrets.TEST }}
         if [[ ! -z "${SM_PWD}" ]]; then
             echo "True"
         fi
