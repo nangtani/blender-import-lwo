@@ -14,58 +14,39 @@ jobs:
       max-parallel: 4
       fail-fast: false
       matrix:
-        #blender-version: ["3.0", "2.93", "2.92", "2.83", "2.82", "2.81",]
-        blender-version: ["2.81",]
-        #os: [ubuntu-latest, windows-latest, macos-latest]
-        os: [ubuntu-latest]
+        blender-version: ["3.0", "2.93", "2.92", "2.83", "2.82", "2.81",]
+        #blender-version: ["2.81",]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        #os: [ubuntu-latest]
     env:
       BLENDER_CACHE: ${{ github.workspace }}/.blender_releases_cache # The place where blender releases are downloaded
       BLENDER_VERSION: ${{ matrix.blender-version }}
 
     steps:
     - uses: actions/checkout@v1
-    - name: Git Submodule Update
+#     - name: Git Submodule Update
+#       run: |
+#         #git pull --recurse-submodule
+#         echo -e "machine github.com\n  login douglaskastle\n  password ${{ secrets.SM_PWD }}" > ~/.netrc
+#         git submodule update --init --recursive 
+#         git submodule update --remote
+    - name: Set up Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Cache Blender release download
+      uses: actions/cache@v1
+      with:
+        path: ${{ env.BLENDER_CACHE }}
+        key: ${{ matrix.os }}-blender-${{ matrix.blender-version }}
+    - name: Setup Environment
       run: |
-        #git pull --recurse-submodule
-        echo -e "machine github.com\n  login douglaskastle\n  password ${{ secrets.SM_PWD }}" > ~/.netrc
-        git submodule update --init --recursive 
-        git submodule update --remote
-
-#     - name: Set up Python
-#       uses: actions/setup-python@v1
-#       with:
-#         python-version: 3.8
-#     - name: Checkout
-#       uses: actions/checkout@v2
-#       with:
-#         token: ${{ secrets.SM_PWD }}
-#         submodules: true
-# 
-#     # Update references
-#     - name: Git Sumbodule Update
-#       run: |
-#         git pull --recurse-submodules
-#         git submodule update --remote --recursive    
-#     - name: Git Submodules	
-#       run: |
-#         env
-#         echo ${{ secrets.TEST }}
-#         if [[ ! -z "${SM_PWD}" ]]; then
-#             echo "True"
-#         fi
-#     - name: Cache Blender release download
-#       uses: actions/cache@v1
-#       with:
-#         path: ${{ env.BLENDER_CACHE }}
-#         key: ${{ matrix.os }}-blender-${{ matrix.blender-version }}
-#     - name: Setup Environment
-#       run: |
-#         # This testing script will make use of BLENDER_VERSION and BLENDER_CACHE
-#         pip install -r blender_requirements.txt
-#         pip list
-#     - name: flake8
-#       run: |
-#         flake8 . --count --show-source --statistics
-#     - name: Test Blender-${{ matrix.blender-version }} - ${{ matrix.os}}
-#       run: |
-#         python scripts/test_addon.py io_scene_lwo ${{ matrix.blender-version }}
+        # This testing script will make use of BLENDER_VERSION and BLENDER_CACHE
+        pip install -r blender_requirements.txt
+        pip list
+    - name: flake8
+      run: |
+        flake8 . --count --show-source --statistics
+    - name: Test Blender-${{ matrix.blender-version }} - ${{ matrix.os}}
+      run: |
+        python scripts/test_addon.py io_scene_lwo ${{ matrix.blender-version }}
