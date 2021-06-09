@@ -9,7 +9,6 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
     runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 4
