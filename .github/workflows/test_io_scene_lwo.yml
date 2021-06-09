@@ -25,9 +25,9 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-#       with:
-#         token: ${{ secrets.SM_PWD }}
-#         submodules: true
+      with:
+        token: ${{ secrets.SM_PWD }}
+        submodules: true
 #     - name: Set up Python
 #       uses: actions/setup-python@v1
 #       with:
