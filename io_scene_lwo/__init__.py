@@ -19,7 +19,7 @@
 bl_info = {
     "name": "Import LightWave Objects",
     "author": "Dave Keeshan, Ken Nign (Ken9) and Gert De Roost",
-    "version": (1, 4, 6),
+    "version": (1, 4, 7),
     "blender": (2, 81, 16),
     "location": "File > Import > LightWave Object (.lwo)",
     "description": "Imports a LWO file including any UV, Morph and Color maps. "
@@ -63,7 +63,8 @@ bl_info = {
 import os
 import bpy
 
-from .lwoObject import lwoObject, lwoNoImageFoundException, lwoUnsupportedFileException
+from .lwo_strut.lwoObject import lwoObject
+from .lwo_strut.lwoExceptions import lwoNoImageFoundException, lwoUnsupportedFileException
 from .construct_mesh import build_objects
 
 
@@ -109,12 +110,6 @@ class MESSAGE_OT_Box(bpy.types.Operator):
     )
     ob: bpy.props.BoolProperty(name="ob", description="ob", default=False,)
 
-
-
-
-
-
-
     def invoke(self, context, event):  # gui: no cover
         return context.window_manager.invoke_props_dialog(self, width=400)
 
@@ -148,19 +143,6 @@ class OPEN_OT_browser(bpy.types.Operator):
         description="If no further images are to be found",
         default=False,
     )
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     def invoke(self, context, event):  # gui: no cover
         wm = context.window_manager
@@ -224,35 +206,6 @@ class IMPORT_OT_lwo(bpy.types.Operator):
         description="Use existing materials if a material by that name already exists",
         default=False,
     )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     def invoke(self, context, event):  # gui: no cover
         wm = context.window_manager
@@ -352,9 +305,6 @@ def register():
 
     bpy.types.TOPBAR_MT_file_import.append(menu_func)
 
-
-
-
     ch = _choices()
     bpy.types.Scene.ch = ch
 
@@ -365,9 +315,6 @@ def unregister():  # pragma: no cover
         bpy.utils.unregister_class(cls)
 
     bpy.types.TOPBAR_MT_file_import.remove(menu_func)
-
-
-
 
     del bpy.types.Scene.ch
 

@@ -151,12 +151,6 @@ def build_objects(lwo, ch):
         bpy.context.view_layer.objects.active = ob
         ob.select_set(state=True)
 
-
-
-
-
-
-
         ob_dict[layer_data.index] = [ob, layer_data.parent_index]
 
         # Move the object so the pivot is in the right place.
