@@ -241,8 +241,15 @@ def build_objects(lwo, ch):
             print(f"Adding {len(layer_data.colmaps)} Vertex Color Maps")
             for cmap_key in layer_data.colmaps:
                 map_pack = create_mappack(layer_data, cmap_key, "COLOR")
-                me.vertex_colors.new(name=cmap_key)
+                vertexColorMap = me.vertex_colors.new(name=cmap_key)
 
+                for poly in me.polygons:                   
+                    if poly.index in map_pack:
+                        colors = map_pack[poly.index]
+                        i=0
+                        for loop_index in poly.loop_indices:
+                            vertexColorMap.data[loop_index].color = colors[i] + (1.0,)
+                            i+=1
 # All code below here is redundant
 
 #                 if (2, 80, 0) < bpy.app.version:
