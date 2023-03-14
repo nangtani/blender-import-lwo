@@ -14,16 +14,15 @@ jobs:
       max-parallel: 4
       fail-fast: false
       matrix:
-        blender-version: ["3.0", "2.93", "2.92", "2.83", "2.82", "2.81",]
-        #blender-version: ["2.81",]
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        #os: [ubuntu-latest]
+        blender-version: ["3.4", "3.2", "3.0", "2.82",]
+        #os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
     env:
       BLENDER_CACHE: ${{ github.workspace }}/.blender_releases_cache # The place where blender releases are downloaded
       BLENDER_VERSION: ${{ matrix.blender-version }}
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
 #     - name: Git Submodule Update
 #       run: |
 #         #git pull --recurse-submodule
@@ -31,11 +30,11 @@ jobs:
 #         git submodule update --init --recursive 
 #         git submodule update --remote
     - name: Set up Python
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v4
       with:
-        python-version: 3.8
+        python-version: 3.10
     - name: Cache Blender release download
-      uses: actions/cache@v1
+      uses: actions/cache@v3
       with:
         path: ${{ env.BLENDER_CACHE }}
         key: ${{ matrix.os }}-blender-${{ matrix.blender-version }}

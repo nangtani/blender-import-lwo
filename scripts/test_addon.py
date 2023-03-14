@@ -14,7 +14,7 @@ def main():
     if len(sys.argv) > 2:
         blender_rev = sys.argv[2]
     else:
-        blender_rev = "2.93"
+        blender_rev = "3.2"
     
     if os.path.isdir("scripts"):
         os.environ["ADDON_TEST_HELPER"] = os.path.join(os.getcwd(), "scripts")
@@ -28,10 +28,10 @@ def main():
         #if "master" == os.environ["TRAVIS_BRANCH"]:
             extra_cmd = ""
 
-#     config = {"coverage": True}
     config = {"coverage": True, "pytest_args": extra_cmd}
+#     config = {"coverage": False}
 #     config = {
-#         "coverage": True, 
+#         "coverage": False, 
 #         "tests": "tests/basic/test_load_lwo.py", 
 #     }
 #     config = {
