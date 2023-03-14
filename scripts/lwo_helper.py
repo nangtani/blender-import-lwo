@@ -60,7 +60,7 @@ class ImportFile:
             self.check_blend = True
             render = bpy.context.scene.render.engine.lower()
             self.cwd = os.getcwd()
-            self.outfile = f"{dst_path}/{render}/{name}{post_pend}.blend"
+            self.outfile = os.path.abspath(f"{dst_path}/{render}/{name}{post_pend}.blend")
             self.zipdir, self.blendfile = os.path.split(self.reffile)
             self.zipblend = f"{self.blendfile}.zip"
             self.zippath = os.path.join(self.zipdir, self.zipblend)
