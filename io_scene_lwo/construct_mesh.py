@@ -246,34 +246,9 @@ def build_objects(lwo, ch):
                 for poly in me.polygons:                   
                     if poly.index in map_pack:
                         colors = map_pack[poly.index]
-                        i=0
-                        for loop_index in poly.loop_indices:
+                        for i, loop_index in enumerate(poly.loop_indices):
                             vertexColorMap.data[loop_index].color = colors[i] + (1.0,)
-                            i+=1
-# All code below here is redundant
-
-#                 if (2, 80, 0) < bpy.app.version:
-#                     break
-#                     vcol = me.vertex_colors[-1] # Not right
-#                 else:  # else bpy.app.version
-#                     vcol = me.tessface_vertex_colors[-1]
-
-#                 
-#                 if not vcol or not vcol.data:
-#                     break
-#                 for fi in map_pack:
-#                     if fi > len(vcol.data):
-#                         continue
-# #                    face = map_pack[fi]
-# #                     colf = vcol.data[fi]
-# # 
-# #                     if len(face) > 2:
-# #                         colf.color1 = face[0]
-# #                         colf.color2 = face[1]
-# #                         colf.color3 = face[2]
-# #                     if len(face) == 4:
-# #                         colf.color4 = face[3]
-
+                            
         # Create the UV Maps.
         if len(layer_data.uvmaps_vmad) > 0 or len(layer_data.uvmaps_vmap) > 0:
             allmaps = set(list(layer_data.uvmaps_vmad.keys()))
