@@ -287,25 +287,25 @@ def build_objects(lwo, ch):
                 elif edge_sb in layer_data.edge_weights:
                     edge.crease = layer_data.edge_weights[edge_sb]
 
-        # # Now triangulate the NGons.
-        # # if not 0 == len(ngons):
-        # #if True:
-        # if check_ngons:
-        #     bm = bmesh.new()
-        #     bm.from_mesh(me) # Causes crashed in star field
-        #     if hasattr(bm.faces, "ensure_lookup_table"):
-        #         bm.faces.ensure_lookup_table()
+        # Now triangulate the NGons.
+        # if not 0 == len(ngons):
+        #if True:
+        if check_ngons:
+            bm = bmesh.new()
+            bm.from_mesh(me) # Causes crashed in star field
+            if hasattr(bm.faces, "ensure_lookup_table"):
+                bm.faces.ensure_lookup_table()
 
-        #     faces = []
-        #     for face in bm.faces:
-        #         if len(face.verts) > 4:  # review this number
-        #             faces.append(face)
-        #     print(f"{len(faces)} NGONs")
-        #     bmesh.ops.triangulate(bm, faces=faces)
+            faces = []
+            for face in bm.faces:
+                if len(face.verts) > 4:  # review this number
+                    faces.append(face)
+            print(f"{len(faces)} NGONs")
+            bmesh.ops.triangulate(bm, faces=faces)
 
-        #     # Finish up, write the bmesh back to the mesh
-        #     bm.to_mesh(me)
-        #     bm.free()
+            # Finish up, write the bmesh back to the mesh
+            bm.to_mesh(me)
+            bm.free()
 
         # We may have some invalid mesh data, See: [#27916]
         # keep this last!
