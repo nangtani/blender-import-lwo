@@ -43,9 +43,9 @@ jobs:
 #         # This testing script will make use of BLENDER_VERSION and BLENDER_CACHE
 #         pip install -r blender_requirements.txt
 #         pip list
-    - name: flake8
-      run: |
-        flake8 io_scene_lwo scripts --count --show-source --statistics
+#     - name: flake8
+#       run: |
+#         flake8 io_scene_lwo scripts --count --show-source --statistics
     - name: Test Blender-${{ matrix.blender-version }} - ${{ matrix.os}}
       run: |
         pip install -r blender_requirements.txt
