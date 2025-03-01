@@ -20,7 +20,7 @@ bl_info = {
     "name": "Import LightWave Objects",
     "author": "Dave Keeshan, Ken Nign (Ken9) and Gert De Roost",
     "version": (1, 4, 6),
-    "blender": (2, 81, 16),
+    "blender": (4, 4, 0),
     "location": "File > Import > LightWave Object (.lwo)",
     "description": "Imports a LWO file including any UV, Morph and Color maps. "
     "Can convert Skelegons to an Armature.",
@@ -103,17 +103,16 @@ class MESSAGE_OT_Box(bpy.types.Operator):
     bl_idname = "message.messagebox"
     bl_label = ""
 
-
     message: bpy.props.StringProperty(
-        name="message", description="message", default="",
+        name="message",
+        description="message",
+        default="",
     )
-    ob: bpy.props.BoolProperty(name="ob", description="ob", default=False,)
-
-
-
-
-
-
+    ob: bpy.props.BoolProperty(
+        name="ob",
+        description="ob",
+        default=False,
+    )
 
     def invoke(self, context, event):  # gui: no cover
         return context.window_manager.invoke_props_dialog(self, width=400)
@@ -136,7 +135,6 @@ class OPEN_OT_browser(bpy.types.Operator):
     bl_label = "Select Image Search Path"
     bl_options = {"REGISTER", "UNDO"}
 
-
     directory: StringProperty(subtype="DIR_PATH")
     recursive: BoolProperty(
         name="Recursive Search",
@@ -148,19 +146,6 @@ class OPEN_OT_browser(bpy.types.Operator):
         description="If no further images are to be found",
         default=False,
     )
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     def invoke(self, context, event):  # gui: no cover
         wm = context.window_manager
@@ -196,7 +181,6 @@ class IMPORT_OT_lwo(bpy.types.Operator):
     bpy.types.Scene.ch = None
     bpy.types.Scene.lwo = None
 
-
     filepath: StringProperty(
         name="File Path",
         description="Filepath used for importing the LWO file",
@@ -225,35 +209,6 @@ class IMPORT_OT_lwo(bpy.types.Operator):
         default=False,
     )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     def invoke(self, context, event):  # gui: no cover
         wm = context.window_manager
         wm.fileselect_add(self)
@@ -266,15 +221,14 @@ class IMPORT_OT_lwo(bpy.types.Operator):
         ch.load_hidden = self.LOAD_HIDDEN
         ch.skel_to_arm = self.SKEL_TO_ARM
         ch.use_existing_materials = self.USE_EXISTING_MATERIALS
-        #ch.search_paths = []
+        # ch.search_paths = []
         ch.images = {}
         # ch.cancel_search          = False
 
-
-#         import cProfile
-#         import pstats
-#         profiler = cProfile.Profile()
-#         profiler.enable()
+        #         import cProfile
+        #         import pstats
+        #         profiler = cProfile.Profile()
+        #         profiler.enable()
 
         lwo = lwoObject(self.filepath)
         bpy.types.Scene.lwo = lwo
@@ -300,10 +254,10 @@ class IMPORT_OT_lwo(bpy.types.Operator):
                 bpy.ops.message.messagebox(
                     "INVOKE_DEFAULT", message=str(err), ob=True
                 )  # gui: no cover
-#         profiler.disable()
-#         #profiler.print_stats()
-#         p = pstats.Stats(profiler)
-#         p.sort_stats('time').print_stats()
+        #         profiler.disable()
+        #         #profiler.print_stats()
+        #         p = pstats.Stats(profiler)
+        #         p.sort_stats('time').print_stats()
 
         del lwo
         # With the data gathered, build the object(s).
@@ -322,9 +276,6 @@ class IMPORT_PT_Debug(bpy.types.Panel):
     region = "WINDOW"
     # region = "TOOLS"
     space = "PROPERTIES"
-
-
-
 
     bl_label = "DEBUG"
     bl_space_type = space
@@ -345,15 +296,13 @@ classes = (
     MESSAGE_OT_Box,
 )
 
+
 def register():
 
     for cls in classes:
         bpy.utils.register_class(cls)
 
     bpy.types.TOPBAR_MT_file_import.append(menu_func)
-
-
-
 
     ch = _choices()
     bpy.types.Scene.ch = ch
@@ -366,10 +315,8 @@ def unregister():  # pragma: no cover
 
     bpy.types.TOPBAR_MT_file_import.remove(menu_func)
 
-
-
-
     del bpy.types.Scene.ch
+
 
 if __name__ == "__main__":  # pragma: no cover
     register()

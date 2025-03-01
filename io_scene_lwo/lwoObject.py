@@ -26,6 +26,7 @@ from collections import OrderedDict
 
 DEBUG = False
 
+
 class lwoNoImageFoundException(Exception):
     pass
 
@@ -150,7 +151,9 @@ class _obj_surf(_lwo_base):
     def lwoprint(self):  # debug: no cover
         print(f"SURFACE")
         print(f"Surface Name:       {self.name}")
-        print(f"Color:              {int(self.colr[0]*256)} {int(self.colr[1]*256)} {int(self.colr[2]*256)}")
+        print(
+            f"Color:              {int(self.colr[0]*256)} {int(self.colr[1]*256)} {int(self.colr[2]*256)}"
+        )
         print(f"Luminosity:         {self.lumi*100:>8.1f}%")
         print(f"Diffuse:            {self.diff*100:>8.1f}%")
         print(f"Specular:           {self.spec*100:>8.1f}%")
@@ -697,7 +700,9 @@ def read_surf_tags(tag_bytes, object_layers, last_pols_count):
     if 0 == len(object_layers[-1].pols):
         return
     if abs_pid < 0:
-        raise Exception(len(object_layers[-1].pols), last_pols_count, object_layers[-1].pols)
+        raise Exception(
+            len(object_layers[-1].pols), last_pols_count, object_layers[-1].pols
+        )
     while offset < chunk_len:
         pid, pid_len = read_vx(tag_bytes[offset : offset + 4])
         offset += pid_len
@@ -730,28 +735,34 @@ def read_texture(surf_bytes, offset, subchunk_len, debug=False):
         suboffset += 2
         if subsubchunk_name == b"CHAN":
             (texture.channel,) = struct.unpack(
-                "4s", surf_bytes[offset + suboffset : offset + suboffset + 4],
+                "4s",
+                surf_bytes[offset + suboffset : offset + suboffset + 4],
             )
             texture.channel = texture.channel.decode("ascii")
         elif subsubchunk_name == b"OPAC":
             (texture.opactype,) = struct.unpack(
-                ">H", surf_bytes[offset + suboffset : offset + suboffset + 2],
+                ">H",
+                surf_bytes[offset + suboffset : offset + suboffset + 2],
             )
             (texture.opac,) = struct.unpack(
-                ">f", surf_bytes[offset + suboffset + 2 : offset + suboffset + 6],
+                ">f",
+                surf_bytes[offset + suboffset + 2 : offset + suboffset + 6],
             )
             # print("opactype",opactype)
         elif subsubchunk_name == b"ENAB":
             (texture.enab,) = struct.unpack(
-                ">H", surf_bytes[offset + suboffset : offset + suboffset + 2],
+                ">H",
+                surf_bytes[offset + suboffset : offset + suboffset + 2],
             )
         elif subsubchunk_name == b"IMAG":
             (texture.clipid,) = struct.unpack(
-                ">H", surf_bytes[offset + suboffset : offset + suboffset + 2],
+                ">H",
+                surf_bytes[offset + suboffset : offset + suboffset + 2],
             )
         elif subsubchunk_name == b"PROJ":
             (texture.projection,) = struct.unpack(
-                ">H", surf_bytes[offset + suboffset : offset + suboffset + 2],
+                ">H",
+                surf_bytes[offset + suboffset : offset + suboffset + 2],
             )
         elif subsubchunk_name == b"VMAP":
             texture.uvname, name_len = read_lwostring(surf_bytes[offset + suboffset :])
@@ -760,7 +771,8 @@ def read_texture(surf_bytes, offset, subchunk_len, debug=False):
             texture.func, name_len = read_lwostring(surf_bytes[offset + suboffset :])
         elif subsubchunk_name == b"NEGA":
             (texture.nega,) = struct.unpack(
-                ">H", surf_bytes[offset + suboffset : offset + suboffset + 2],
+                ">H",
+                surf_bytes[offset + suboffset : offset + suboffset + 2],
             )
         elif subsubchunk_name == b"TMAP":
             if DEBUG:
@@ -829,7 +841,9 @@ def read_texture(surf_bytes, offset, subchunk_len, debug=False):
         else:
             print(f"Unimplemented SubSubBlock: {subsubchunk_name}")
             if DEBUG:
-                raise Exception("Unimplemented SubSubBlock: {}".format(subsubchunk_name))
+                raise Exception(
+                    "Unimplemented SubSubBlock: {}".format(subsubchunk_name)
+                )
         suboffset += subsubchunk_len
     return texture
 
@@ -903,14 +917,18 @@ def read_surf(surf_bytes, lwo):
         elif subchunk_name == b"BLOK":
             (block_type,) = struct.unpack("4s", surf_bytes[offset : offset + 4])
             texture = None
-            if block_type == b"IMAP" or block_type == b"PROC" \
-            or block_type == b"SHDR" or block_type == b"GRAD":
+            if (
+                block_type == b"IMAP"
+                or block_type == b"PROC"
+                or block_type == b"SHDR"
+                or block_type == b"GRAD"
+            ):
                 # print(surf.name, block_type)
                 texture = read_texture(surf_bytes, offset, subchunk_len)
             else:
                 print(f"Unimplemented texture type: {block_type}")
                 if DEBUG:
-                    raise Exception ("Unimplemented texture type: {}".format(block_type))
+                    raise Exception("Unimplemented texture type: {}".format(block_type))
             if None is not texture:
                 texture.type = block_type.decode("ascii")
                 if texture.channel not in surf.textures.keys():
@@ -1010,7 +1028,15 @@ def read_surf_5(surf_bytes, lwo, dirpath=None):
             if s_angle > 0.0:
                 surf.smooth = True
 
-        elif subchunk_name in [b"CTEX", b"DTEX", b"STEX", b"RTEX", b"TTEX", b"BTEX", b"LTEX"]:
+        elif subchunk_name in [
+            b"CTEX",
+            b"DTEX",
+            b"STEX",
+            b"RTEX",
+            b"TTEX",
+            b"BTEX",
+            b"LTEX",
+        ]:
             texture = None
 
         elif subchunk_name == b"TIMG":
@@ -1140,19 +1166,19 @@ class lwoObject:
             else:
                 paths.append(s)
         return paths
-    
+
     def resolve_clips(self):
         files = []
         for search_path in self.search_paths:
             files.extend(glob("{0}/*.*".format(search_path)))
             if self.ch.recursive:
                 files.extend(glob("{0}/**/*.*".format(search_path)))
-            
+
         for c_id in self.clips:
             clip = self.clips[c_id]
             # LW is windows tools, so windows path need to be replaced
             # under linux, and treated the sameunder windows
-            imagefile = os.path.basename(clip.replace('\\', os.sep))
+            imagefile = os.path.basename(clip.replace("\\", os.sep))
             ifile = None
             for f in files:
                 if re.search(re.escape(imagefile), f, re.I):
@@ -1169,7 +1195,7 @@ class lwoObject:
         for c_id in self.clips:
             if None is self.ch.images[c_id] and not self.ch.cancel_search:
                 raise lwoNoImageFoundException(
-                    "Can't find filepath for image: \"{}\"".format(self.clips[c_id])
+                    'Can\'t find filepath for image: "{}"'.format(self.clips[c_id])
                 )
 
     def validate_lwo(self):
@@ -1180,7 +1206,7 @@ class lwoObject:
                 for texture in surf_data.textures[textures_type]:
                     ci = texture.clipid
                     if ci not in self.clips.keys():
-                    #if ci not in self.ch.images.keys():
+                        # if ci not in self.ch.images.keys():
                         print(f"WARNING in material {surf_data.name}")
                         print(f"\tci={ci}, not present in self.clips.keys():")
                         self.ch.images[ci] = None

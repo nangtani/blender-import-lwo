@@ -19,7 +19,7 @@
 import bpy
 import bmesh
 import mathutils
-from .gen_material import lwo2BI, lwo2cycles, get_existing
+from .gen_material import lwo2cycles, get_existing
 
 
 def create_mappack(data, map_name, map_type):
@@ -103,14 +103,7 @@ def build_materials(lwo, ch):
     for key, surf in lwo.surfs.items():
         m = get_existing(surf, ch.use_existing_materials)
         if None == m:
-            if (
-                "CYCLES" == renderer
-                or "BLENDER_EEVEE" == renderer
-                or "BLENDER_WORKBENCH" == renderer
-            ):
-                m = lwo2cycles(surf)
-            else:
-                m = lwo2BI(surf)
+            m = lwo2cycles(surf)
         lwo.materials[key] = m
 
 
@@ -135,27 +128,21 @@ def build_objects(lwo, ch):
         face_edges = []
         me = bpy.data.meshes.new(layer_data.name)
         me.from_pydata(layer_data.pnts, face_edges, layer_data.pols)
-        #me.validate()
-        
-        # https://developer.blender.org/T75884 
+        # me.validate()
+
+        # https://developer.blender.org/T75884
         check_ngons = True
-#         for i, pol in enumerate(layer_data.pols):
-#             if 1 == len(layer_data.pols[i]):
-#                 raise Exception(i, layer_data.pols[i])
-#                 check_ngons = False
-        
+        #         for i, pol in enumerate(layer_data.pols):
+        #             if 1 == len(layer_data.pols[i]):
+        #                 raise Exception(i, layer_data.pols[i])
+        #                 check_ngons = False
+
         ob = bpy.data.objects.new(layer_data.name, me)
 
         scn = bpy.context.collection
         scn.objects.link(ob)
         bpy.context.view_layer.objects.active = ob
         ob.select_set(state=True)
-
-
-
-
-
-
 
         ob_dict[layer_data.index] = [ob, layer_data.parent_index]
 
@@ -182,35 +169,35 @@ def build_objects(lwo, ch):
             for vi in layer_data.vnorms.keys():
                 me.vertices[vi].normal = layer_data.vnorms[vi]
 
-#         # Create the Split Vertex Normals.
-#         print(len(layer_data.lnorms))
-#         print(len(layer_data.vnorms))
-        #"tests/lwo_nasa/src/Wide Field Infrared Survey Telescope (WFIRST)/WFirst-2015-composite.lwo"
+        #         # Create the Split Vertex Normals.
+        #         print(len(layer_data.lnorms))
+        #         print(len(layer_data.vnorms))
+        # "tests/lwo_nasa/src/Wide Field Infrared Survey Telescope (WFIRST)/WFirst-2015-composite.lwo"
         if len(layer_data.lnorms) > 0 and len(layer_data.vnorms) > 0:
             pass
-            #raise Exception
-            
-#         if len(layer_data.lnorms) > 0:
-#             print("Adding Smoothing from Split Vertex Normals")
-#             for pi in layer_data.lnorms.keys():
-#                 p = me.polygons[pi]
-#                 p.use_smooth = False
-#                 keepflat = True
-#                 for no in layer_data.lnorms[pi]:
-#                     vn = layer_data.vnorms[no[0]]
-#                     if (
-#                            round(no[1], 4) == round(vn[0], 4)
-#                         or round(no[2], 4) == round(vn[1], 4)
-#                         or round(no[3], 4) == round(vn[2], 4)
-#                     ):
-#                         keepflat = False
-#                         break
-#                 if not (keepflat):
-#                     p.use_smooth = True
-#                 # for li in me.polygons[vn[1]].loop_indices:
-#                 #    l = me.loops[li]
-#                 #    if l.vertex_index == vn[0]:
-#                 #        l.normal = [vn[2], vn[3], vn[4]]
+            # raise Exception
+
+        #         if len(layer_data.lnorms) > 0:
+        #             print("Adding Smoothing from Split Vertex Normals")
+        #             for pi in layer_data.lnorms.keys():
+        #                 p = me.polygons[pi]
+        #                 p.use_smooth = False
+        #                 keepflat = True
+        #                 for no in layer_data.lnorms[pi]:
+        #                     vn = layer_data.vnorms[no[0]]
+        #                     if (
+        #                            round(no[1], 4) == round(vn[0], 4)
+        #                         or round(no[2], 4) == round(vn[1], 4)
+        #                         or round(no[3], 4) == round(vn[2], 4)
+        #                     ):
+        #                         keepflat = False
+        #                         break
+        #                 if not (keepflat):
+        #                     p.use_smooth = True
+        #                 # for li in me.polygons[vn[1]].loop_indices:
+        #                 #    l = me.loops[li]
+        #                 #    if l.vertex_index == vn[0]:
+        #                 #        l.normal = [vn[2], vn[3], vn[4]]
 
         # Create the Vertex Groups (LW's Weight Maps).
         if len(layer_data.wmaps) > 0:
@@ -243,12 +230,12 @@ def build_objects(lwo, ch):
                 map_pack = create_mappack(layer_data, cmap_key, "COLOR")
                 vertexColorMap = me.vertex_colors.new(name=cmap_key)
 
-                for poly in me.polygons:                   
+                for poly in me.polygons:
                     if poly.index in map_pack:
                         colors = map_pack[poly.index]
                         for i, loop_index in enumerate(poly.loop_indices):
                             vertexColorMap.data[loop_index].color = colors[i] + (1.0,)
-                            
+
         # Create the UV Maps.
         if len(layer_data.uvmaps_vmad) > 0 or len(layer_data.uvmaps_vmap) > 0:
             allmaps = set(list(layer_data.uvmaps_vmad.keys()))
@@ -256,12 +243,10 @@ def build_objects(lwo, ch):
             print(f"Adding {len(allmaps)} UV Textures")
             if len(allmaps) > 8:
                 print(f"This mesh contains more than 8 UVMaps: {len(allmaps)}")
-            
+
             for uvmap_key in allmaps:
 
                 uvm = me.uv_layers.new()
-
-
 
                 if None == uvm:
                     break
@@ -292,7 +277,6 @@ def build_objects(lwo, ch):
                     for li in vertloops[pnt_id]:
                         uvm.data[li].uv = [u, v]
 
-
         # Apply the Edge Weighting.
         if len(layer_data.edge_weights) > 0:
             for edge in me.edges:
@@ -303,25 +287,25 @@ def build_objects(lwo, ch):
                 elif edge_sb in layer_data.edge_weights:
                     edge.crease = layer_data.edge_weights[edge_sb]
 
-        # Now triangulate the NGons.
-        # if not 0 == len(ngons):
-        #if True:
-        if check_ngons:
-            bm = bmesh.new()
-            bm.from_mesh(me) # Causes crashed in star field
-            if hasattr(bm.faces, "ensure_lookup_table"):
-                bm.faces.ensure_lookup_table()
+        # # Now triangulate the NGons.
+        # # if not 0 == len(ngons):
+        # #if True:
+        # if check_ngons:
+        #     bm = bmesh.new()
+        #     bm.from_mesh(me) # Causes crashed in star field
+        #     if hasattr(bm.faces, "ensure_lookup_table"):
+        #         bm.faces.ensure_lookup_table()
 
-            faces = []
-            for face in bm.faces:
-                if len(face.verts) > 4:  # review this number
-                    faces.append(face)
-            print(f"{len(faces)} NGONs")
-            bmesh.ops.triangulate(bm, faces=faces)
+        #     faces = []
+        #     for face in bm.faces:
+        #         if len(face.verts) > 4:  # review this number
+        #             faces.append(face)
+        #     print(f"{len(faces)} NGONs")
+        #     bmesh.ops.triangulate(bm, faces=faces)
 
-            # Finish up, write the bmesh back to the mesh
-            bm.to_mesh(me)
-            bm.free()
+        #     # Finish up, write the bmesh back to the mesh
+        #     bm.to_mesh(me)
+        #     bm.free()
 
         # We may have some invalid mesh data, See: [#27916]
         # keep this last!
@@ -331,8 +315,8 @@ def build_objects(lwo, ch):
         # Unfortunately we can't exlude certain faces from the subdivision.
         if layer_data.has_subds and ch.add_subd_mod:
             ob.modifiers.new(name="Subsurf", type="SUBSURF")
-        
-        ob.modifiers.new(name= "Edge Split", type="EDGE_SPLIT")
+
+        ob.modifiers.new(name="Edge Split", type="EDGE_SPLIT")
 
         # Should we build an armature from the embedded rig?
         if len(layer_data.bones) > 0 and ch.skel_to_arm:
@@ -355,26 +339,25 @@ def build_objects(lwo, ch):
         layer_data.morphs.clear()
         layer_data.surf_tags.clear()
 
-
-        # Texture slots have been removed from 2.80, is there a corresponding any thing?
-        # Create the 3D View visualisation textures.
-        if (
-            "CYCLES" == bpy.context.scene.render.engine
-            or "BLENDER_EEVEE" == bpy.context.scene.render.engine
-        ):
-            pass
-        else:
-            for tf in me.polygons:
-                tex_slots = me.materials[tf.material_index].texture_slots
-                for ts in tex_slots:
-                    if ts:
-                        if None == tex_slots[0].texture:
-                            continue
-
-                        image = tex_slots[0].texture.image
-                        for lay in me.tessface_uv_textures:
-                            lay.data[tf.index].image = image
-                        break
+        #         # Texture slots have been removed from 2.80, is there a corresponding any thing?
+        #         # Create the 3D View visualisation textures.
+        #         if (
+        #             "CYCLES" == bpy.context.scene.render.engine
+        #             or "BLENDER_EEVEE" == bpy.context.scene.render.engine
+        #         ):
+        #             pass
+        #         else:
+        #             for tf in me.polygons:
+        #                 tex_slots = me.materials[tf.material_index].texture_slots
+        #                 for ts in tex_slots:
+        #                     if ts:
+        #                         if None == tex_slots[0].texture:
+        #                             continue
+        #
+        #                         image = tex_slots[0].texture.image
+        #                         for lay in me.tessface_uv_textures:
+        #                             lay.data[tf.index].image = image
+        #                         break
 
         print("done!")
 
@@ -384,8 +367,6 @@ def build_objects(lwo, ch):
 
         bpy.context.collection.objects.link(empty)
 
-
-
     for ob_key in ob_dict:
         if ob_dict[ob_key][1] != -1 and ob_dict[ob_key][1] in ob_dict:
             parent_ob = ob_dict[ob_dict[ob_key][1]]
@@ -394,10 +375,6 @@ def build_objects(lwo, ch):
         elif len(ob_dict.keys()) > 1:
             ob_dict[ob_key][0].parent = empty
 
-
     bpy.context.view_layer.update()
-
-
-
 
     print("Done Importing LWO File")

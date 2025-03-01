@@ -28,7 +28,7 @@ def delete_everything():
 
     if (2, 79, 0) < bpy.app.version:
         bpy.ops.wm.read_homefile()
-    
+
     for k in bpy.data.objects.keys():
         try:
             o = bpy.data.objects[k]
@@ -268,7 +268,9 @@ def diff_files(outfile0, outfile1, error_count=0):
             # print(a)
             if not a in y.bl.keys():
                 print(f"<{a}> in not in dst")
-            if not x.bl[a] == y.bl[a]:
+            if "session_uid" == a:
+                pass
+            elif not x.bl[a] == y.bl[a]:
                 print(f"<{a}> is different")
                 pprint(x.bl[a])
                 pprint(y.bl[a])

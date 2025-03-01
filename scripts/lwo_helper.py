@@ -3,7 +3,8 @@ import re
 import shutil
 import bpy
 import zipfile
-#from zipfile import ZipFile
+
+# from zipfile import ZipFile
 from blend_helper import delete_everything, diff_files
 
 
@@ -18,7 +19,6 @@ class ImportFile:
         self.search_paths = []
         self.args = args
         self.kwargs = kwargs
-
 
         self.lw_args = ()
         self.lw_kwargs = {}
@@ -60,13 +60,14 @@ class ImportFile:
             self.check_blend = True
             render = bpy.context.scene.render.engine.lower()
             self.cwd = os.getcwd()
-            self.outfile = os.path.abspath(f"{dst_path}/{render}/{name}{post_pend}.blend")
+            self.outfile = os.path.abspath(
+                f"{dst_path}/{render}/{name}{post_pend}.blend"
+            )
             self.zipdir, self.blendfile = os.path.split(self.reffile)
             self.zipblend = f"{self.blendfile}.zip"
             self.zippath = os.path.join(self.zipdir, self.zipblend)
         else:
             name = os.path.basename(self.infile)
-
 
     @property
     def reffile(self):
@@ -102,14 +103,14 @@ class ImportFile:
         if self.check_blend:
             if os.path.isfile(self.outfile):
                 os.remove(self.outfile)
-    
+
             if not os.path.exists(os.path.split(self.outfile)[0]):
                 os.makedirs(os.path.split(self.outfile)[0])
             if not os.path.exists(os.path.split(self.reffile)[0]):
                 os.makedirs(os.path.split(self.reffile)[0])
 
     def diff_result(self):
-        #self.zippath = os.path.join(self.zipdir, self.zipblend)
+        # self.zippath = os.path.join(self.zipdir, self.zipblend)
         os.chdir(self.zipdir)
         zfiles = []
         if os.path.isfile(self.zipblend):
@@ -117,35 +118,34 @@ class ImportFile:
             zf.extractall()
             zfiles = zf.namelist()
             zf.close()
-        
+
         os.chdir(self.cwd)
-        
+
         try:
-           diff_files(self.reffile, self.outfile)
+            diff_files(self.reffile, self.outfile)
         finally:
             for z in zfiles:
                 zfile = os.path.join(self.zipdir, z)
                 os.unlink(zfile)
 
     def copt_dst2ref(self, force=False, zip=True):
-        #self.zippath = os.path.join(self.zipdir, self.zipblend)
+        # self.zippath = os.path.join(self.zipdir, self.zipblend)
         if os.path.exists(self.zippath) and not force:
             return
-                 
+
         if not os.path.exists(self.reffile) or force:
             shutil.copyfile(self.outfile, self.reffile)
 
         if zip and (not os.path.exists(self.zipblend) or force):
             os.chdir(self.zipdir)
-        
-            with zipfile.ZipFile(self.zipblend, 'w', zipfile.ZIP_DEFLATED) as z:
+
+            with zipfile.ZipFile(self.zipblend, "w", zipfile.ZIP_DEFLATED) as z:
                 z.write(self.blendfile)
             z.close()
-            if os.path.getsize(self.zipblend) >= 50*1024*1024:
+            if os.path.getsize(self.zipblend) >= 50 * 1024 * 1024:
                 raise Exception(f"Zipfile too big: {os.path.getsize(self.zipblend)}")
             os.chdir(self.cwd)
-            #os.unlink(self.reffile)
-        
+            # os.unlink(self.reffile)
 
     def clean_up(self):
         delete_everything()
@@ -160,7 +160,9 @@ class ImportFile:
             ch.cancel_search = self.cancel_search
             ch.recursive = self.recursive
             bpy.ops.import_scene.lwo(
-                filepath=infile, *self.lw_args, **self.lw_kwargs,
+                filepath=infile,
+                *self.lw_args,
+                **self.lw_kwargs,
             )
 
     def save_blend(self):
