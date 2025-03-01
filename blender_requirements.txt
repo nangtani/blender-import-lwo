@@ -1,7 +1,6 @@
+pytest
 flake8
 requests
 bs4
 dmglib
-exceptiongroup
-iniconfig
-#blender-addon-tester
+blender-addon-tester
