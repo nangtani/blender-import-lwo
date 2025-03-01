@@ -42,6 +42,7 @@ jobs:
       run: |
         # This testing script will make use of BLENDER_VERSION and BLENDER_CACHE
         pip install -r blender_requirements.txt
+        pip install blender-addon-tester
         pip list
     - name: flake8
       run: |
