@@ -27,12 +27,12 @@ Tests exist for this addon. Tests are written in `pytest` and are enabled using 
 
 This allows testing to be completed on multiple versions of blender, including the nightly builds.  This flags any changes to the Blender Addon API that breaks the addon closer to when it happens.
 
-Current testing supports blender 2.78 through 2.90.
+Current testing supports blender 3.3 through 4.5.
 
 To run tests locally:
 
     `pip install blender-addon-tester`
-    `python scripts\test_addon.py io_scene_lwo 2.82a`
+    `python scripts\test_addon.py io_scene_lwo 3.6`
 
 ## Not supported (yet)
 
