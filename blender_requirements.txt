@@ -1,2 +1,7 @@
 blender-addon-tester
 flake8
+requests
+bs4
+dmglib
+exceptiongroup
+iniconfig
