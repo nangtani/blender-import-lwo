@@ -19,8 +19,8 @@
 bl_info = {
     "name": "Import LightWave Objects",
     "author": "Dave Keeshan, Ken Nign (Ken9) and Gert De Roost",
-    "version": (1, 4, 6),
-    "blender": (4, 4, 0),
+    "version": (1, 4, 8),
+    "blender": (3, 3, 0),
     "location": "File > Import > LightWave Object (.lwo)",
     "description": "Imports a LWO file including any UV, Morph and Color maps. "
     "Can convert Skelegons to an Armature.",
@@ -122,7 +122,7 @@ class MESSAGE_OT_Box(bpy.types.Operator):
         self.report({"INFO"}, self.message)
         print(self.message)
         if self.ob:
-            bpy.ops.open.browser("INVOKE_DEFAULT")
+            bpy.ops.wm.lwo_open_browser("INVOKE_DEFAULT")
         return {"FINISHED"}
 
     def draw(self, context):  # gui: no cover
@@ -131,7 +131,7 @@ class MESSAGE_OT_Box(bpy.types.Operator):
 
 
 class OPEN_OT_browser(bpy.types.Operator):
-    bl_idname = "open.browser"
+    bl_idname = "wm.lwo_open_browser"
     bl_label = "Select Image Search Path"
     bl_options = {"REGISTER", "UNDO"}
 
@@ -221,14 +221,8 @@ class IMPORT_OT_lwo(bpy.types.Operator):
         ch.load_hidden = self.LOAD_HIDDEN
         ch.skel_to_arm = self.SKEL_TO_ARM
         ch.use_existing_materials = self.USE_EXISTING_MATERIALS
-        # ch.search_paths = []
         ch.images = {}
-        # ch.cancel_search          = False
 
-        #         import cProfile
-        #         import pstats
-        #         profiler = cProfile.Profile()
-        #         profiler.enable()
 
         lwo = lwoObject(self.filepath)
         bpy.types.Scene.lwo = lwo
@@ -254,10 +248,7 @@ class IMPORT_OT_lwo(bpy.types.Operator):
                 bpy.ops.message.messagebox(
                     "INVOKE_DEFAULT", message=str(err), ob=True
                 )  # gui: no cover
-        #         profiler.disable()
-        #         #profiler.print_stats()
-        #         p = pstats.Stats(profiler)
-        #         p.sort_stats('time').print_stats()
+
 
         del lwo
         # With the data gathered, build the object(s).
@@ -287,7 +278,7 @@ class IMPORT_PT_Debug(bpy.types.Panel):
 
         col = layout.column(align=True)
         col.operator("import_scene.lwo", text="Import LWO")
-        col.operator("open.browser", text="File Browser")
+        col.operator("wm.lwo_open_browser", text="File Browser")
 
 
 classes = (
