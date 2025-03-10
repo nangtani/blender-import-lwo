@@ -19,8 +19,8 @@
 bl_info = {
     "name": "Import LightWave Objects",
     "author": "Dave Keeshan, Ken Nign (Ken9) and Gert De Roost",
-    "version": (1, 4, 5),
-    "blender": (2, 80, 0),
+    "version": (1, 4, 8),
+    "blender": (3, 3, 0),
     "location": "File > Import > LightWave Object (.lwo)",
     "description": "Imports a LWO file including any UV, Morph and Color maps. "
     "Can convert Skelegons to an Armature.",
@@ -103,17 +103,16 @@ class MESSAGE_OT_Box(bpy.types.Operator):
     bl_idname = "message.messagebox"
     bl_label = ""
 
-    if (2, 80, 0) < bpy.app.version:
-        message: bpy.props.StringProperty(
-            name="message", description="message", default="",
-        )
-        ob: bpy.props.BoolProperty(name="ob", description="ob", default=False,)
-    else:  # else bpy.app.version
-        message = bpy.props.StringProperty(
-            name="message", description="message", default="",
-        )
-        ob = bpy.props.BoolProperty(name="ob", description="ob", default=False,)
-    # endif
+    message: bpy.props.StringProperty(
+        name="message",
+        description="message",
+        default="",
+    )
+    ob: bpy.props.BoolProperty(
+        name="ob",
+        description="ob",
+        default=False,
+    )
 
     def invoke(self, context, event):  # gui: no cover
         return context.window_manager.invoke_props_dialog(self, width=400)
@@ -136,31 +135,17 @@ class OPEN_OT_browser(bpy.types.Operator):
     bl_label = "Select Image Search Path"
     bl_options = {"REGISTER", "UNDO"}
 
-    if (2, 80, 0) < bpy.app.version:
-        directory: StringProperty(subtype="DIR_PATH")
-        recursive: BoolProperty(
-            name="Recursive Search",
-            description="Uncheck to disable recursive search",
-            default=True,
-        )
-        cancel_search: BoolProperty(
-            name="Cancel Search",
-            description="If no further images are to be found",
-            default=False,
-        )
-    else:  # else bpy.app.version
-        directory = StringProperty(subtype="DIR_PATH")
-        recursive = BoolProperty(
-            name="Recursive Search",
-            description="Uncheck to disable recursive search",
-            default=True,
-        )
-        cancel_search = BoolProperty(
-            name="Cancel Search",
-            description="If no further images are to be found",
-            default=False,
-        )
-    # endif
+    directory: StringProperty(subtype="DIR_PATH")
+    recursive: BoolProperty(
+        name="Recursive Search",
+        description="Uncheck to disable recursive search",
+        default=True,
+    )
+    cancel_search: BoolProperty(
+        name="Cancel Search",
+        description="If no further images are to be found",
+        default=False,
+    )
 
     def invoke(self, context, event):  # gui: no cover
         wm = context.window_manager
@@ -196,63 +181,33 @@ class IMPORT_OT_lwo(bpy.types.Operator):
     bpy.types.Scene.ch = None
     bpy.types.Scene.lwo = None
 
-    if (2, 80, 0) < bpy.app.version:
-        filepath: StringProperty(
-            name="File Path",
-            description="Filepath used for importing the LWO file",
-            maxlen=1024,
-            default="",
-        )
+    filepath: StringProperty(
+        name="File Path",
+        description="Filepath used for importing the LWO file",
+        maxlen=1024,
+        default="",
+    )
 
-        ADD_SUBD_MOD: BoolProperty(
-            name="Apply SubD Modifier",
-            description="Apply the Subdivision Surface modifier to layers with Subpatches",
-            default=True,
-        )
-        LOAD_HIDDEN: BoolProperty(
-            name="Load Hidden Layers",
-            description="Load object layers that have been marked as hidden",
-            default=False,
-        )
-        SKEL_TO_ARM: BoolProperty(
-            name="Create Armature",
-            description="Create an armature from an embedded Skelegon rig",
-            default=True,
-        )
-        USE_EXISTING_MATERIALS: BoolProperty(
-            name="Use Existing Materials",
-            description="Use existing materials if a material by that name already exists",
-            default=False,
-        )
-    else:  # else bpy.app.version
-        filepath = StringProperty(
-            name="File Path",
-            description="Filepath used for importing the LWO file",
-            maxlen=1024,
-            default="",
-        )
-
-        ADD_SUBD_MOD = BoolProperty(
-            name="Apply SubD Modifier",
-            description="Apply the Subdivision Surface modifier to layers with Subpatches",
-            default=True,
-        )
-        LOAD_HIDDEN = BoolProperty(
-            name="Load Hidden Layers",
-            description="Load object layers that have been marked as hidden",
-            default=False,
-        )
-        SKEL_TO_ARM = BoolProperty(
-            name="Create Armature",
-            description="Create an armature from an embedded Skelegon rig",
-            default=True,
-        )
-        USE_EXISTING_MATERIALS = BoolProperty(
-            name="Use Existing Materials",
-            description="Use existing materials if a material by that name already exists",
-            default=False,
-        )
-    # endif
+    ADD_SUBD_MOD: BoolProperty(
+        name="Apply SubD Modifier",
+        description="Apply the Subdivision Surface modifier to layers with Subpatches",
+        default=True,
+    )
+    LOAD_HIDDEN: BoolProperty(
+        name="Load Hidden Layers",
+        description="Load object layers that have been marked as hidden",
+        default=False,
+    )
+    SKEL_TO_ARM: BoolProperty(
+        name="Create Armature",
+        description="Create an armature from an embedded Skelegon rig",
+        default=True,
+    )
+    USE_EXISTING_MATERIALS: BoolProperty(
+        name="Use Existing Materials",
+        description="Use existing materials if a material by that name already exists",
+        default=False,
+    )
 
     def invoke(self, context, event):  # gui: no cover
         wm = context.window_manager
@@ -266,15 +221,14 @@ class IMPORT_OT_lwo(bpy.types.Operator):
         ch.load_hidden = self.LOAD_HIDDEN
         ch.skel_to_arm = self.SKEL_TO_ARM
         ch.use_existing_materials = self.USE_EXISTING_MATERIALS
-        #ch.search_paths = []
+        # ch.search_paths = []
         ch.images = {}
         # ch.cancel_search          = False
 
-
-#         import cProfile
-#         import pstats
-#         profiler = cProfile.Profile()
-#         profiler.enable()
+        #         import cProfile
+        #         import pstats
+        #         profiler = cProfile.Profile()
+        #         profiler.enable()
 
         lwo = lwoObject(self.filepath)
         bpy.types.Scene.lwo = lwo
@@ -300,10 +254,10 @@ class IMPORT_OT_lwo(bpy.types.Operator):
                 bpy.ops.message.messagebox(
                     "INVOKE_DEFAULT", message=str(err), ob=True
                 )  # gui: no cover
-#         profiler.disable()
-#         #profiler.print_stats()
-#         p = pstats.Stats(profiler)
-#         p.sort_stats('time').print_stats()
+        #         profiler.disable()
+        #         #profiler.print_stats()
+        #         p = pstats.Stats(profiler)
+        #         p.sort_stats('time').print_stats()
 
         del lwo
         # With the data gathered, build the object(s).
@@ -317,15 +271,12 @@ def menu_func(self, context):  # gui: no cover
 # Panel
 class IMPORT_PT_Debug(bpy.types.Panel):
     bl_idname = "IMPORT_PT_Debug"
-    if (2, 80, 0) < bpy.app.version:
-        # region = "UI"
-        region = "WINDOW"
-        # region = "TOOLS"
-        space = "PROPERTIES"
-    else:  # else bpy.app.version
-        region = "TOOLS"
-        space = "VIEW_3D"
-    # endif
+
+    # region = "UI"
+    region = "WINDOW"
+    # region = "TOOLS"
+    space = "PROPERTIES"
+
     bl_label = "DEBUG"
     bl_space_type = space
     bl_region_type = region
@@ -345,31 +296,27 @@ classes = (
     MESSAGE_OT_Box,
 )
 
-def register():
-    if (2, 80, 0) < bpy.app.version:
-        for cls in classes:
-            bpy.utils.register_class(cls)
 
-        bpy.types.TOPBAR_MT_file_import.append(menu_func)
-    else:  # else bpy.app.version
-        bpy.utils.register_module(__name__)
-        bpy.types.INFO_MT_file_import.append(menu_func)
-    # endif
+def register():
+
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+    bpy.types.TOPBAR_MT_file_import.append(menu_func)
+
     ch = _choices()
     bpy.types.Scene.ch = ch
 
 
 def unregister():  # pragma: no cover
-    if (2, 80, 0) < bpy.app.version:
-        for cls in classes:
-            bpy.utils.unregister_class(cls)
 
-        bpy.types.TOPBAR_MT_file_import.remove(menu_func)
-    else:  # else bpy.app.version
-        bpy.utils.unregister_module(__name__)
-        bpy.types.INFO_MT_file_import.remove(menu_func)
-    # endif
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
+
+    bpy.types.TOPBAR_MT_file_import.remove(menu_func)
+
     del bpy.types.Scene.ch
+
 
 if __name__ == "__main__":  # pragma: no cover
     register()
