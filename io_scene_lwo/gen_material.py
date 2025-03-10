@@ -23,9 +23,6 @@ from collections import OrderedDict
 from pprint import pprint
 from .bpy_debug import DebugException
 
-# from .NodeArrange import nodemargin, ArrangeNodesOp, values
-
-
 class _material:
     __slots__ = (
         "name",

@@ -23,6 +23,7 @@ import re
 from glob import glob
 from pprint import pprint
 from collections import OrderedDict
+from .bpy_debug import DebugException
 
 DEBUG = False
 
@@ -171,6 +172,23 @@ class _obj_surf(_lwo_base):
             for texture in self.textures[textures_type]:
                 texture.lwoprint(indent=1)
 
+class _surf_position(_lwo_base):
+    __slots__ = (
+        "cntr",
+        "size",
+        "rota",
+        "fall",
+        "oref",
+        "csys",
+    )
+
+    def __init__(self):
+        self.cntr = (0.0, 0.0, 0.0, 0)
+        self.size = (0.0, 0.0, 0.0, 0)
+        self.rota = (0.0, 0.0, 0.0, 0)
+        self.fall = (0, 0.0, 0.0, 0.0, 0)
+        self.oref = ""
+        self.csys = 0
 
 class _surf_texture(_lwo_base):
     __slots__ = (
@@ -180,6 +198,7 @@ class _surf_texture(_lwo_base):
         "clipid",
         "projection",
         "axis",
+        "position",
         "enab",
         "uvname",
         "channel",
@@ -196,6 +215,7 @@ class _surf_texture(_lwo_base):
         self.enab = True
         self.projection = 5
         self.axis = 0
+        self.position = _surf_position()
         self.uvname = "UVMap"
         self.channel = "COLR"
         self.type = "IMAP"
@@ -217,7 +237,7 @@ class _surf_texture(_lwo_base):
         print(f"Function:       {self.func}")
         print(f"Image:          {self.image}")
         print()
-
+        
 
 class _surf_texture_5(_lwo_base):
     __slots__ = ("id", "image", "X", "Y", "Z")
@@ -718,6 +738,45 @@ def read_clip(clip_bytes, lwo):
     lwo.clips[c_id] = orig_path
 
 
+def read_position(surf_bytes, offset, subchunk_len):
+    p = _surf_position()
+    suboffset = 0
+    
+    while suboffset < subchunk_len:
+        (subsubchunk_name,) = struct.unpack(
+            "4s", surf_bytes[offset + suboffset: offset + suboffset + 4]
+        )
+        suboffset += 4        
+        (slen,) = struct.unpack(
+            ">H", surf_bytes[offset + suboffset : offset + suboffset + 2]
+        )
+        suboffset += 2
+    
+        if b"CNTR" == subsubchunk_name:
+            p.cntr = struct.unpack(
+                ">fffh", surf_bytes[offset + suboffset : offset + suboffset + slen]
+            )
+        elif b"SIZE" == subsubchunk_name:
+            p.size = struct.unpack(
+                ">fffh", surf_bytes[offset + suboffset : offset + suboffset + slen]
+            )
+        elif b"ROTA" == subsubchunk_name:
+            p.rota = struct.unpack(
+                ">fffh", surf_bytes[offset + suboffset : offset + suboffset + slen]
+            )
+        elif b"FALL" == subsubchunk_name:
+            p.fall = struct.unpack(
+                ">hfffh", surf_bytes[offset + suboffset : offset + suboffset + slen]
+            )
+        elif b"OREF" == subsubchunk_name:
+            p.oref, name_len = read_lwostring(surf_bytes[offset + suboffset :])
+        elif b"CSYS" == subsubchunk_name:
+            (p.csys,) = struct.unpack(
+                ">h", surf_bytes[offset + suboffset : offset + suboffset + slen]
+            )
+        suboffset += slen
+    return p
+
 def read_texture(surf_bytes, offset, subchunk_len, debug=False):
     texture = _surf_texture()
     ordinal, ord_len = read_lwostring(surf_bytes[offset + 4 :])
@@ -731,7 +790,9 @@ def read_texture(surf_bytes, offset, subchunk_len, debug=False):
             ">H", surf_bytes[offset + suboffset : offset + suboffset + 2]
         )
         suboffset += 2
-        if subsubchunk_name == b"CHAN":
+        if subsubchunk_name == b"TMAP":
+            texture.position = read_position(surf_bytes, (offset + suboffset), subsubchunk_len)
+        elif subsubchunk_name == b"CHAN":
             (texture.channel,) = struct.unpack(
                 "4s", surf_bytes[offset + suboffset : offset + suboffset + 4],
             )
@@ -764,21 +825,12 @@ def read_texture(surf_bytes, offset, subchunk_len, debug=False):
             (texture.nega,) = struct.unpack(
                 ">H", surf_bytes[offset + suboffset : offset + suboffset + 2],
             )
-        elif subsubchunk_name == b"TMAP":
-            if DEBUG:
-                print(f"SubSubBlock: {subsubchunk_name} {subchunk_len}")
-        #                 xx, = struct.unpack(
-        #                     ">H",
-        #                     surf_bytes[offset + suboffset:offset + suboffset + 2],
-        #                 )
-        #                 print(xx)
         elif subsubchunk_name == b"AXIS":
             (texture.axis,) = struct.unpack(
                 ">H", surf_bytes[offset + suboffset : offset + suboffset + 2],
             )
         elif subsubchunk_name == b"WRAP":
-            if DEBUG:
-                print(f"SubSubBlock: {subsubchunk_name}")
+            DebugException(f"SubSubBlock: {subsubchunk_name} {subchunk_len}")
         elif subsubchunk_name == b"WRPW":
             if DEBUG:
                 print(f"SubSubBlock: {subsubchunk_name}")
@@ -825,10 +877,9 @@ def read_texture(surf_bytes, offset, subchunk_len, debug=False):
             if DEBUG:
                 print(f"SubSubBlock: {subsubchunk_name}")
         else:
-            print(f"Unimplemented SubSubBlock: {subsubchunk_name}")
-            if DEBUG:
-                raise Exception("Unimplemented SubSubBlock: {}".format(subsubchunk_name))
+            DebugException(f"Unimplemented SubSubBlock: {subsubchunk_name}")
         suboffset += subsubchunk_len
+    
     return texture
 
 
