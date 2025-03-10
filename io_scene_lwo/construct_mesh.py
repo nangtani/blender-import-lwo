@@ -289,10 +289,10 @@ def build_objects(lwo, ch):
 
         # Now triangulate the NGons.
         # if not 0 == len(ngons):
-        #if True:
+        # if True:
         if check_ngons:
             bm = bmesh.new()
-            bm.from_mesh(me) # Causes crashed in star field
+            bm.from_mesh(me)  # Causes crashed in star field
             if hasattr(bm.faces, "ensure_lookup_table"):
                 bm.faces.ensure_lookup_table()
 
