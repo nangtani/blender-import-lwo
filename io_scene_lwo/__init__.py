@@ -62,7 +62,6 @@ bl_info = {
     "description": "Imports a LWO file including any UV, Morph and Color maps. "
     "Can convert Skelegons to an Armature.",
     "warning": "",
-    "wiki_url": "http://wiki.blender.org/index.php/Extensions:2.6/Py/"
     "Scripts/Import-Export/LightWave_Object",
     "category": "Import-Export",
 }
@@ -181,7 +180,7 @@ class IMPORT_OT_lwo(Operator, ImportHelper):
 
     file_handler = {
         "extensions": [".lwo", ".lwo2"],
-    "blender": (2, 81, 0),
+        "appcategories": ["blender"],  # For drag/drop into Blender window
     }
 
     bpy.types.Scene.ch = None
@@ -238,6 +237,28 @@ class IMPORT_OT_lwo(Operator, ImportHelper):
             self.report({"ERROR"}, f"Browser operation failed: {err}")
             return {"CANCELLED"}
 
+        # Image handling in Lightwave files presents a portability challenge.
+        # Lightwave images are typically stored with explicit filenames, making
+        # it difficult to move projects between different systems or directories
+        # without breaking image links.  This plugin addresses this issue by:
+        #
+        # - When an image file reference is encountered but the image is missing:
+        #   A Blender file browser dialog will open, prompting the user to select
+        #   a directory to search for missing images.
+        #
+        # - Directory Search and Multiple Prompts:
+        #   If images are found in the selected directory, the import continues.
+        #   If not all missing images are resolved after the first directory selection,
+        #   the dialog will re-open, allowing the user to select another directory.
+        #   This process repeats until either:
+        #     a) All missing images are located across the selected directories.
+        #     b) The user cancels the dialog.
+        #
+        # - Import Completion:
+        #   The import process will complete even if not all images are found. In cases
+        #   where images remain unresolved after directory searching or if the dialog
+        #   is cancelled, the import will still finish, but without the missing image
+        #   textures being loaded.
         try:
             lwo.resolve_clips()
             lwo.validate_lwo()
@@ -259,10 +280,6 @@ class IMPORT_OT_lwo(Operator, ImportHelper):
 
     def menu_func(self, context):  # gui: no cover
         self.layout.operator(IMPORT_OT_lwo.bl_idname, text="LightWave Object (.lwo)")
-
-
-# def menu_func(self, context):  # gui: no cover
-#     self.layout.operator(IMPORT_OT_lwo.bl_idname, text="LightWave Object (.lwo)")
 
 
 # Panel

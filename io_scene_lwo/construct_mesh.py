@@ -99,7 +99,7 @@ def build_armature(layer_data, bones):
 def build_materials(lwo, ch):
     print(f"Adding {len(lwo.surfs)} Materials")
 
-    #renderer = bpy.context.scene.render.engine
+    # renderer = bpy.context.scene.render.engine
     for key, surf in lwo.surfs.items():
         m = get_existing(surf, ch.use_existing_materials)
         if m is None:
@@ -176,28 +176,6 @@ def build_objects(lwo, ch):
         if len(layer_data.lnorms) > 0 and len(layer_data.vnorms) > 0:
             pass
             # raise Exception
-
-        #         if len(layer_data.lnorms) > 0:
-        #             print("Adding Smoothing from Split Vertex Normals")
-        #             for pi in layer_data.lnorms.keys():
-        #                 p = me.polygons[pi]
-        #                 p.use_smooth = False
-        #                 keepflat = True
-        #                 for no in layer_data.lnorms[pi]:
-        #                     vn = layer_data.vnorms[no[0]]
-        #                     if (
-        #                            round(no[1], 4) == round(vn[0], 4)
-        #                         or round(no[2], 4) == round(vn[1], 4)
-        #                         or round(no[3], 4) == round(vn[2], 4)
-        #                     ):
-        #                         keepflat = False
-        #                         break
-        #                 if not (keepflat):
-        #                     p.use_smooth = True
-        #                 # for li in me.polygons[vn[1]].loop_indices:
-        #                 #    l = me.loops[li]
-        #                 #    if l.vertex_index == vn[0]:
-        #                 #        l.normal = [vn[2], vn[3], vn[4]]
 
         # Create the Vertex Groups (LW's Weight Maps).
         if len(layer_data.wmaps) > 0:
@@ -338,26 +316,6 @@ def build_objects(lwo, ch):
         layer_data.uvmaps_vmap.clear()
         layer_data.morphs.clear()
         layer_data.surf_tags.clear()
-
-        #         # Texture slots have been removed from 2.80, is there a corresponding any thing?
-        #         # Create the 3D View visualisation textures.
-        #         if (
-        #             "CYCLES" == bpy.context.scene.render.engine
-        #             or "BLENDER_EEVEE" == bpy.context.scene.render.engine
-        #         ):
-        #             pass
-        #         else:
-        #             for tf in me.polygons:
-        #                 tex_slots = me.materials[tf.material_index].texture_slots
-        #                 for ts in tex_slots:
-        #                     if ts:
-        #                         if None == tex_slots[0].texture:
-        #                             continue
-        #
-        #                         image = tex_slots[0].texture.image
-        #                         for lay in me.tessface_uv_textures:
-        #                             lay.data[tf.index].image = image
-        #                         break
 
         print("done!")
 

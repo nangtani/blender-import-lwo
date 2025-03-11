@@ -40,7 +40,7 @@ def get_existing(surf, use_existing_materials):
     if not use_existing_materials:
         return m
     x = bpy.data.materials.get(surf.name)
-    if x is None:
+    if not x is None:
         m = _material(surf.name)
         m.mat = x
         m.smooth = surf.smooth
@@ -55,12 +55,8 @@ def lwo2cycles(surf_data):
     m.mat = bpy.data.materials.new(mat_name)
     m.mat.use_nodes = True
     nodes = m.mat.node_tree.nodes
-    #n = nodes["Material Output"]
 
     color = (surf_data.colr[0], surf_data.colr[1], surf_data.colr[2], surf_data.diff)
-    # surf_data.diff = 0 == black
-    # print(color)
-    # print(surf_data.diff, surf_data.tran)
     d = nodes["Principled BSDF"]
     d.inputs[0].default_value = color
 
@@ -79,6 +75,5 @@ def lwo2cycles(surf_data):
                 image = bpy.data.images.load(image_path)
             i = nodes.new("ShaderNodeTexImage")
             i.image = image
-            # print(ci, image)
 
     return m
