@@ -99,10 +99,10 @@ def build_armature(layer_data, bones):
 def build_materials(lwo, ch):
     print(f"Adding {len(lwo.surfs)} Materials")
 
-    renderer = bpy.context.scene.render.engine
+    #renderer = bpy.context.scene.render.engine
     for key, surf in lwo.surfs.items():
         m = get_existing(surf, ch.use_existing_materials)
-        if None == m:
+        if m is None:
             m = lwo2cycles(surf)
         lwo.materials[key] = m
 
@@ -248,19 +248,19 @@ def build_objects(lwo, ch):
 
                 uvm = me.uv_layers.new()
 
-                if None == uvm:
+                if uvm is None:
                     break
                 uvm.name = uvmap_key
 
             vertloops = {}
             for v in me.vertices:
                 vertloops[v.index] = []
-            for l in me.loops:
-                vertloops[l.vertex_index].append(l.index)
+            for k in me.loops:
+                vertloops[k.vertex_index].append(k.index)
             for uvmap_key in layer_data.uvmaps_vmad.keys():
                 uvcoords = layer_data.uvmaps_vmad[uvmap_key]["FaceMap"]
                 uvm = me.uv_layers.get(uvmap_key)
-                if None == uvm:
+                if uvm is None:
                     continue
                 for pol_id in uvcoords.keys():
                     for pnt_id, (u, v) in uvcoords[pol_id].items():
@@ -271,7 +271,7 @@ def build_objects(lwo, ch):
             for uvmap_key in layer_data.uvmaps_vmap.keys():
                 uvcoords = layer_data.uvmaps_vmap[uvmap_key]["PointMap"]
                 uvm = me.uv_layers.get(uvmap_key)
-                if None == uvm:
+                if uvm is None:
                     continue
                 for pnt_id, (u, v) in uvcoords.items():
                     for li in vertloops[pnt_id]:

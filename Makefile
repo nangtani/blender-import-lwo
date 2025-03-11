@@ -24,6 +24,18 @@ all:
 flake8:
 	@flake8 $(BLENDER_ADDON) --count --show-source --statistics
 
+lint:
+	pyflakes io_scene_lwo
+	ruff check io_scene_lwo
+
+mypy:
+	mypy io_scene_lwo
+
+format:
+	black io_scene_lwo
+
+checks: format lint mypy
+
 GIT_TAG?=1.4.7
 GIT_TAGX:=$(shell echo "$(GIT_TAG)" | sed 's/\./, /g')
 VERSION_FILE?=`find . -name version.py`

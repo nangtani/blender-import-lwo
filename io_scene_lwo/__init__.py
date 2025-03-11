@@ -15,23 +15,6 @@
 #  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 # ##### END GPL LICENSE BLOCK #####
-from bpy_extras.io_utils import ImportHelper
-from bpy.types import Operator
-from bpy.props import StringProperty, BoolProperty
-
-bl_info = {
-    "name": "Import LightWave Objects",
-    "author": "Dave Keeshan, Ken Nign (Ken9) and Gert De Roost",
-    "version": (1, 4, 7),
-    "blender": (2, 81, 0),
-    "location": "File > Import > LightWave Object (.lwo)",
-    "description": "Imports a LWO file including any UV, Morph and Color maps. "
-    "Can convert Skelegons to an Armature.",
-    "warning": "",
-    "wiki_url": "http://wiki.blender.org/index.php/Extensions:2.6/Py/"
-    "Scripts/Import-Export/LightWave_Object",
-    "category": "Import-Export",
-}
 
 # Copyright (c) Ken Nign 2010
 # ken@virginpi.com
@@ -62,12 +45,27 @@ bl_info = {
 # 1.2 Added Absolute Morph and CC Edge Weight support.
 #     Made edge creation safer.
 # 1.0 First Release
-
-import os
 import bpy
+from bpy_extras.io_utils import ImportHelper
+from bpy.types import Operator
+from bpy.props import StringProperty, BoolProperty
 
 from .lwoObject import lwoObject, lwoNoImageFoundException, lwoUnsupportedFileException
 from .construct_mesh import build_objects
+
+bl_info = {
+    "name": "Import LightWave Objects",
+    "author": "Dave Keeshan, Ken Nign (Ken9) and Gert De Roost",
+    "version": (1, 4, 7),
+    "blender": (2, 81, 0),
+    "location": "File > Import > LightWave Object (.lwo)",
+    "description": "Imports a LWO file including any UV, Morph and Color maps. "
+    "Can convert Skelegons to an Armature.",
+    "warning": "",
+    "wiki_url": "http://wiki.blender.org/index.php/Extensions:2.6/Py/"
+    "Scripts/Import-Export/LightWave_Object",
+    "category": "Import-Export",
+}
 
 
 class _choices:
@@ -97,8 +95,6 @@ class _choices:
         self.cancel_search = False
         self.images = {}
         self.recursive = True
-
-
 
 
 class WM_OT_messagebox(Operator):
@@ -166,8 +162,8 @@ class WM_OT_lwo_file_browser(Operator):
         except lwoNoImageFoundException as err:
             bpy.ops.wm.messagebox("INVOKE_DEFAULT", message=str(err), ob=True)
         except Exception as err:
-            self.report({'ERROR'}, f"Browser operation failed: {err}")
-            return {'CANCELLED'}
+            self.report({"ERROR"}, f"Browser operation failed: {err}")
+            return {"CANCELLED"}
 
         del lwo
         return {"FINISHED"}
@@ -180,14 +176,14 @@ class IMPORT_OT_lwo(Operator, ImportHelper):
     bl_label = "Import LWO"
     bl_description = "Import a LightWave Object file"
     bl_options = {"REGISTER", "UNDO"}
-    filepath: StringProperty(subtype='FILE_PATH')
-    filter_glob: StringProperty(default='*.lwo;*.lwo2', options={'HIDDEN'})
-    
+    filepath: StringProperty(subtype="FILE_PATH")
+    filter_glob: StringProperty(default="*.lwo;*.lwo2", options={"HIDDEN"})
+
     file_handler = {
-        'extensions': ['.lwo', '.lwo2'],
-        'appcategories': ['blender'], # For drag/drop into Blender window
+        "extensions": [".lwo", ".lwo2"],
+    "blender": (2, 81, 0),
     }
-    
+
     bpy.types.Scene.ch = None
     bpy.types.Scene.lwo = None
 
@@ -226,7 +222,6 @@ class IMPORT_OT_lwo(Operator, ImportHelper):
         ch.use_existing_materials = self.USE_EXISTING_MATERIALS
         ch.images = {}
 
-
         lwo = lwoObject(self.filepath)
         bpy.types.Scene.lwo = lwo
 
@@ -240,8 +235,8 @@ class IMPORT_OT_lwo(Operator, ImportHelper):
                     "INVOKE_DEFAULT", message=str(err)
                 )  # gui: no cover
         except Exception as err:
-            self.report({'ERROR'}, f"Browser operation failed: {err}")
-            return {'CANCELLED'}
+            self.report({"ERROR"}, f"Browser operation failed: {err}")
+            return {"CANCELLED"}
 
         try:
             lwo.resolve_clips()
@@ -255,15 +250,16 @@ class IMPORT_OT_lwo(Operator, ImportHelper):
                     "INVOKE_DEFAULT", message=str(err), ob=True
                 )  # gui: no cover
         except Exception as err:
-            self.report({'ERROR'}, f"Browser operation failed: {err}")
-            return {'CANCELLED'}
-        
+            self.report({"ERROR"}, f"Browser operation failed: {err}")
+            return {"CANCELLED"}
+
         del lwo
         # With the data gathered, build the object(s).
         return {"FINISHED"}
 
     def menu_func(self, context):  # gui: no cover
         self.layout.operator(IMPORT_OT_lwo.bl_idname, text="LightWave Object (.lwo)")
+
 
 # def menu_func(self, context):  # gui: no cover
 #     self.layout.operator(IMPORT_OT_lwo.bl_idname, text="LightWave Object (.lwo)")
