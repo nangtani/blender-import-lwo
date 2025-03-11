@@ -22,8 +22,8 @@ from bpy.props import StringProperty, BoolProperty
 bl_info = {
     "name": "Import LightWave Objects",
     "author": "Dave Keeshan, Ken Nign (Ken9) and Gert De Roost",
-    "version": (1, 4, 8),
-    "blender": (3, 3, 0),
+    "version": (1, 4, 7),
+    "blender": (2, 81, 0),
     "location": "File > Import > LightWave Object (.lwo)",
     "description": "Imports a LWO file including any UV, Morph and Color maps. "
     "Can convert Skelegons to an Armature.",
@@ -101,8 +101,8 @@ class _choices:
 
 
 
-class MESSAGE_OT_Box(Operator):
-    bl_idname = "message.messagebox"
+class WM_OT_messagebox(Operator):
+    bl_idname = "wm.messagebox"
     bl_label = ""
 
     message: bpy.props.StringProperty(
@@ -122,7 +122,7 @@ class MESSAGE_OT_Box(Operator):
     def execute(self, context):  # gui: no cover
         self.report({"INFO"}, self.message)
         if self.ob:
-            bpy.ops.scene.lwo_open_browser("INVOKE_DEFAULT")
+            bpy.ops.wm.lwo_open_browser("INVOKE_DEFAULT")
         return {"FINISHED"}
 
     def draw(self, context):  # gui: no cover
@@ -130,8 +130,8 @@ class MESSAGE_OT_Box(Operator):
         self.layout.label(text="")
 
 
-class OPEN_OT_browser(Operator):
-    bl_idname = "scene.lwo_open_browser"
+class WM_OT_lwo_file_browser(Operator):
+    bl_idname = "wm.lwo_open_browser"
     bl_label = "Select Image Search Path"
     bl_options = {"REGISTER", "UNDO"}
 
@@ -164,7 +164,7 @@ class OPEN_OT_browser(Operator):
             lwo.validate_lwo()
             build_objects(lwo, ch)
         except lwoNoImageFoundException as err:
-            bpy.ops.message.messagebox("INVOKE_DEFAULT", message=str(err), ob=True)
+            bpy.ops.wm.messagebox("INVOKE_DEFAULT", message=str(err), ob=True)
         except Exception as err:
             self.report({'ERROR'}, f"Browser operation failed: {err}")
             return {'CANCELLED'}
@@ -182,6 +182,11 @@ class IMPORT_OT_lwo(Operator, ImportHelper):
     bl_options = {"REGISTER", "UNDO"}
     filepath: StringProperty(subtype='FILE_PATH')
     filter_glob: StringProperty(default='*.lwo;*.lwo2', options={'HIDDEN'})
+    
+    file_handler = {
+        'extensions': ['.lwo', '.lwo2'],
+        'appcategories': ['blender'], # For drag/drop into Blender window
+    }
     
     bpy.types.Scene.ch = None
     bpy.types.Scene.lwo = None
@@ -231,7 +236,7 @@ class IMPORT_OT_lwo(Operator, ImportHelper):
             if bpy.app.background:
                 raise err
             else:
-                bpy.ops.message.messagebox(
+                bpy.ops.wm.messagebox(
                     "INVOKE_DEFAULT", message=str(err)
                 )  # gui: no cover
         except Exception as err:
@@ -246,7 +251,7 @@ class IMPORT_OT_lwo(Operator, ImportHelper):
             if bpy.app.background:
                 raise err
             else:
-                bpy.ops.message.messagebox(
+                bpy.ops.wm.messagebox(
                     "INVOKE_DEFAULT", message=str(err), ob=True
                 )  # gui: no cover
         except Exception as err:
@@ -257,24 +262,12 @@ class IMPORT_OT_lwo(Operator, ImportHelper):
         # With the data gathered, build the object(s).
         return {"FINISHED"}
 
+    def menu_func(self, context):  # gui: no cover
+        self.layout.operator(IMPORT_OT_lwo.bl_idname, text="LightWave Object (.lwo)")
 
-lwo_handler = None # Global variable to store the handler
+# def menu_func(self, context):  # gui: no cover
+#     self.layout.operator(IMPORT_OT_lwo.bl_idname, text="LightWave Object (.lwo)")
 
-
-def menu_func(self, context):  # gui: no cover
-    self.layout.operator(IMPORT_OT_lwo.bl_idname, text="LightWave Object (.lwo)")
-
-
-# from bpy.types import FileHandler
-# class LWOFileHandler(FileHandler): 
-#     "LWO File Handler"
-#     bl_idname = "io_scene_lwo.file_handler" # Unique ID for the handler
-#     filepath = StringProperty() # Inherit filepath
-#     filter_glob: StringProperty(default='*.lwo;*.lwo2', options={'HIDDEN'}) # File filter
-# 
-#     def execute(self, context): # Execute import operator on file drop
-#         bpy.ops.import_scene.lwo('INVOKE_DEFAULT', filepath=self.filepath)
-#         return {'FINISHED'}
 
 # Panel
 class IMPORT_PT_Debug(bpy.types.Panel):
@@ -295,13 +288,13 @@ class IMPORT_PT_Debug(bpy.types.Panel):
 
         col = layout.column(align=True)
         col.operator("import_scene.lwo", text="Import LWO")
-        col.operator("scene.lwo_open_browser", text="File Browser")
+        col.operator("wm.lwo_open_browser", text="File Browser")
 
 
 classes = (
     IMPORT_OT_lwo,
-    OPEN_OT_browser,
-    MESSAGE_OT_Box,
+    WM_OT_lwo_file_browser,
+    WM_OT_messagebox,
 )
 
 
@@ -310,16 +303,8 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.TOPBAR_MT_file_import.append(menu_func)
+    bpy.types.TOPBAR_MT_file_import.append(IMPORT_OT_lwo.menu_func)
 
-#     bpy.utils.register_class(LWOFileHandler) # Register FileHandler
-    
-#     global lwo_handler
-#     lwo_handler = bpy.utils.register_file_handler( # Register for specific extensions
-#         LWOFileHandler,
-#         extensions=['.lwo', '.lwo2'],
-#     )
-    
     ch = _choices()
     bpy.types.Scene.ch = ch
 
@@ -329,12 +314,7 @@ def unregister():  # pragma: no cover
     for cls in classes:
         bpy.utils.unregister_class(cls)
 
-    bpy.types.TOPBAR_MT_file_import.remove(menu_func)
-
-#     bpy.utils.unregister_class(LWOFileHandler) # Unregister FileHandler
-#     global lwo_handler
-#     bpy.utils.unregister_file_handler(lwo_handler)
-#     lwo_handler = None
+    bpy.types.TOPBAR_MT_file_import.remove(IMPORT_OT_lwo.menu_func)
 
     del bpy.types.Scene.ch
 
