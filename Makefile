@@ -24,14 +24,37 @@ all:
 flake8:
 	@flake8 $(BLENDER_ADDON) --count --show-source --statistics
 
-GIT_TAG?=0.10.0
+GIT_TAG?=1.4.7
+GIT_TAGX:=$(shell echo "$(GIT_TAG)" | sed 's/\./, /g')
 VERSION_FILE?=`find . -name version.py`
 release:
 	echo "Release v${GIT_TAG}"
 # 	@grep -Po '\d\.\d\.\d' cocotbext/jtag/version.py
 	git tag v${GIT_TAG} || { echo "make release GIT_TAG=${GIT_TAG}"; git tag ; exit 1; }
-	echo "__version__ = \"${GIT_TAG}\"" > ${VERSION_FILE}
-	git add ${VERSION_FILE}
+	sed -i '/^version/c\
+version = "${GIT_TAG}"' io_scene_lwo/blender_manifest.toml
+	sed -i '/\"version/c\
+    "version": (${GIT_TAGX}),' io_scene_lwo/__init__.py
+	sed -i '/\"blender/c\
+    "blender": (2, 81, 0),' io_scene_lwo/__init__.py
+	sed -i '/expect_version = (1/c\
+    expect_version = (${GIT_TAGX})'  tests/basic/test_version.py
+	git add io_scene_lwo/blender_manifest.toml io_scene_lwo/__init__.py tests/basic/test_version.py
 	git commit --allow-empty -m "Update to version ${GIT_TAG}"
 	git tag -f v${GIT_TAG}
 	git push && git push --tags
+# 	sed -i '/^version/c\
+# version = "${GIT_TAG}"
+# ' io_scene_lwo/blender_manifest.toml
+
+xx:	
+	sed -i '/^version/c\
+version = "${GIT_TAG}"' io_scene_lwo/blender_manifest.toml
+	sed -i '/\"version/c\
+    "version": (${GIT_TAGX}),' io_scene_lwo/__init__.py
+	sed -i '/\"blender/c\
+    "blender": (2, 81, 0),' io_scene_lwo/__init__.py
+	sed -i '/expect_version = (1/c\
+    expect_version = (${GIT_TAGX})'  tests/basic/test_version.py
+# 	sed -i 'expect_version//c\
+#     expect_version = (${GIT_TAGX}),' tests/basic/test_version.py

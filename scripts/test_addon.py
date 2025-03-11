@@ -28,6 +28,7 @@ def main():
     if "TRAVIS_BRANCH" in os.environ.keys():
         if (
             "master" == os.environ["TRAVIS_BRANCH"]
+            or "main" == os.environ["TRAVIS_BRANCH"]
             or "develop" == os.environ["TRAVIS_BRANCH"]
         ):
             # if "master" == os.environ["TRAVIS_BRANCH"]:

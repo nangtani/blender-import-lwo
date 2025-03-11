@@ -4,12 +4,13 @@ schema_version = "1.0.0"
 # Change the values according to your extension
 id = "blender_import_lwo"
 version = "1.4.7"
+
 name = "Import LightWave Objects"
 tagline = "Imports a LWO file including any UV, Morph and Color maps"
 maintainer = "Dave Keeshan <dave.keeshan@daxzio.com>"
 # Supported types: "add-on", "theme"
 type = "add-on"
-
+category = "Import-Export"
 # # Optional: link to documentation, support, source files, etc
 # website = "https://extensions.blender.org/add-ons/my-example-package/"
 
