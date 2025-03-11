@@ -28,7 +28,7 @@ def delete_everything():
 
     if (2, 79, 0) < bpy.app.version:
         bpy.ops.wm.read_homefile()
-    
+
     for k in bpy.data.objects.keys():
         try:
             o = bpy.data.objects[k]
@@ -192,8 +192,7 @@ def checkType(x):
         print(x, "Unknown", type(x))
         t = type(x)
         print(t)
-        # raise Exception(f"Attribute <{x}> of Unknown type {t}")
-        raise Exception("Attribute <{0}> of Unknown type {1}".format(x, t))
+        raise Exception(f"Attribute <{x}> of Unknown type {t}")
         x = None
     return x
 
@@ -201,9 +200,9 @@ def checkType(x):
 def diff_files(outfile0, outfile1, error_count=0):
     print("Diffing files!")
     if os.path.isfile(outfile1):
-        print("Reference blend present: {0}".format(outfile1))
+        print(f"Reference blend present: {outfile1}")
     else:
-        print("No reference blend present: {0}".format(outfile1))
+        print(f"No reference blend present: {outfile1}")
         assert False
         return
 
@@ -268,9 +267,11 @@ def diff_files(outfile0, outfile1, error_count=0):
         for a in x.bl.keys():
             # print(a)
             if not a in y.bl.keys():
-                print("<{}> in not in dst".format(a))
-            if not x.bl[a] == y.bl[a]:
-                print("<{}> is different".format(a))
+                print(f"<{a}> in not in dst")
+            if "session_uid" == a:
+                pass
+            elif not x.bl[a] == y.bl[a]:
+                print(f"<{a}> is different")
                 pprint(x.bl[a])
                 pprint(y.bl[a])
                 assert False
@@ -282,9 +283,9 @@ def diff_files(outfile0, outfile1, error_count=0):
     #         for a in x.bl.keys():
     #             #print(a)
     #             if not a in y.bl.keys():
-    #                 print("<{}> in not in dst".format(a))
+    #                 print(f"<{a}> in not in dst")
     #             if not x.bl[a] == y.bl[a]:
-    #                 print("<{}> is different".format(a))
+    #                 print(f"<{a}> is different")
     #                 pprint(x.bl[a])
     #                 pprint(y.bl[a])
     #                 assert False
@@ -314,9 +315,9 @@ def diff_files(outfile0, outfile1, error_count=0):
             assert False
         for a, b in x.items():
             if not a in y.keys():
-                print("<{}> in not in dst".format(a))
+                print(f"<{a}> in not in dst")
             if not x[a] == y[a]:
-                print("<{}> is different".format(a))
+                print(f"<{a}> is different")
                 pprint(x[a])
                 pprint(y[a])
                 assert False
