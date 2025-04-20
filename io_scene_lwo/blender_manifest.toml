@@ -3,7 +3,7 @@ schema_version = "1.0.0"
 # Example of manifest file for a Blender extension
 # Change the values according to your extension
 id = "blender_import_lwo"
-version = "1.4.7"
+version = "1.4.8"
 
 name = "Import LightWave Objects"
 tagline = "Imports a LWO file including any UV, Morph and Color maps"

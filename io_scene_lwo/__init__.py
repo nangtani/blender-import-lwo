@@ -56,7 +56,7 @@ from .construct_mesh import build_objects
 bl_info = {
     "name": "Import LightWave Objects",
     "author": "Dave Keeshan, Ken Nign (Ken9) and Gert De Roost",
-    "version": (1, 4, 7),
+    "version": (1, 4, 8),
     "blender": (2, 81, 0),
     "location": "File > Import > LightWave Object (.lwo)",
     "description": "Imports a LWO file including any UV, Morph and Color maps. "
@@ -180,7 +180,7 @@ class IMPORT_OT_lwo(Operator, ImportHelper):
 
     file_handler = {
         "extensions": [".lwo", ".lwo2"],
-        "appcategories": ["blender"],  # For drag/drop into Blender window
+    "blender": (2, 81, 0),
     }
 
     bpy.types.Scene.ch = None
