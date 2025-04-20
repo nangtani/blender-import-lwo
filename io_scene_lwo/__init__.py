@@ -62,7 +62,7 @@ bl_info = {
     "description": "Imports a LWO file including any UV, Morph and Color maps. "
     "Can convert Skelegons to an Armature.",
     "warning": "",
-    "Scripts/Import-Export/LightWave_Object",
+#     "Scripts/Import-Export/LightWave_Object",
     "category": "Import-Export",
 }
 
