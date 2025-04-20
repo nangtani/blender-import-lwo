@@ -18,11 +18,11 @@
 
 import os
 import struct
-import chunk
 import re
 from glob import glob
 from pprint import pprint
 from collections import OrderedDict
+from .chunk import Chunk
 
 DEBUG = False
 
@@ -1224,7 +1224,7 @@ class lwoObject:
 
         while True:
             try:
-                rootchunk = chunk.Chunk(self.f)
+                rootchunk = Chunk(self.f)
             except EOFError:
                 break
 
@@ -1337,7 +1337,7 @@ class lwoObject:
 
         while True:
             try:
-                rootchunk = chunk.Chunk(self.f)
+                rootchunk = Chunk(self.f)
             except EOFError:
                 break
 
